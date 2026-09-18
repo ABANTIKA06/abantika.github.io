@@ -28,6 +28,7 @@ async function runEleventy() {
   bustRequire(path.join(env.ROOT, "src", "lib", "content.js"));
   const Eleventy = require("@11ty/eleventy");
   const elev = new Eleventy();
+  await elev.init();
   await elev.write();
 }
 

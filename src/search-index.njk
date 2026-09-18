@@ -1,0 +1,44 @@
+---
+permalink: /search-index.json
+eleventyExcludeFromCollections: true
+layout: false
+---
+[
+  {%- set comma = false -%}
+  {%- for p in publishedProjects -%}
+  {%- if comma %},{% endif %}
+  {
+    "type": "project",
+    "title": {{ p.title | dump | safe }},
+    "category": {{ p.category | dump | safe }},
+    "url": "/projects/{{ p.slug }}/",
+    "description": {{ (p.description or p.summary or "") | dump | safe }},
+    "tags": {{ (p.technologies or []) | dump | safe }}
+  }
+  {%- set comma = true -%}
+  {%- endfor -%}
+  {%- for b in publishedBlog -%}
+  {%- if comma %},{% endif %}
+  {
+    "type": "blog",
+    "title": {{ b.title | dump | safe }},
+    "category": {{ b.category | dump | safe }},
+    "url": "/blog/{{ b.slug }}/",
+    "description": {{ (b.description or "") | dump | safe }},
+    "tags": {{ (b.tags or []) | dump | safe }}
+  }
+  {%- set comma = true -%}
+  {%- endfor -%}
+  {%- for j in publishedJournal -%}
+  {%- if comma %},{% endif %}
+  {
+    "type": "journal",
+    "title": {{ j.title | dump | safe }},
+    "category": "Journal Entry",
+    "url": "/journal/{{ j.year }}/{{ j.month }}/{{ j.day }}/",
+    "description": {{ (j.summary or j.did or j.title or "") | dump | safe }},
+    "tags": [{{ j.date | dump | safe }}]
+  }
+  {%- set comma = true -%}
+  {%- endfor -%}
+]
