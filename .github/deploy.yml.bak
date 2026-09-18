@@ -35,7 +35,7 @@ jobs:
         run: npm ci
 
       - name: Build Eleventy static site
-        run: npx @11ty/eleventy
+        run: npx @11ty/eleventy --pathprefix="/abantika.github.io/"
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4

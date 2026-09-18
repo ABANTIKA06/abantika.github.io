@@ -321,12 +321,22 @@
   function gate() {
     return `
       <div class="admin-gate">
-        <p class="admin-kicker">00 / PRIVATE</p>
+        <p class="admin-kicker">00 / PRIVATE CONSOLE</p>
         <h1>ABANTIKA / ADMIN<span class="red-stop">.</span></h1>
-        <p>This console is limited to the allowlisted GitHub identity. Secrets stay on the server. There is no password form.</p>
+        <p>Enter your secret access passcode to unlock the workspace console.</p>
         ${state.error ? `<p class="admin-msg error">${esc(state.error)}</p>` : ""}
-        ${state.config.github ? `<p><a class="admin-btn primary" href="/api/auth/github">CONTINUE WITH GITHUB <b>→</b></a></p>` : `<p class="admin-msg">GitHub OAuth is not configured. Set GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ALLOWED_GITHUB_USER, and SESSION_SECRET in the server environment.</p>`}
-        ${state.config.dev ? `<p><button class="admin-btn" data-act="dev" type="button">CONTINUE ON LOCALHOST <b>→</b></button></p>` : ""}
+        
+        <form class="admin-form" data-form="passcode-login" style="max-width:380px;margin:24px 0">
+          <label style="font:11px var(--mono)">SECRET ACCESS PASSCODE
+            <input type="password" name="passcode" placeholder="Enter secret code..." required style="padding:10px;font-size:14px;background:#fff">
+          </label>
+          <button class="admin-btn primary" type="submit" style="width:100%;margin-top:10px">UNLOCK CONSOLE <b>→</b></button>
+        </form>
+
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+          ${state.config.github ? `<a class="admin-btn" href="/api/auth/github">SIGN IN WITH GITHUB <b>→</b></a>` : ""}
+          ${state.config.dev ? `<button class="admin-btn" data-act="dev" type="button">DEVELOPER LOCALHOST LOGIN <b>→</b></button>` : ""}
+        </div>
       </div>`;
   }
 
@@ -939,6 +949,12 @@
   async function onSubmit(form, publishFlag) {
     const type = form.getAttribute("data-form");
     const isNew = form.getAttribute("data-new") === "1";
+    if (type === "passcode-login") {
+      const passcode = formValue(form, "passcode");
+      await api("/api/auth/passcode", { method: "POST", body: { passcode } });
+      await render();
+      return;
+    }
     if (type === "media-upload") {
       const file = form.elements.file.files[0];
       if (!file) throw new Error("Choose an image first.");
@@ -1375,6 +1391,15 @@
     syncAllWysiwyg(form);
     const publishFlag = form.dataset.nextPublish || "false";
     const type = form.getAttribute("data-form");
+    if (type === "passcode-login") {
+      try {
+        await onSubmit(form, publishFlag);
+      } catch (err) {
+        state.error = err.message;
+        await render();
+      }
+      return;
+    }
     const name = formValue(form, "title") || formValue(form, "name") || "this entry";
     try {
       const ok = await askCommit(commitPrompt(type, publishFlag, form));

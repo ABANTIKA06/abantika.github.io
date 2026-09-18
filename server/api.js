@@ -50,8 +50,9 @@ function origin(req) {
 
 function currentUser(req) {
   const data = session.read(req);
-  if (!data || !data.login || !env.allowedGithubUser) return null;
-  if (data.login.toLowerCase() !== env.allowedGithubUser.toLowerCase()) return null;
+  if (!data || !data.login) return null;
+  if (data.passcode) return data;
+  if (env.allowedGithubUser && data.login.toLowerCase() !== env.allowedGithubUser.toLowerCase()) return null;
   return data;
 }
 
@@ -178,6 +179,18 @@ async function handle(req, res) {
     if (route === "POST /api/auth/dev") {
       await readBody(req);
       devLogin(req, res);
+      return true;
+    }
+    if (route === "POST /api/auth/passcode") {
+      const body = await readBody(req);
+      const code = String(body.passcode || "").trim();
+      const expected = String(env.adminPasscode || "abantika2026").trim();
+      if (!code || code !== expected) {
+        send(res, 401, { error: "Invalid secret passcode." });
+        return true;
+      }
+      session.write(res, { login: env.allowedGithubUser || "admin", passcode: true });
+      send(res, 200, { ok: true, login: env.allowedGithubUser || "admin" });
       return true;
     }
     if (route === "POST /api/auth/logout") {

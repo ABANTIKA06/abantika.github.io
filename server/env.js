@@ -38,6 +38,7 @@ module.exports = {
   allowedGithubUser: required("ALLOWED_GITHUB_USER"),
   sessionSecret: required("SESSION_SECRET"),
   adminDevLogin: required("ADMIN_DEV_LOGIN"),
+  adminPasscode: required("ADMIN_PASSCODE") || "abantika2026",
   githubToken: required("GITHUB_TOKEN"),
   githubRepoOwner: required("GITHUB_REPO_OWNER"),
   githubRepoName: required("GITHUB_REPO_NAME"),

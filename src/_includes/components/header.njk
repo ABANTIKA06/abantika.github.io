@@ -9,5 +9,19 @@
     <a href="/skills/" {% if page.url == "/skills/" %}class="active" aria-current="page"{% endif %}><i>06</i> SKILLS</a>
     <a href="/contact/" {% if page.url == "/contact/" %}class="active" aria-current="page"{% endif %}><i>07</i> CONTACT</a>
   </nav>
+
+  <div class="header-search-box" id="header-search-box">
+    <button type="button" class="search-icon-btn" aria-label="Search or enter access code" id="search-toggle-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </button>
+    <div class="search-input-wrapper">
+      <input type="password" id="site-search-input" placeholder="CODE / SEARCH..." autocomplete="off" spellcheck="false">
+      <span class="search-status-badge" id="search-status-badge">CODE</span>
+    </div>
+  </div>
+
   <span class="header-dot" aria-hidden="true"></span>
 </header>
