@@ -1,7 +1,9 @@
 const path = require("path");
+const { EleventyHtmlBasePlugin } = require("@11ty/eleventy");
 const { renderMarkdown } = require("./src/lib/content");
 
 module.exports = function (eleventyConfig) {
+  eleventyConfig.addPlugin(EleventyHtmlBasePlugin);
   eleventyConfig.addPassthroughCopy({ "src/assets": "assets" });
   eleventyConfig.addWatchTarget("src/assets");
   eleventyConfig.addWatchTarget(path.join(__dirname, "content"));
@@ -45,6 +47,7 @@ module.exports = function (eleventyConfig) {
   });
 
   return {
+    pathPrefix: process.env.PATH_PREFIX || "/",
     dir: {
       input: "src",
       output: "_site",
