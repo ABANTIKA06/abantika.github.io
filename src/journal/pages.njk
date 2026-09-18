@@ -1,0 +1,77 @@
+---
+pagination:
+  data: publishedJournal
+  size: 1
+  alias: note
+permalink: "/journal/{{ note.year }}/{{ note.month }}/{{ note.day }}/"
+layout: base.njk
+share: true
+ogType: article
+eleventyComputed:
+  title: "{{ note.title | safe }} — Abantika"
+  description: "{{ note.summary or note.title }}"
+---
+{% set related = projects | findBySlug(note.project) %}
+<div class="page-shell">
+  {% include "components/header.njk" %}
+  <main class="note-page">
+    <header class="note-header">
+      <p class="eyebrow">04 / JOURNAL</p>
+      <div class="note-date" aria-label="{{ note.dateISO }}">
+        <span>{{ note.day }}</span>
+        <span>{{ note.month }}</span>
+        <span>{{ note.yearShort }}</span>
+      </div>
+      <h1>{{ note.headline | joinLines | safe }}<span class="red-stop">.</span></h1>
+    </header>
+    <div class="detail-with-share">
+      <article class="case-body note-body">
+        {% if note.data or note.method or note.result or note.dataset or note.tools %}
+        <aside class="note-meta" aria-label="Entry metadata">
+          {% if note.dataset %}<p><strong>DATA</strong> {{ note.dataset }}</p>{% endif %}
+          {% if note.data %}<p><strong>DATA</strong> {{ note.data }}</p>{% endif %}
+          {% if note.method %}<p><strong>METHOD</strong> {{ note.method }}</p>{% endif %}
+          {% if note.result %}<p><strong>RESULT</strong> {{ note.result }}</p>{% endif %}
+          {% if note.tools %}<p><strong>TOOLS</strong> {{ note.tools }}</p>{% endif %}
+        </aside>
+        {% endif %}
+        <section>
+          <p class="case-num">01 / WHAT I DID</p>
+          <h2>THE WORK</h2>
+          {{ note.sections.didHtml | safe }}
+        </section>
+        <section>
+          <p class="case-num">02 / WHAT I LEARNED</p>
+          <h2>THE NOTE</h2>
+          {{ note.sections.learnedHtml | safe }}
+        </section>
+        <section>
+          <p class="case-num">03 / NEXT</p>
+          <h2>THE FOLLOW-UP</h2>
+          {{ note.sections.nextHtml | safe }}
+        </section>
+        {% if note.backlinks and note.backlinks.length %}
+        <aside class="related-block backlinks-block">
+          <p class="eyebrow" style="color:var(--red)">REFERENCED BY</p>
+          {% for backlink in note.backlinks %}
+          {% if backlink.published %}
+          <a class="text-link" href="{{ backlink.url }}">
+            <small style="font-family:var(--mono);color:#666;margin-right:8px">[{{ backlink.type | upper }}]</small>
+            {{ backlink.title | upper }} <b>→</b>
+          </a>
+          {% endif %}
+          {% endfor %}
+        </aside>
+        {% endif %}
+        {% if related %}
+        <aside class="related-block">
+          <p class="eyebrow">RELATED PROJECT</p>
+          <a class="text-link" href="{{ related.url }}">{{ related.title | upper }} <b>→</b></a>
+        </aside>
+        {% endif %}
+      </article>
+      {% include "components/share.njk" %}
+    </div>
+  </main>
+  {% include "components/footer.njk" %}
+</div>

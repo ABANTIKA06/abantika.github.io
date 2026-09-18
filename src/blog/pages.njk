@@ -1,0 +1,54 @@
+---
+pagination:
+  data: publishedBlog
+  size: 1
+  alias: article
+permalink: "/blog/{{ article.slug }}/"
+layout: base.njk
+share: true
+ogType: article
+eleventyComputed:
+  title: "{{ article.title | safe }} — Abantika"
+  description: "{{ article.description }}"
+  image: "{{ article.cover }}"
+---
+{% set related = projects | findBySlug(article.relatedProject) %}
+<div class="page-shell">
+  {% include "components/header.njk" %}
+  <main class="article-page">
+    <header class="case-header">
+      <p class="eyebrow">05 / BLOG &nbsp; · &nbsp; {{ article.dateISO }} / {{ article.category | upper }}</p>
+      <h1>{{ article.headline | joinLines | safe }}<span class="red-stop">.</span></h1>
+      <p>{{ article.description }}</p>
+      {% if article.tags.length %}
+      <div class="case-tech">{{ article.tags | join(" / ") | upper }}</div>
+      {% endif %}
+    </header>
+    <div class="detail-with-share">
+      <article class="case-body article-body">
+        {{ article.html | safe }}
+        {% if article.backlinks and article.backlinks.length %}
+        <aside class="related-block backlinks-block">
+          <p class="eyebrow" style="color:var(--red)">REFERENCED BY</p>
+          {% for backlink in article.backlinks %}
+          {% if backlink.published %}
+          <a class="text-link" href="{{ backlink.url }}">
+            <small style="font-family:var(--mono);color:#666;margin-right:8px">[{{ backlink.type | upper }}]</small>
+            {{ backlink.title | upper }} <b>→</b>
+          </a>
+          {% endif %}
+          {% endfor %}
+        </aside>
+        {% endif %}
+        {% if related %}
+        <aside class="related-block">
+          <p class="eyebrow">RELATED PROJECT</p>
+          <a class="text-link" href="{{ related.url }}">{{ related.title | upper }} <b>→</b></a>
+        </aside>
+        {% endif %}
+      </article>
+      {% include "components/share.njk" %}
+    </div>
+  </main>
+  {% include "components/footer.njk" %}
+</div>

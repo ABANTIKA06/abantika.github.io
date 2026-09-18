@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ description or site.description }}">
+    <meta name="theme-color" content="#f2f0ea">
+    <meta property="og:title" content="{{ title or site.name }}">
+    <meta property="og:description" content="{{ description or site.ogDescription }}">
+    <meta property="og:type" content="{{ ogType or 'website' }}">
+    <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+    <meta property="og:image" content="{{ site.url }}{{ image or '/assets/og-image.png' }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ title or site.name }}">
+    <meta name="twitter:description" content="{{ description or site.ogDescription }}">
+    <meta name="twitter:image" content="{{ site.url }}{{ image or '/assets/og-image.png' }}">
+    <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+    <link rel="stylesheet" href="/assets/styles.css">
+    <title>{{ title or site.name }}</title>
+  </head>
+  <body>
+    {{ content | safe }}
+    {% if share %}
+    <script type="text/javascript" src="https://platform-api.sharethis.com/js/sharethis.js#property=6aa112a085a899f47bb776d5&product=sticky-share-buttons" async></script>
+    {% endif %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var videos = document.querySelectorAll("video[data-hover-play]");
+        videos.forEach(function (video) {
+          video.muted = true;
+          var parent = video.closest(".hover-video-plate") || video.parentElement;
+          if (!parent) return;
+
+          var direction = 1;
+          var isPlaying = false;
+          var animId = null;
+          var lastTimestamp = null;
+
+          function step(timestamp) {
+            if (!isPlaying) return;
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            var delta = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+            if (delta > 0.1) delta = 0.016;
+
+            if (direction === 1) {
+              if (video.duration && video.currentTime >= video.duration - 0.15) {
+                direction = -1;
+                video.pause();
+              }
+            } else if (direction === -1) {
+              video.currentTime = Math.max(0.01, video.currentTime - delta * 0.85);
+              if (video.currentTime <= 0.1) {
+                direction = 1;
+                video.currentTime = 0;
+                video.play().catch(function () {});
+              }
+            }
+            animId = requestAnimationFrame(step);
+          }
+
+          function startPlay() {
+            isPlaying = true;
+            lastTimestamp = null;
+            if (direction === 1) {
+              video.play().catch(function () {});
+            }
+            if (animId) cancelAnimationFrame(animId);
+            animId = requestAnimationFrame(step);
+          }
+
+          function stopPlay() {
+            isPlaying = false;
+            video.pause();
+            if (animId) cancelAnimationFrame(animId);
+          }
+
+          parent.addEventListener("mouseenter", startPlay);
+          parent.addEventListener("mouseleave", stopPlay);
+
+          parent.addEventListener("touchstart", function () {
+            if (isPlaying) stopPlay();
+            else startPlay();
+          }, { passive: true });
+        });
+      });
+    </script>
+  </body>
+</html>

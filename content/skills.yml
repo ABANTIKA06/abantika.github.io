@@ -1,0 +1,31 @@
+dataAnalysis:
+  - Python
+  - SQL
+  - Pandas
+  - NumPy
+  - Excel
+statistics:
+  - Hypothesis Testing
+  - Regression
+  - Probability
+  - A/B Testing
+  - Time Series
+machineLearning:
+  - Scikit-learn
+  - XGBoost
+  - RANDOM FOREST
+  - Classification
+  - Regression
+  - Clustering
+visualization:
+  - Power BI
+  - Tableau
+  - Matplotlib
+  - Plotly
+  - Seaborn
+other:
+  - Git / GitHub
+  - APIs
+  - ETL
+  - Data Cleaning
+  - Jupyter

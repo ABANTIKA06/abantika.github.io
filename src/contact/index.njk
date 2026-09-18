@@ -1,0 +1,24 @@
+---
+layout: base.njk
+title: Contact — Abantika
+---
+<div class="page-shell">
+{% include "components/header.njk" %}
+<main class="inner-page contact-page">
+  <section class="contact-hero">
+    <p class="eyebrow">07 / CONTACT</p>
+    <h1>LET’S BUILD<br>SOMETHING<br>IMPACTFUL<span class="red-stop">.</span></h1>
+    <div>
+      <p>{{ site.contactBlurb }}</p>
+      <a class="button button-primary" href="mailto:{{ site.email }}">EMAIL ME <b>→</b></a>
+    </div>
+  </section>
+  <section class="contact-details">
+    <p class="eyebrow">OTHER WAYS TO CONNECT</p>
+    <a href="{{ site.linkedin or '#' }}">LINKEDIN <b>↗</b></a>
+    <a href="{{ site.github or '#' }}">GITHUB <b>↗</b></a>
+    <p class="contact-note">{% if site.linkedin and site.github %}{{ site.email }}{% else %}[PLACEHOLDER — Replace the email address and profile links before publishing.]{% endif %}</p>
+  </section>
+</main>
+{% include "components/footer.njk" %}
+</div>

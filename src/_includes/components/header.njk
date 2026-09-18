@@ -1,0 +1,13 @@
+<header class="site-header" aria-label="Main navigation">
+  <a class="brand" href="/" aria-label="{{ site.shortName }} home"><span>{{ site.shortName | upper }}</span><small>{{ site.role | upper }}</small></a>
+  <nav class="main-nav" aria-label="Primary navigation">
+    <a href="/" {% if page.url == "/" %}class="active" aria-current="page"{% endif %}><i>01</i> HOME</a>
+    <a href="/about/" {% if page.url == "/about/" %}class="active" aria-current="page"{% endif %}><i>02</i> ABOUT</a>
+    <a href="/projects/" {% if page.url.startsWith("/projects/") %}class="active" aria-current="page"{% endif %}><i>03</i> PROJECTS</a>
+    <a href="/journal/" {% if page.url.startsWith("/journal/") %}class="active" aria-current="page"{% endif %}><i>04</i> JOURNAL</a>
+    <a href="/blog/" {% if page.url.startsWith("/blog/") %}class="active" aria-current="page"{% endif %}><i>05</i> BLOG</a>
+    <a href="/skills/" {% if page.url == "/skills/" %}class="active" aria-current="page"{% endif %}><i>06</i> SKILLS</a>
+    <a href="/contact/" {% if page.url == "/contact/" %}class="active" aria-current="page"{% endif %}><i>07</i> CONTACT</a>
+  </nav>
+  <span class="header-dot" aria-hidden="true"></span>
+</header>

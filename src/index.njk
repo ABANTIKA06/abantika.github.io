@@ -1,0 +1,91 @@
+---
+layout: base.njk
+title: Abantika — Data Analyst & Data Scientist
+---
+{% set featuredProjects = projects | featured %}
+{% set latestNote = (journal | published)[0] %}
+<main class="page-shell">
+  {% include "components/header.njk" %}
+
+  <section class="hero section-rule" id="home" aria-labelledby="hero-title">
+    <div class="section-id">01 <span>INTRODUCTION</span></div>
+    <div class="hero-copy">
+      <p class="eyebrow">TURNING DATA INTO</p>
+      <h1 id="hero-title">CLEAR<br>INSIGHTS.<br>REAL<br>IMPACT<span class="red-stop">.</span></h1>
+      <p class="lede">{{ site.heroLede }}</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#projects">VIEW MY WORK <b>→</b></a>
+        <a class="text-link" href="#contact">GET IN TOUCH <b>→</b></a>
+      </div>
+    </div>
+    <div class="hero-plate hover-video-plate" aria-label="Interactive video artifact">
+      <video class="plate-video" data-hover-play src="/assets/Video Project 1.mp4" poster="/assets/og-image.png" muted playsinline preload="auto"></video>
+    </div>
+  </section>
+
+  <section class="about section-rule" id="about" aria-labelledby="about-title">
+    <div class="section-heading"><span>02</span><i></i><p>ABOUT ME</p></div>
+    <div class="portrait-plate" aria-label="Portrait placeholder"><span>PORTRAIT<br>PLACEHOLDER</span><b></b><em></em></div>
+    <div class="about-statement">
+      <h2 id="about-title">{{ about.homeHeadline | joinLines | safe }}<span class="red-stop">.</span></h2>
+      <p>{{ about.homeSummary | publicText(about.intro) }}</p>
+      <a class="text-link" href="/about/">MORE ABOUT ME <b>→</b></a>
+    </div>
+    <ul class="principles" aria-label="Working principles">
+      {% for item in about.principles %}
+      <li><strong>{{ item.number }}</strong><div><b>{{ item.title }}</b><span>{{ item.home }}</span></div></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="projects section-rule" id="projects" aria-labelledby="projects-title">
+    <div class="section-heading"><span>03</span><i></i><h2 id="projects-title">SELECTED WORK</h2><a class="text-link" href="/projects/">VIEW ALL PROJECTS <b>→</b></a></div>
+    <div class="project-grid">
+      {% for project in featuredProjects %}
+      <article class="project">
+        <div class="project-art {{ project.artClass }}">{% if project.art != "dots" %}<span></span>{% endif %}</div>
+        <p class="project-number">{{ project.number }}</p>
+        <h3>{{ project.title | editorialBreak | safe }}</h3>
+        <p>{{ project.summary | publicText(project.description) }}</p>
+        <small>{{ project.techLabel }}</small>
+        <a class="text-link" href="{{ project.url }}">VIEW PROJECT <b>→</b></a>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="journal section-rule" id="journal" aria-labelledby="journal-title">
+    <div class="section-heading"><span>04</span><i></i><h2 id="journal-title">FIELD NOTES</h2><a class="text-link" href="/journal/">VIEW JOURNAL <b>→</b></a></div>
+    {% if latestNote %}
+    <div class="journal-date"><b>—</b><strong>{{ latestNote.day }}</strong><span>{{ latestNote.monthShort }}<br>{{ latestNote.year }}</span></div>
+    <article class="journal-note"><p class="eyebrow">WHAT I DID TODAY / {{ latestNote.day }}</p><h3>{{ latestNote.headline | joinLines | safe }}<span class="red-stop">.</span></h3><p>{{ latestNote.summary }}</p><a class="text-link" href="{{ latestNote.url }}">READ THE NOTE <b>→</b></a></article>
+    {% else %}
+    <div class="journal-date"><b>—</b><strong>01</strong><span>SEPT<br>2026</span></div>
+    <article class="journal-note"><p class="eyebrow">WHAT I DID TODAY / 01</p><h3>ANALYTICAL<br>WORK IN<br>PROGRESS<span class="red-stop">.</span></h3><p>[PLACEHOLDER — A concise research note, experiment log, or reflection will appear here.]</p><a class="text-link" href="/journal/">READ THE NOTE <b>→</b></a></article>
+    {% endif %}
+    <div class="journal-plot" aria-label="Illustrative line plot"><span></span><i></i><b>METHOD / RESULT / NEXT</b></div>
+  </section>
+
+  <section class="skills section-rule" id="skills" aria-labelledby="skills-title">
+    <div class="section-heading"><span>05</span><i></i><h2 id="skills-title">SKILLS &amp; TOOLS</h2></div>
+    <p class="skills-intro">TOOLS<br>THAT TURN<br>DATA INTO<br>DECISIONS.</p>
+    <div class="skill-groups">
+      {% for group in skills %}
+      <div><h3>{{ group.title }}</h3><p>{{ group.items | join("<br>") | safe }}</p></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="section-heading"><span>06</span><i></i><p>LET’S CONNECT</p></div>
+    <h2 id="contact-title">LET’S BUILD<br>SOMETHING IMPACTFUL<span class="red-stop">.</span></h2>
+    <div class="contact-copy"><p>{{ site.contactBlurb }}</p><a class="button button-primary" href="mailto:{{ site.email }}">EMAIL ME <b>→</b></a></div>
+    <div class="contact-links">
+      <a href="{{ site.linkedin or '#' }}">LINKEDIN</a>
+      <a href="{{ site.github or '#' }}">GITHUB</a>
+      <p>{{ site.availabilityLines | join("<br>") | safe }}</p>
+    </div>
+  </section>
+
+  {% include "components/footer.njk" %}
+</main>

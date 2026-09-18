@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "buildCommand": "npx @11ty/eleventy",
+  "outputDirectory": "_site",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/server/admin-api.js" },
+    { "source": "/admin/(.*)", "destination": "/admin/index.html" }
+  ]
+}

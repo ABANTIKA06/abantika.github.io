@@ -1,0 +1,10 @@
+node_modules/
+_site/
+.env
+.env.local
+.DS_Store
+Thumbs.db
+*.log
+-checks/
+.gemini/
+03. Page ISSUE.png

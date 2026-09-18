@@ -1,0 +1,28 @@
+---
+layout: base.njk
+title: Journal — Abantika
+---
+{% set notes = journal | published %}
+<div class="page-shell">
+{% include "components/header.njk" %}
+<main class="inner-page journal-page">
+  <section class="page-intro compact"><p class="eyebrow">04 / JOURNAL</p><h1>WHAT I DID<br>TODAY<span class="red-stop">.</span></h1><p>A research log and field notebook for analytical work. Each published note has a dated route.</p></section>
+  {% if notes.length %}
+  <section class="journal-index" aria-label="Journal entries">
+    {% for note in notes %}
+    <a class="journal-index-row" href="{{ note.url }}">
+      <div class="journal-index-date"><strong>{{ note.day }}</strong><span>{{ note.monthShort }} {{ note.year }}</span></div>
+      <div>
+        <p class="eyebrow">{% if note.project %}PROJECT / {{ note.project | replace("-", " ") | upper }}{% else %}FIELD NOTE{% endif %}</p>
+        <h2>{{ note.headline | joinLines | safe }}<span class="red-stop">.</span></h2>
+        <p>{{ note.summary }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </section>
+  {% else %}
+  <section class="journal-empty"><div><span>DD</span><span>MM</span><span>YY</span></div><article><p class="eyebrow">FIRST ENTRY / PENDING</p><h2>THE WORKING<br>NOTEBOOK<span class="red-stop">.</span></h2><p>[PLACEHOLDER — Published research notes, what was learned, and next steps will appear here.]</p></article><aside>DATA<br>METHOD<br>RESULT<br>NEXT</aside></section>
+  {% endif %}
+</main>
+{% include "components/footer.njk" %}
+</div>

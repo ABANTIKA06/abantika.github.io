@@ -1,0 +1,38 @@
+---
+layout: base.njk
+title: Blog — Abantika
+---
+{% set articles = blog | published %}
+<div class="page-shell">
+  {% include "components/header.njk" %}
+  <main class="inner-page blog-page">
+    <section class="page-intro compact">
+      <p class="eyebrow">05 / BLOG</p>
+      <h1>NOTES ON<br>METHOD AND<br>MEANING<span class="red-stop">.</span></h1>
+      <p>Longer essays on analytical work. Articles are Markdown-driven. Findings stay unpublished until verified source material is supplied.</p>
+    </section>
+    {% if articles.length %}
+    <section class="blog-index" aria-label="Articles">
+      {% for article in articles %}
+      <a class="blog-row" href="{{ article.url }}">
+        <span>{{ article.dateISO }}</span>
+        <h2>{{ article.title | editorialBreak | safe }}</h2>
+        <p>{{ article.category | upper }}</p>
+        <b aria-hidden="true">→</b>
+      </a>
+      {% endfor %}
+    </section>
+    {% else %}
+    <section class="journal-empty">
+      <div><span>NO</span><span>LIVE</span><span>COPY</span></div>
+      <article>
+        <p class="eyebrow">ARTICLES / PENDING</p>
+        <h2>THE LONG<br>FORM<span class="red-stop">.</span></h2>
+        <p>[PLACEHOLDER — Published essays will appear here.]</p>
+      </article>
+      <aside>METHOD<br>EVIDENCE<br>LIMITS</aside>
+    </section>
+    {% endif %}
+  </main>
+  {% include "components/footer.njk" %}
+</div>

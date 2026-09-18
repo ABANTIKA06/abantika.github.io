@@ -1,0 +1,28 @@
+---
+layout: base.njk
+title: Skills & Tools — Abantika
+---
+<div class="page-shell">
+{% include "components/header.njk" %}
+<main class="inner-page skills-page">
+  <section class="page-intro compact">
+    <p class="eyebrow">06 / SKILLS & TOOLS</p>
+    <h1>TOOLS FOR<br>ASKING BETTER<br>QUESTIONS<span class="red-stop">.</span></h1>
+    <p>The working toolkit, grouped by the kinds of questions it helps answer. Groups are content-driven and can be updated without changing the page.</p>
+  </section>
+  <section class="skill-listing">
+    {% for group in skills %}
+    <div>
+      <p>{{ group.number }}</p>
+      <h2>{{ group.title }}</h2>
+      <ul>
+        {% for item in group.items %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </section>
+</main>
+{% include "components/footer.njk" %}
+</div>

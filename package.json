@@ -1,0 +1,15 @@
+{
+  "name": "abantika-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Abantika's editorial data portfolio.",
+  "scripts": {
+    "build": "npx @11ty/eleventy",
+    "start": "node server/admin-api.js",
+    "admin": "node server/admin-api.js"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1"
+  }
+}
+

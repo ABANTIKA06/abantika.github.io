@@ -1,0 +1,27 @@
+---
+layout: base.njk
+title: Projects — Abantika
+---
+{% set listed = projects | published %}
+<div class="page-shell">
+  {% include "components/header.njk" %}
+  <main class="inner-page projects-page">
+    <section class="page-intro compact">
+      <p class="eyebrow">03 / PROJECTS</p>
+      <h1>SELECTED<br>ANALYTICAL<br>WORK<span class="red-stop">.</span></h1>
+      <p>Case studies and works in progress. Project descriptions and results are placeholders until verified source material is supplied.</p>
+    </section>
+    <section class="project-index" aria-label="Selected projects">
+      {% for project in listed %}
+      <a class="project-row" href="{{ project.url }}">
+        <span>{{ project.number }}</span>
+        <div class="row-art {{ project.rowArtClass }}" aria-hidden="true"></div>
+        <h2>{{ project.title | editorialBreak | safe }}</h2>
+        <p>{{ project.techLabel }}</p>
+        <b aria-hidden="true">→</b>
+      </a>
+      {% endfor %}
+    </section>
+  </main>
+  {% include "components/footer.njk" %}
+</div>
