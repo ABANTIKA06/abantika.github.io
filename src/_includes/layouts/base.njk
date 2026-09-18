@@ -43,33 +43,47 @@
             searchBox.classList.add("expanded");
           });
 
+          searchInput.addEventListener("input", function () {
+            var val = searchInput.value;
+            if (val.startsWith("$")) {
+              searchInput.type = "password";
+              if (searchBadge) searchBadge.textContent = "COMMAND";
+            } else {
+              searchInput.type = "text";
+              if (searchBadge) searchBadge.textContent = "SEARCH";
+            }
+          });
+
           searchInput.addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
               e.preventDefault();
               var val = searchInput.value.trim();
               if (!val) return;
 
-              fetch("/api/auth/passcode", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ passcode: val })
-              })
-              .then(function (res) { return res.json(); })
-              .then(function (data) {
-                if (data.ok) {
-                  searchBox.classList.add("success");
-                  if (searchBadge) searchBadge.textContent = "UNLOCKED →";
-                  setTimeout(function () {
-                    window.location.href = "/admin/";
-                  }, 300);
-                } else {
-                  if (searchBadge) searchBadge.textContent = "SEARCH";
-                  window.location.href = "/projects/?q=" + encodeURIComponent(val);
-                }
-              })
-              .catch(function () {
-                window.location.href = "/admin/";
-              });
+              if (val.startsWith("$")) {
+                fetch("/api/auth/passcode", {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({ passcode: val })
+                })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                  if (data.ok) {
+                    searchBox.classList.add("success");
+                    if (searchBadge) searchBadge.textContent = "UNLOCKED →";
+                    setTimeout(function () {
+                      window.location.href = "/admin/";
+                    }, 300);
+                  } else {
+                    if (searchBadge) searchBadge.textContent = "DENIED";
+                  }
+                })
+                .catch(function () {
+                  window.location.href = "/admin/";
+                });
+              } else {
+                window.location.href = "/projects/?q=" + encodeURIComponent(val);
+              }
             }
           });
 

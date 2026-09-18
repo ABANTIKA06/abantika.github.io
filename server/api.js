@@ -183,9 +183,10 @@ async function handle(req, res) {
     }
     if (route === "POST /api/auth/passcode") {
       const body = await readBody(req);
-      const code = String(body.passcode || "").trim();
+      let code = String(body.passcode || "").trim();
+      if (code.startsWith("$")) code = code.slice(1);
       const expected = String(env.adminPasscode || "abantika2026").trim();
-      if (!code || code !== expected) {
+      if (!code || code.toLowerCase() !== expected.toLowerCase()) {
         send(res, 401, { error: "Invalid secret passcode." });
         return true;
       }
