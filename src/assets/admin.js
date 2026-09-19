@@ -151,10 +151,10 @@
       ["about", "settings", "skills", "media-upload"].includes(type);
     if (type === "media-upload") {
       return {
-        kicker: "06 / MEDIA",
-        title: "COMMIT UPLOAD",
-        copy: "This will store the image and rebuild the public site.",
-        confirmLabel: "YES, COMMIT",
+        kicker: "07 / MEDIA",
+        title: "UPLOAD IMAGE",
+        copy: "This will process the image and save it to Cloudflare R2 media storage.",
+        confirmLabel: "YES, UPLOAD",
         primary: true
       };
     }
@@ -439,7 +439,7 @@
             <div class="admin-progress-bar" id="admin-pbar" style="width: 15%"></div>
           </div>
           <div class="admin-status-text">
-            <span id="admin-pstatus">WRITING MARKDOWN & REBUILDING SITE...</span>
+            <span id="admin-pstatus">PROCESSING ASSET & SAVING MEDIA...</span>
             <span id="admin-ppercent">15%</span>
           </div>
         </div>
@@ -454,7 +454,7 @@
         pct += 1;
         const statusEl = document.getElementById("admin-pstatus");
         if (statusEl && pct > 88) {
-          statusEl.textContent = "COMMITTING TO GITHUB & VERCEL EDGE...";
+          statusEl.textContent = "SAVING TO CLOUDFLARE R2 & MEDIA STORE...";
         }
       }
       const bar = document.getElementById("admin-pbar");
@@ -2124,10 +2124,13 @@
       }
       
       const isPublish = publishFlag === "true" || type === "journal" || ["about", "settings", "skills", "media-upload"].includes(type);
+      const isMedia = type === "media-upload";
       const prog = showProgressModal({
-        kicker: isPublish ? "00 / PUBLISHING" : "00 / COMMITTING DRAFT",
-        title: "REBUILDING & COMMITTING...",
-        copy: `"${name}" is being written to disk and static pages are rebuilding.`
+        kicker: isMedia ? "07 / MEDIA UPLOAD" : (isPublish ? "00 / PUBLISHING" : "00 / SAVING DRAFT"),
+        title: isMedia ? "SAVING MEDIA ASSETS..." : (isPublish ? "PROCESSING & SAVING..." : "SAVING DRAFT..."),
+        copy: isMedia
+          ? `"${name}" is being processed and saved to Cloudflare R2 media storage.`
+          : `"${name}" is being saved to content store.`
       });
 
       let savedResult;
@@ -2141,10 +2144,12 @@
       let viewUrl = "";
       if (savedResult && savedResult.url && isPublish) viewUrl = savedResult.url;
 
-      const successTitle = isPublish ? "PUBLISHED SUCCESSFULLY" : "DRAFT SAVED SUCCESSFULLY";
-      const successCopy = isPublish 
-        ? `"${name}" has been published and the static site has been rebuilt.`
-        : `"${name}" has been saved as a draft.`;
+      const successTitle = isMedia ? "UPLOADED SUCCESSFULLY" : (isPublish ? "PUBLISHED SUCCESSFULLY" : "DRAFT SAVED SUCCESSFULLY");
+      const successCopy = isMedia
+        ? `"${name}" has been uploaded to Cloudflare R2 media storage.`
+        : (isPublish
+          ? `"${name}" has been published and updated.`
+          : `"${name}" has been saved as a draft.`);
 
       prog.finish(successTitle, successCopy, viewUrl);
 
