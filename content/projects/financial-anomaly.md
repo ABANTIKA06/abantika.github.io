@@ -18,7 +18,7 @@ art: dots
 artLabel: ''
 cover: ''
 github: ''
-live: ''
+live: 'https://anomalyiq.onrender.com/'
 headline:
   - FINANCIAL ANOMALY
 sections:
@@ -33,6 +33,6 @@ sections:
     body: ''
   - label: 04 / RESULTS
     heading: THE OUTCOME
-    body: METRIC TBD — Add only results supported by the real project record.
+    body: ''
 ---
 
