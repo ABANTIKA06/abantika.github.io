@@ -605,9 +605,15 @@ a.wikilink {
     letter-spacing: 0.05em;
   }
   .admin-mobile-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 10px;
+    flex-wrap: wrap;
+  }
+  .admin-mobile-actions .admin-home-circle-btn {
+    height: 38px;
+    padding: 4px 14px 4px 5px;
   }
   .admin-main {
     padding: 24px 18px 60px;

@@ -387,8 +387,16 @@
         <div class="admin-user-mobile mobile-only">
           <span class="admin-mobile-username">LOGGED IN AS <b>@${esc(state.user.login)}</b></span>
           <div class="admin-mobile-actions">
-            <a href="/" class="admin-btn secondary" style="justify-content:center">RETURN TO HOME <b>→</b></a>
-            <button class="admin-btn danger" data-act="logout" type="button" style="justify-content:center">SIGN OUT</button>
+            <a href="/" class="admin-home-circle-btn" title="Return to Home Website" aria-label="Return to public portfolio homepage">
+              <span class="circle-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+              </span>
+              <span class="circle-btn-text">RETURN TO HOME</span>
+            </a>
+            <button class="admin-btn danger" data-act="logout" type="button" style="justify-content:center;height:38px">SIGN OUT</button>
           </div>
         </div>
       </nav>
