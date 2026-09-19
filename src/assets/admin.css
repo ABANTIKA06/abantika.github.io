@@ -656,3 +656,346 @@ a.wikilink {
 .admin-home-circle-btn:hover .circle-icon svg {
   transform: translateX(-2px);
 }
+
+/* Editorial Portrait Studio & Photo Editor */
+.portrait-studio-container {
+  margin: 28px 0;
+  padding: 24px;
+  background: #f7f6f2;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--red);
+}
+
+.portrait-studio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.portrait-studio-header h3 {
+  font: 11px var(--mono);
+  letter-spacing: 0.18em;
+  margin: 0;
+  color: var(--ink);
+}
+
+.studio-badge {
+  font: 9px var(--mono);
+  letter-spacing: 0.12em;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+.portrait-studio-body {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.portrait-plate-preview {
+  width: 140px;
+  height: 185px;
+  background: linear-gradient(130deg, #cccac4, #777 55%, #252525);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.portrait-plate-preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.portrait-placeholder-box {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+  z-index: 1;
+}
+
+.portrait-placeholder-box span {
+  font: 8px/1.7 var(--mono);
+  letter-spacing: .2em;
+  color: white;
+}
+
+.portrait-plate-preview b {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  background: var(--red);
+  bottom: 10px;
+  right: 0;
+  z-index: 2;
+}
+
+.portrait-studio-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* Portrait Editor Modal Studio */
+.portrait-editor-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 17, 17, 0.75);
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+.portrait-editor-dialog {
+  width: min(960px, 95vw);
+  max-height: 92vh;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.portrait-editor-head {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ebe8df;
+}
+
+.portrait-editor-head h2 {
+  font: 14px var(--mono);
+  letter-spacing: 0.18em;
+  margin: 0;
+  font-weight: 900;
+}
+
+.editor-subtitle {
+  font-size: 11px;
+  color: #666;
+  margin: 2px 0 0;
+}
+
+.editor-close-btn {
+  background: none;
+  border: 1px solid var(--ink);
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.editor-close-btn:hover {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
+.portrait-editor-content {
+  display: grid;
+  grid-template-columns: minmax(320px, 440px) 1fr;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.editor-canvas-stage {
+  padding: 24px;
+  background: #181818;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--line);
+}
+
+.stage-wrapper {
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  border: 1px solid #444;
+  background: #000;
+  max-width: 100%;
+}
+
+.stage-wrapper canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+  cursor: grab;
+}
+
+.stage-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.studio-mini-btn {
+  font: 9px var(--mono);
+  letter-spacing: 0.12em;
+  padding: 6px 12px;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.studio-mini-btn:hover {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.editor-toolset {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  max-height: 72vh;
+}
+
+.editor-section {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+}
+
+.editor-label {
+  font: 10px var(--mono);
+  letter-spacing: 0.15em;
+  color: var(--red);
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.control-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 45px;
+  align-items: center;
+  gap: 12px;
+  font: 10px var(--mono);
+  margin-bottom: 8px;
+}
+
+.control-row input[type="range"] {
+  accent-color: var(--red);
+  cursor: pointer;
+}
+
+.ratio-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font: 9px var(--mono);
+}
+
+.ratio-btn {
+  font: 9px var(--mono);
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.ratio-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.filter-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.filter-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.filter-chip.active {
+  border-color: var(--red);
+  background: #fdf5f4;
+  box-shadow: 0 0 0 1px var(--red);
+}
+
+.chip-swatch {
+  width: 36px;
+  height: 24px;
+  border: 1px solid rgba(0,0,0,0.15);
+  margin-bottom: 6px;
+}
+
+.filter-normal { background: linear-gradient(135deg, #e66465, #9198e5); }
+.filter-noir { background: linear-gradient(135deg, #111, #fff); }
+.filter-duotone { background: linear-gradient(135deg, #111, #ef321f); }
+.filter-cream { background: linear-gradient(135deg, #1c1a17, #f2f0ea); }
+.filter-vivid { background: linear-gradient(135deg, #111, #ff5722); }
+.filter-silver { background: linear-gradient(135deg, #333, #ccc); }
+.filter-sepia { background: linear-gradient(135deg, #422d1b, #d4a373); }
+
+.filter-chip b {
+  font: 9px var(--mono);
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+.filter-chip small {
+  font-size: 8px;
+  color: #777;
+}
+
+.editor-footer {
+  margin-top: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.editor-footer .admin-btn.large {
+  width: 100%;
+  padding: 14px;
+  font-size: 11px;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .portrait-editor-content {
+    grid-template-columns: 1fr;
+  }
+  .editor-canvas-stage {
+    padding: 16px;
+  }
+  .portrait-studio-body {
+    grid-template-columns: 1fr;
+  }
+}

@@ -628,6 +628,7 @@
       ${input("HOME LINE", `p-home-${i}`, item.home || "")}
       ${input("PAGE LINE", `p-page-${i}`, item.page || "")}
     `).join("");
+    const portraitPath = about.portrait || "";
     return chrome(
       "02 / ABOUT",
       `<h1>ABOUT COPY<span class="red-stop">.</span></h1>
@@ -641,7 +642,39 @@
         ${area("APPROACH HEADLINE", "approachHeadline", (about.approachHeadline || []).join("\n"))}
         ${area("APPROACH", "approach", about.approach || "")}
         ${area("MARGIN NOTE", "marginNote", (about.marginNote || []).join("\n"))}
-        ${input("PORTRAIT PATH", "portrait", about.portrait || "")}
+
+        <!-- EDITORIAL PORTRAIT PHOTO STUDIO CONTAINER -->
+        <div class="portrait-studio-container">
+          <div class="portrait-studio-header">
+            <h3>EDITORIAL PORTRAIT STUDIO</h3>
+            <span class="studio-badge">CROP & CANVA FILTERS</span>
+          </div>
+          <div class="portrait-studio-body">
+            <div class="portrait-plate-preview" id="portrait-studio-preview-box">
+              ${portraitPath 
+                ? `<img id="portrait-studio-active-img" src="${portraitPath}" alt="Portrait Preview">`
+                : `<div class="portrait-placeholder-box"><span>PORTRAIT<br>PLACEHOLDER</span></div>`
+              }
+              <b></b>
+            </div>
+            <div class="portrait-studio-controls-area">
+              <div style="margin-bottom:12px">
+                <label class="admin-kicker" style="margin-bottom:4px;display:block">PORTRAIT PATH</label>
+                <input type="text" name="portrait" id="portrait-path-input" class="admin-input" value="${portraitPath}" placeholder="/assets/images/about/portrait.webp">
+              </div>
+              <div class="portrait-studio-actions">
+                <button type="button" class="admin-btn primary" id="open-portrait-studio-btn">
+                  📷 UPLOAD & EDIT PHOTO STUDIO <b>→</b>
+                </button>
+                <button type="button" class="admin-btn secondary" id="pick-library-portrait-btn">
+                  🖼️ CHOOSE FROM LIBRARY <b>→</b>
+                </button>
+                ${portraitPath ? `<button type="button" class="admin-btn danger" id="clear-portrait-btn">REMOVE PORTRAIT</button>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+
         ${principles}
         <div class="admin-actions"><button class="admin-btn primary" type="submit">SAVE ABOUT <b>→</b></button></div>
       </form>`
@@ -831,6 +864,580 @@
         syncWysiwyg(wrapper);
       }
       root.remove();
+    });
+
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-dismiss]")) root.remove();
+    });
+  }
+
+  // --- EDITORIAL PORTRAIT PHOTO STUDIO ENGINE ---
+  let portraitStudioState = {
+    activeImg: null,
+    zoom: 100,
+    panX: 0,
+    panY: 0,
+    rotation: 0,
+    aspectRatio: "3:4",
+    filter: "normal",
+    brightness: 0,
+    contrast: 0,
+    saturation: 0,
+    isDragging: false,
+    dragStartX: 0,
+    dragStartY: 0
+  };
+
+  function renderPortraitStudioModalHtml() {
+    return `
+    <div class="portrait-editor-modal" id="portrait-editor-modal" style="display:none">
+      <div class="portrait-editor-dialog">
+        <div class="portrait-editor-head">
+          <div>
+            <h2>PORTRAIT PHOTO STUDIO</h2>
+            <p class="editor-subtitle">Crop, frame, and apply Canva-Noir & Duotone filters</p>
+          </div>
+          <button type="button" class="editor-close-btn" id="close-portrait-studio-modal-btn">✕</button>
+        </div>
+
+        <div class="portrait-editor-content">
+          <!-- Stage / Canvas area -->
+          <div class="editor-canvas-stage">
+            <div class="stage-wrapper">
+              <canvas id="portrait-studio-canvas" width="600" height="800"></canvas>
+            </div>
+            <div class="stage-controls">
+              <button type="button" class="studio-mini-btn" id="ps-rotate-btn">↻ ROTATE 90°</button>
+              <button type="button" class="studio-mini-btn" id="ps-reset-btn">↺ RESET FRAME</button>
+            </div>
+          </div>
+
+          <!-- Toolset controls area -->
+          <div class="editor-toolset">
+            
+            <div class="editor-section">
+              <label class="editor-label">1. CHOOSE IMAGE SOURCE</label>
+              <div class="editor-file-drop">
+                <input type="file" id="ps-file-input" accept="image/*" style="display:none">
+                <button type="button" class="admin-btn secondary" id="ps-trigger-file-btn">SELECT IMAGE FILE <b>↑</b></button>
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <label class="editor-label">2. CROP & FRAMING</label>
+              <div class="control-row">
+                <span>ZOOM / SCALE</span>
+                <input type="range" id="ps-zoom-slider" min="100" max="300" value="100" step="1">
+                <b id="ps-zoom-val">1.0x</b>
+              </div>
+              <div class="control-row">
+                <span>POSITION X</span>
+                <input type="range" id="ps-panx-slider" min="-250" max="250" value="0" step="1">
+                <b id="ps-panx-val">0px</b>
+              </div>
+              <div class="control-row">
+                <span>POSITION Y</span>
+                <input type="range" id="ps-pany-slider" min="-250" max="250" value="0" step="1">
+                <b id="ps-pany-val">0px</b>
+              </div>
+              <div class="ratio-presets">
+                <span>ASPECT RATIO:</span>
+                <button type="button" class="ratio-btn active" data-ratio="3:4">3:4 PORTRAIT</button>
+                <button type="button" class="ratio-btn" data-ratio="1:1">1:1 SQUARE</button>
+                <button type="button" class="ratio-btn" data-ratio="4:5">4:5 EDITORIAL</button>
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <label class="editor-label">3. EDITORIAL FILTERS (CANVA STYLE)</label>
+              <div class="filter-presets-grid">
+                <button type="button" class="filter-chip active" data-filter="normal">
+                  <span class="chip-swatch filter-normal"></span>
+                  <b>NORMAL</b>
+                  <small>Original</small>
+                </button>
+                <button type="button" class="filter-chip" data-filter="canva-noir">
+                  <span class="chip-swatch filter-noir"></span>
+                  <b>CANVA-NOIR</b>
+                  <small>Editorial B&W</small>
+                </button>
+                <button type="button" class="filter-chip" data-filter="canva-duotone">
+                  <span class="chip-swatch filter-duotone"></span>
+                  <b>CANVA-DUOTONE</b>
+                  <small>Bauhaus Red</small>
+                </button>
+                <button type="button" class="filter-chip" data-filter="canva-duotone-cream">
+                  <span class="chip-swatch filter-cream"></span>
+                  <b>DUOTONE WARM</b>
+                  <small>Cream & Ink</small>
+                </button>
+                <button type="button" class="filter-chip" data-filter="vivid-ink">
+                  <span class="chip-swatch filter-vivid"></span>
+                  <b>VIVID INK</b>
+                  <small>Rich Detail</small>
+                </button>
+                <button type="button" class="filter-chip" data-filter="silver-mono">
+                  <span class="chip-swatch filter-silver"></span>
+                  <b>SILVER MONO</b>
+                  <small>Soft B&W</small>
+                </button>
+                <button type="button" class="filter-chip" data-filter="warm-sepia">
+                  <span class="chip-swatch filter-sepia"></span>
+                  <b>WARM SEPIA</b>
+                  <small>Vintage Tones</small>
+                </button>
+              </div>
+            </div>
+
+            <div class="editor-section">
+              <label class="editor-label">4. FINE TUNING</label>
+              <div class="control-row">
+                <span>BRIGHTNESS</span>
+                <input type="range" id="ps-brightness-slider" min="-50" max="50" value="0" step="1">
+                <b id="ps-brightness-val">0</b>
+              </div>
+              <div class="control-row">
+                <span>CONTRAST</span>
+                <input type="range" id="ps-contrast-slider" min="-50" max="50" value="0" step="1">
+                <b id="ps-contrast-val">0</b>
+              </div>
+              <div class="control-row">
+                <span>SATURATION</span>
+                <input type="range" id="ps-saturation-slider" min="-100" max="100" value="0" step="1">
+                <b id="ps-saturation-val">0</b>
+              </div>
+            </div>
+
+            <div class="editor-footer">
+              <button type="button" class="admin-btn primary large" id="ps-apply-save-btn">
+                💾 APPLY & SAVE PORTRAIT <b>→</b>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+  }
+
+  function openPortraitStudio(initialImageUrl) {
+    let modal = document.getElementById("portrait-editor-modal");
+    if (!modal) {
+      document.body.insertAdjacentHTML("beforeend", renderPortraitStudioModalHtml());
+      modal = document.getElementById("portrait-editor-modal");
+      bindPortraitStudioEvents();
+    }
+
+    modal.style.display = "flex";
+
+    portraitStudioState = {
+      activeImg: null,
+      zoom: 100,
+      panX: 0,
+      panY: 0,
+      rotation: 0,
+      aspectRatio: "3:4",
+      filter: "normal",
+      brightness: 0,
+      contrast: 0,
+      saturation: 0,
+      isDragging: false,
+      dragStartX: 0,
+      dragStartY: 0
+    };
+
+    updateStudioUiControls();
+
+    if (initialImageUrl) {
+      loadImgIntoStudio(initialImageUrl);
+    } else {
+      drawPortraitStudioCanvas();
+    }
+  }
+
+  function loadImgIntoStudio(src) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      portraitStudioState.activeImg = img;
+      portraitStudioState.zoom = 100;
+      portraitStudioState.panX = 0;
+      portraitStudioState.panY = 0;
+      updateStudioUiControls();
+      drawPortraitStudioCanvas();
+    };
+    img.onerror = () => {
+      drawPortraitStudioCanvas();
+    };
+    img.src = src;
+  }
+
+  function drawPortraitStudioCanvas() {
+    const canvas = document.getElementById("portrait-studio-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    const ratio = portraitStudioState.aspectRatio;
+    const targetW = 600;
+    const targetH = ratio === "1:1" ? 600 : ratio === "4:5" ? 750 : 800;
+
+    canvas.width = targetW;
+    canvas.height = targetH;
+
+    ctx.clearRect(0, 0, targetW, targetH);
+
+    if (!portraitStudioState.activeImg) {
+      ctx.fillStyle = "#1c1c1c";
+      ctx.fillRect(0, 0, targetW, targetH);
+      ctx.font = "14px monospace";
+      ctx.fillStyle = "#888";
+      ctx.textAlign = "center";
+      ctx.fillText("NO IMAGE LOADED", targetW / 2, targetH / 2 - 10);
+      ctx.font = "11px monospace";
+      ctx.fillText("Click 'SELECT IMAGE FILE' to begin", targetW / 2, targetH / 2 + 15);
+      return;
+    }
+
+    const img = portraitStudioState.activeImg;
+    ctx.save();
+
+    const centerX = targetW / 2 + portraitStudioState.panX;
+    const centerY = targetH / 2 + portraitStudioState.panY;
+
+    ctx.translate(centerX, centerY);
+    ctx.rotate((portraitStudioState.rotation * Math.PI) / 180);
+
+    const imgRatio = img.width / img.height;
+    const canvasRatio = targetW / targetH;
+    let drawW, drawH;
+
+    if (imgRatio > canvasRatio) {
+      drawH = targetH * (portraitStudioState.zoom / 100);
+      drawW = drawH * imgRatio;
+    } else {
+      drawW = targetW * (portraitStudioState.zoom / 100);
+      drawH = drawW / imgRatio;
+    }
+
+    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+
+    const imgData = ctx.getImageData(0, 0, targetW, targetH);
+    applyPixelFilters(
+      imgData.data,
+      targetW,
+      targetH,
+      portraitStudioState.filter,
+      portraitStudioState.brightness,
+      portraitStudioState.contrast,
+      portraitStudioState.saturation
+    );
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function applyPixelFilters(data, width, height, filterName, brightness, contrast, saturation) {
+    const bMult = 1 + brightness / 100;
+    const cFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+    const satMult = 1 + saturation / 100;
+
+    for (let i = 0; i < data.length; i += 4) {
+      let r = data[i];
+      let g = data[i + 1];
+      let b = data[i + 2];
+
+      if (filterName === "canva-noir") {
+        let lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        let norm = lum / 255;
+        norm = (norm - 0.5) * 1.4 + 0.5;
+        norm = Math.max(0, Math.min(1, norm));
+        r = g = b = norm * 255;
+      } else if (filterName === "canva-duotone") {
+        let norm = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        r = 17 + norm * (239 - 17);
+        g = 17 + norm * (50 - 17);
+        b = 17 + norm * (31 - 17);
+      } else if (filterName === "canva-duotone-cream") {
+        let norm = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        r = 28 + norm * (242 - 28);
+        g = 26 + norm * (240 - 26);
+        b = 23 + norm * (234 - 23);
+      } else if (filterName === "silver-mono") {
+        let lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = g = b = lum;
+      } else if (filterName === "warm-sepia") {
+        let sr = r * 0.393 + g * 0.769 + b * 0.189;
+        let sg = r * 0.349 + g * 0.686 + b * 0.168;
+        let sb = r * 0.272 + g * 0.534 + b * 0.131;
+        r = sr; g = sg; b = sb;
+      } else if (filterName === "vivid-ink") {
+        r = (r - 128) * 1.25 + 128;
+        g = (g - 128) * 1.25 + 128;
+        b = (b - 128) * 1.25 + 128;
+      }
+
+      if (brightness !== 0) {
+        r *= bMult;
+        g *= bMult;
+        b *= bMult;
+      }
+
+      if (contrast !== 0) {
+        r = cFactor * (r - 128) + 128;
+        g = cFactor * (g - 128) + 128;
+        b = cFactor * (b - 128) + 128;
+      }
+
+      if (saturation !== 0 && !["canva-noir", "canva-duotone", "canva-duotone-cream", "silver-mono"].includes(filterName)) {
+        let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = gray + satMult * (r - gray);
+        g = gray + satMult * (g - gray);
+        b = gray + satMult * (b - gray);
+      }
+
+      data[i] = Math.max(0, Math.min(255, r));
+      data[i + 1] = Math.max(0, Math.min(255, g));
+      data[i + 2] = Math.max(0, Math.min(255, b));
+    }
+  }
+
+  function bindPortraitStudioEvents() {
+    const modal = document.getElementById("portrait-editor-modal");
+    if (!modal) return;
+
+    document.getElementById("close-portrait-studio-modal-btn")?.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+
+    document.getElementById("ps-trigger-file-btn")?.addEventListener("click", () => {
+      document.getElementById("ps-file-input")?.click();
+    });
+
+    document.getElementById("ps-file-input")?.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        loadImgIntoStudio(url);
+      }
+    });
+
+    document.getElementById("ps-zoom-slider")?.addEventListener("input", (e) => {
+      portraitStudioState.zoom = parseInt(e.target.value, 10);
+      document.getElementById("ps-zoom-val").textContent = (portraitStudioState.zoom / 100).toFixed(1) + "x";
+      drawPortraitStudioCanvas();
+    });
+
+    document.getElementById("ps-panx-slider")?.addEventListener("input", (e) => {
+      portraitStudioState.panX = parseInt(e.target.value, 10);
+      document.getElementById("ps-panx-val").textContent = portraitStudioState.panX + "px";
+      drawPortraitStudioCanvas();
+    });
+
+    document.getElementById("ps-pany-slider")?.addEventListener("input", (e) => {
+      portraitStudioState.panY = parseInt(e.target.value, 10);
+      document.getElementById("ps-pany-val").textContent = portraitStudioState.panY + "px";
+      drawPortraitStudioCanvas();
+    });
+
+    document.getElementById("ps-brightness-slider")?.addEventListener("input", (e) => {
+      portraitStudioState.brightness = parseInt(e.target.value, 10);
+      document.getElementById("ps-brightness-val").textContent = portraitStudioState.brightness;
+      drawPortraitStudioCanvas();
+    });
+
+    document.getElementById("ps-contrast-slider")?.addEventListener("input", (e) => {
+      portraitStudioState.contrast = parseInt(e.target.value, 10);
+      document.getElementById("ps-contrast-val").textContent = portraitStudioState.contrast;
+      drawPortraitStudioCanvas();
+    });
+
+    document.getElementById("ps-saturation-slider")?.addEventListener("input", (e) => {
+      portraitStudioState.saturation = parseInt(e.target.value, 10);
+      document.getElementById("ps-saturation-val").textContent = portraitStudioState.saturation;
+      drawPortraitStudioCanvas();
+    });
+
+    document.getElementById("ps-rotate-btn")?.addEventListener("click", () => {
+      portraitStudioState.rotation = (portraitStudioState.rotation + 90) % 360;
+      drawPortraitStudioCanvas();
+    });
+
+    document.getElementById("ps-reset-btn")?.addEventListener("click", () => {
+      portraitStudioState.zoom = 100;
+      portraitStudioState.panX = 0;
+      portraitStudioState.panY = 0;
+      portraitStudioState.rotation = 0;
+      portraitStudioState.brightness = 0;
+      portraitStudioState.contrast = 0;
+      portraitStudioState.saturation = 0;
+      updateStudioUiControls();
+      drawPortraitStudioCanvas();
+    });
+
+    modal.querySelectorAll(".ratio-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        modal.querySelectorAll(".ratio-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        portraitStudioState.aspectRatio = btn.getAttribute("data-ratio");
+        drawPortraitStudioCanvas();
+      });
+    });
+
+    modal.querySelectorAll(".filter-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        modal.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        portraitStudioState.filter = chip.getAttribute("data-filter");
+        drawPortraitStudioCanvas();
+      });
+    });
+
+    const canvas = document.getElementById("portrait-studio-canvas");
+    canvas?.addEventListener("mousedown", (e) => {
+      if (!portraitStudioState.activeImg) return;
+      portraitStudioState.isDragging = true;
+      portraitStudioState.dragStartX = e.clientX - portraitStudioState.panX;
+      portraitStudioState.dragStartY = e.clientY - portraitStudioState.panY;
+      canvas.style.cursor = "grabbing";
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!portraitStudioState.isDragging) return;
+      portraitStudioState.panX = Math.max(-250, Math.min(250, e.clientX - portraitStudioState.dragStartX));
+      portraitStudioState.panY = Math.max(-250, Math.min(250, e.clientY - portraitStudioState.dragStartY));
+      const px = document.getElementById("ps-panx-slider");
+      const py = document.getElementById("ps-pany-slider");
+      if (px) px.value = portraitStudioState.panX;
+      if (py) py.value = portraitStudioState.panY;
+      document.getElementById("ps-panx-val").textContent = portraitStudioState.panX + "px";
+      document.getElementById("ps-pany-val").textContent = portraitStudioState.panY + "px";
+      drawPortraitStudioCanvas();
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (portraitStudioState.isDragging) {
+        portraitStudioState.isDragging = false;
+        if (canvas) canvas.style.cursor = "grab";
+      }
+    });
+
+    document.getElementById("ps-apply-save-btn")?.addEventListener("click", async () => {
+      if (!portraitStudioState.activeImg) {
+        alert("Please choose an image file first.");
+        return;
+      }
+
+      const saveBtn = document.getElementById("ps-apply-save-btn");
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = "PROCESSING & UPLOADING... <b>⏳</b>";
+
+      try {
+        const cvs = document.getElementById("portrait-studio-canvas");
+        const webpDataUrl = cvs.toDataURL("image/webp", 0.92);
+        const filename = `portrait-${Date.now()}.webp`;
+
+        const uploadRes = await api("/api/media", {
+          method: "POST",
+          body: {
+            folder: "about",
+            filename: filename,
+            data: webpDataUrl
+          }
+        });
+
+        const savedPath = uploadRes.path || `/assets/images/about/${filename}`;
+        const pathInput = document.getElementById("portrait-path-input");
+        if (pathInput) pathInput.value = savedPath;
+
+        const previewBox = document.getElementById("portrait-studio-preview-box");
+        if (previewBox) {
+          previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${savedPath}" alt="Portrait Preview"><b></b>`;
+        }
+
+        modal.style.display = "none";
+        alert("Editorial portrait successfully cropped, filtered & saved!");
+      } catch (err) {
+        alert(`Save failed: ${err.message}`);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = "💾 APPLY & SAVE PORTRAIT <b>→</b>";
+      }
+    });
+  }
+
+  function updateStudioUiControls() {
+    const modal = document.getElementById("portrait-editor-modal");
+    if (!modal) return;
+    const z = document.getElementById("ps-zoom-slider");
+    if (z) z.value = portraitStudioState.zoom;
+    const zv = document.getElementById("ps-zoom-val");
+    if (zv) zv.textContent = (portraitStudioState.zoom / 100).toFixed(1) + "x";
+    const px = document.getElementById("ps-panx-slider");
+    if (px) px.value = portraitStudioState.panX;
+    const pxv = document.getElementById("ps-panx-val");
+    if (pxv) pxv.textContent = portraitStudioState.panX + "px";
+    const py = document.getElementById("ps-pany-slider");
+    if (py) py.value = portraitStudioState.panY;
+    const pyv = document.getElementById("ps-pany-val");
+    if (pyv) pyv.textContent = portraitStudioState.panY + "px";
+    const br = document.getElementById("ps-brightness-slider");
+    if (br) br.value = portraitStudioState.brightness;
+    const brv = document.getElementById("ps-brightness-val");
+    if (brv) brv.textContent = portraitStudioState.brightness;
+    const ct = document.getElementById("ps-contrast-slider");
+    if (ct) ct.value = portraitStudioState.contrast;
+    const ctv = document.getElementById("ps-contrast-val");
+    if (ctv) ctv.textContent = portraitStudioState.contrast;
+    const st = document.getElementById("ps-saturation-slider");
+    if (st) st.value = portraitStudioState.saturation;
+    const stv = document.getElementById("ps-saturation-val");
+    if (stv) stv.textContent = portraitStudioState.saturation;
+  }
+
+  async function showImagePickerModalForPortrait() {
+    document.querySelector(".admin-modal-root")?.remove();
+    let mediaFiles = [];
+    try {
+      mediaFiles = await api("/api/media");
+    } catch(e) {
+      mediaFiles = state.content?.media || [];
+    }
+
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal image-picker-modal" role="dialog" aria-modal="true" style="width:min(680px, 100%)">
+        <p class="admin-kicker">02 / PORTRAIT SELECTOR</p>
+        <h2 style="margin-bottom:12px">CHOOSE PORTRAIT IMAGE<span class="red-stop">.</span></h2>
+
+        <div class="image-picker-pane">
+          <div class="admin-media-grid-picker" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:10px;max-height:280px;overflow-y:auto;border:1px solid var(--line);padding:10px">
+            ${mediaFiles.length ? mediaFiles.map((f) => `
+              <div class="portrait-picker-item" data-path="${esc(f.path)}" style="border:1px solid var(--line);padding:6px;cursor:pointer;background:#f7f5ef">
+                <img src="${esc(f.path)}" alt="${esc(f.name)}" style="width:100%;height:80px;object-fit:cover">
+                <span style="font:9px var(--mono);display:block;margin-top:4px;word-break:break-all">${esc(f.name)}</span>
+              </div>
+            `).join("") : `<p style="font:11px var(--mono)">No images in library yet.</p>`}
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(root);
+
+    root.querySelectorAll(".portrait-picker-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        const path = item.getAttribute("data-path");
+        const pathInput = document.getElementById("portrait-path-input");
+        if (pathInput) pathInput.value = path;
+        const previewBox = document.getElementById("portrait-studio-preview-box");
+        if (previewBox) {
+          previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${path}" alt="Portrait Preview"><b></b>`;
+        }
+        root.remove();
+        openPortraitStudio(path);
+      });
     });
 
     root.addEventListener("click", (e) => {
@@ -1229,6 +1836,31 @@
           showImagePickerModal(wrapper);
         }
         syncWysiwyg(wrapper);
+        return;
+      }
+
+      const openStudioBtn = event.target.closest("#open-portrait-studio-btn");
+      const pickLibraryBtn = event.target.closest("#pick-library-portrait-btn");
+      const clearPortraitBtn = event.target.closest("#clear-portrait-btn");
+
+      if (openStudioBtn) {
+        const pathVal = document.getElementById("portrait-path-input")?.value.trim() || "";
+        openPortraitStudio(pathVal);
+        return;
+      }
+
+      if (pickLibraryBtn) {
+        showImagePickerModalForPortrait();
+        return;
+      }
+
+      if (clearPortraitBtn) {
+        const pathInput = document.getElementById("portrait-path-input");
+        if (pathInput) pathInput.value = "";
+        const previewBox = document.getElementById("portrait-studio-preview-box");
+        if (previewBox) {
+          previewBox.innerHTML = `<div class="portrait-placeholder-box"><span>PORTRAIT<br>PLACEHOLDER</span></div><b></b>`;
+        }
         return;
       }
 

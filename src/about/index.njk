@@ -6,7 +6,18 @@ title: About — Abantika
 {% include "components/header.njk" %}
 <main class="inner-page about-page">
   <section class="page-intro"><p class="eyebrow">02 / ABOUT</p><h1>{{ about.headline | joinLines | safe }}<span class="red-stop">.</span></h1><p>{{ about.intro }}</p></section>
-  <section class="about-profile section-rule"><div class="portrait-plate portrait-large" aria-label="Portrait placeholder"><span>PORTRAIT<br>PLACEHOLDER</span><b></b></div><div><p class="eyebrow">{{ about.approachEyebrow }}</p><h2>{{ about.approachHeadline | joinLines | safe }}</h2><p class="body-copy">{{ about.approach }}</p></div><aside class="margin-note">{{ about.marginNote | join("<br>") | safe }}<br><b>—</b></aside></section>
+  <section class="about-profile section-rule">
+    <div class="portrait-plate portrait-large" aria-label="Portrait of Abantika">
+      {% if about.portrait %}
+        <img src="{{ about.portrait }}" alt="Portrait of Abantika" class="portrait-image">
+      {% else %}
+        <span>PORTRAIT<br>PLACEHOLDER</span>
+      {% endif %}
+      <b></b>
+    </div>
+    <div><p class="eyebrow">{{ about.approachEyebrow }}</p><h2>{{ about.approachHeadline | joinLines | safe }}</h2><p class="body-copy">{{ about.approach }}</p></div>
+    <aside class="margin-note">{{ about.marginNote | join("<br>") | safe }}<br><b>—</b></aside>
+  </section>
   <section class="principle-sheet"><div class="section-heading"><span>01</span><i></i><h2>PRINCIPLES</h2></div>
     <ol>
       {% for item in about.principles %}

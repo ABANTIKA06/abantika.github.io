@@ -25,7 +25,14 @@ title: Abantika — Data Analyst & Data Scientist
 
   <section class="about section-rule" id="about" aria-labelledby="about-title">
     <div class="section-heading"><span>02</span><i></i><p>ABOUT ME</p></div>
-    <div class="portrait-plate" aria-label="Portrait placeholder"><span>PORTRAIT<br>PLACEHOLDER</span><b></b><em></em></div>
+    <div class="portrait-plate" aria-label="Portrait of Abantika">
+      {% if about.portrait %}
+        <img src="{{ about.portrait }}" alt="Portrait of Abantika" class="portrait-image">
+      {% else %}
+        <span>PORTRAIT<br>PLACEHOLDER</span>
+      {% endif %}
+      <b></b><em></em>
+    </div>
     <div class="about-statement">
       <h2 id="about-title">{{ about.homeHeadline | joinLines | safe }}<span class="red-stop">.</span></h2>
       <p>{{ about.homeSummary | publicText(about.intro) }}</p>
