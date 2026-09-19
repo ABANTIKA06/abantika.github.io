@@ -45,7 +45,7 @@
         reject(new Error("File exceeds 25MB limit."));
         return;
       }
-      const sanitizeName = (name) => path.basename(String(name || "")).replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
+      const sanitizeName = (name) => String(name || "").split(/[\\/]/).pop().replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
 
       const isRasterImage = file.type && file.type.startsWith("image/") && !file.type.includes("svg");
       if (isRasterImage) {
