@@ -113,9 +113,46 @@ async function getSignedUploadUrl({ folder = "about", filename, contentType = "a
   return { uploadUrl, publicUrl, key };
 }
 
+async function listMedia() {
+  const creds = getCredentials();
+  const client = getR2Client();
+  if (!creds || !client) return [];
+
+  try {
+    const command = new ListObjectsV2Command({
+      Bucket: creds.bucket
+    });
+    const res = await client.send(command);
+    const contents = res.Contents || [];
+    return contents.map((obj) => {
+      const key = obj.Key || "";
+      const parts = key.split("/");
+      const folder = parts.length > 1 ? parts[0] : "about";
+      const name = parts.length > 1 ? parts.slice(1).join("/") : key;
+      const publicUrl = creds.publicDomain
+        ? `${creds.publicDomain}/${key}`
+        : `https://${creds.bucket}.${creds.accountId}.r2.cloudflarestorage.com/${key}`;
+
+      return {
+        folder,
+        name,
+        path: publicUrl,
+        size: obj.Size || 0,
+        updated: obj.LastModified ? obj.LastModified.toISOString() : new Date().toISOString(),
+        r2: true,
+        key
+      };
+    });
+  } catch (err) {
+    console.error("Cloudflare R2 listMedia error:", err);
+    return [];
+  }
+}
+
 module.exports = {
   isConfigured,
   uploadMedia,
   removeMedia,
-  getSignedUploadUrl
+  getSignedUploadUrl,
+  listMedia
 };

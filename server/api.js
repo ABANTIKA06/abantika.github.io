@@ -393,7 +393,8 @@ async function handle(req, res) {
       return true;
     }
     if (route === "GET /api/media") {
-      send(res, 200, store.listMedia());
+      const list = await store.listMedia();
+      send(res, 200, list);
       return true;
     }
     if (route === "POST /api/r2-presign") {

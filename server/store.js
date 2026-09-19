@@ -420,9 +420,26 @@ function getMediaBuffer(relPath) {
   return mediaBufferCache.get(norm);
 }
 
-function listMedia() {
+async function listMedia() {
   const items = [];
   const seenPaths = new Set();
+  const seenNames = new Set();
+
+  if (r2.isConfigured()) {
+    try {
+      const r2Items = await r2.listMedia();
+      r2Items.forEach((item) => {
+        if (item.folder === "test") return;
+        seenPaths.add(item.path);
+        seenNames.add(item.name);
+        const references = findMediaReferences(item.path, item.name);
+        items.push({ ...item, references });
+      });
+    } catch (e) {
+      console.error("Cloudflare R2 listMedia failed:", e);
+    }
+  }
+
   FOLDERS.forEach((folder) => {
     const dir = path.join(IMAGES, folder);
     if (!fs.existsSync(dir)) return;
@@ -432,16 +449,19 @@ function listMedia() {
       const stat = fs.statSync(file);
       if (!stat.isFile()) return;
       const imgPath = `/assets/images/${folder}/${name}`;
-      seenPaths.add(imgPath);
-      const references = findMediaReferences(imgPath, name);
-      items.push({
-        folder,
-        name,
-        path: imgPath,
-        size: stat.size,
-        updated: stat.mtime.toISOString(),
-        references
-      });
+      if (!seenPaths.has(imgPath) && !seenNames.has(name)) {
+        seenPaths.add(imgPath);
+        seenNames.add(name);
+        const references = findMediaReferences(imgPath, name);
+        items.push({
+          folder,
+          name,
+          path: imgPath,
+          size: stat.size,
+          updated: stat.mtime.toISOString(),
+          references
+        });
+      }
     });
   });
 
@@ -450,8 +470,9 @@ function listMedia() {
     const folder = parts[parts.length - 2];
     const name = parts[parts.length - 1];
     const imgPath = `/assets/images/${folder}/${name}`;
-    if (!seenPaths.has(imgPath)) {
+    if (!seenPaths.has(imgPath) && !seenNames.has(name)) {
       seenPaths.add(imgPath);
+      seenNames.add(name);
       const references = findMediaReferences(imgPath, name);
       items.push({
         folder,
@@ -464,7 +485,7 @@ function listMedia() {
     }
   }
 
-  return items.sort((a, b) => a.path.localeCompare(b.path));
+  return items.sort((a, b) => b.updated.localeCompare(a.updated));
 }
 
 function safeName(name) {
