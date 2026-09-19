@@ -464,6 +464,7 @@ module.exports = {
   loadSettings,
   setVirtualFile,
   getVirtualFile,
-  deleteVirtualFile
+  deleteVirtualFile,
+  isVirtualDeleted
 };
 

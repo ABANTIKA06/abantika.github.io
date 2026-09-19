@@ -14,7 +14,8 @@ const {
   loadSettings,
   setVirtualFile,
   getVirtualFile,
-  deleteVirtualFile
+  deleteVirtualFile,
+  isVirtualDeleted
 } = require("../src/lib/content");
 
 const IMAGES = path.join(ROOT, "src", "assets", "images");
@@ -720,6 +721,7 @@ module.exports = {
   loadBlog,
   loadJournal,
   loadNotes,
-  getVirtualFile
+  getVirtualFile,
+  isVirtualDeleted
 };
 
