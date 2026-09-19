@@ -43,6 +43,11 @@ module.exports = {
   githubRepoOwner: required("GITHUB_REPO_OWNER"),
   githubRepoName: required("GITHUB_REPO_NAME"),
   githubBranch: required("GITHUB_BRANCH") || "main",
+  r2AccountId: required("R2_ACCOUNT_ID"),
+  r2AccessKeyId: required("R2_ACCESS_KEY_ID"),
+  r2SecretAccessKey: required("R2_SECRET_ACCESS_KEY"),
+  r2BucketName: required("R2_BUCKET_NAME"),
+  r2PublicDomain: required("R2_PUBLIC_DOMAIN"),
   isLocalHost(host) {
     const name = String(host || "").split(":")[0];
     return name === "localhost" || name === "127.0.0.1";

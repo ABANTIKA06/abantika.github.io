@@ -16,6 +16,7 @@ const {
 
 const IMAGES = path.join(ROOT, "src", "assets", "images");
 const FOLDERS = ["projects", "blog", "journal", "about"];
+const r2 = require("./r2");
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
@@ -472,23 +473,35 @@ function safeName(name) {
   return base;
 }
 
-function saveMedia({ folder, filename, data }) {
+async function saveMedia({ folder, filename, data }) {
   if (!FOLDERS.includes(folder)) throw new Error("invalid media folder");
   const name = safeName(filename);
   const buf = Buffer.from(String(data || "").replace(/^data:[^;]+;base64,/, ""), "base64");
   if (!buf.length) throw new Error("empty file");
-  if (buf.length > 4.5 * 1024 * 1024) throw new Error("file exceeds 4.5MB limit.");
-  const dir = path.join(IMAGES, folder);
-  const fullPath = path.join(dir, name);
-  safeWriteFile(fullPath, buf, null);
+  if (buf.length > 10 * 1024 * 1024) throw new Error("file exceeds 10MB limit.");
 
   const relPath = `src/assets/images/${folder}/${name}`.replace(/\\/g, "/");
   mediaBufferCache.set(relPath, buf);
 
+  if (r2.isConfigured()) {
+    try {
+      const ext = path.extname(name).toLowerCase();
+      const contentType = ext === ".webp" ? "image/webp" : ext === ".png" ? "image/png" : ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" : ext === ".svg" ? "image/svg+xml" : "application/octet-stream";
+      const uploaded = await r2.uploadMedia({ folder, filename: name, buffer: buf, contentType });
+      return { folder, name, path: uploaded.path, r2: true };
+    } catch (err) {
+      console.error("Cloudflare R2 upload error, falling back to local/git:", err);
+    }
+  }
+
+  const dir = path.join(IMAGES, folder);
+  const fullPath = path.join(dir, name);
+  safeWriteFile(fullPath, buf, null);
+
   return { folder, name, path: `/assets/images/${folder}/${name}` };
 }
 
-function removeMedia({ folder, filename, force }) {
+async function removeMedia({ folder, filename, force }) {
   if (!FOLDERS.includes(folder)) throw new Error("invalid media folder");
   const name = safeName(filename);
   const imgPath = `/assets/images/${folder}/${name}`;
@@ -502,6 +515,14 @@ function removeMedia({ folder, filename, force }) {
 
   const relPath = `src/assets/images/${folder}/${name}`.replace(/\\/g, "/");
   mediaBufferCache.delete(relPath);
+
+  if (r2.isConfigured()) {
+    try {
+      await r2.removeMedia({ folder, filename: name });
+    } catch (err) {
+      console.error("Cloudflare R2 remove error:", err);
+    }
+  }
 
   safeUnlinkFile(file);
   return { ok: true };

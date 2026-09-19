@@ -396,7 +396,7 @@ async function handle(req, res) {
       return true;
     }
     if (route === "POST /api/media") {
-      const resData = store.saveMedia(body);
+      const resData = await store.saveMedia(body);
       await saved(resData, {
         commitMessage: `media: add ${resData.name}`,
         filePaths: [path.join("src", "assets", "images", resData.folder, resData.name)]
@@ -404,7 +404,7 @@ async function handle(req, res) {
       return true;
     }
     if (route === "DELETE /api/media") {
-      const resData = store.removeMedia(body);
+      const resData = await store.removeMedia(body);
       await saved(resData, {
         commitMessage: `media: remove ${body.filename}`,
         filePaths: [path.join("src", "assets", "images", body.folder, body.filename)]
