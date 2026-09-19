@@ -29,9 +29,11 @@
         reject(new Error("No file provided."));
         return;
       }
+      const sanitizeName = (name) => path.basename(String(name || "")).replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
+
       if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
         const reader = new FileReader();
-        reader.onload = () => resolve({ dataUrl: reader.result, filename: file.name });
+        reader.onload = () => resolve({ dataUrl: reader.result, filename: sanitizeName(file.name) });
         reader.onerror = reject;
         reader.readAsDataURL(file);
         return;
@@ -59,14 +61,32 @@
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
-        const webpDataUrl = canvas.toDataURL("image/webp", quality);
-        const baseName = file.name.replace(/\.[^/.]+$/, "");
-        const webpFilename = `${baseName}.webp`;
+
+        let webpDataUrl = "";
+        try {
+          webpDataUrl = canvas.toDataURL("image/webp", quality);
+        } catch(e) {}
+
+        if (!webpDataUrl || !webpDataUrl.startsWith("data:image/webp")) {
+          webpDataUrl = canvas.toDataURL("image/png");
+        }
+
+        const baseName = sanitizeName(file.name.replace(/\.[^/.]+$/, ""));
+        const ext = webpDataUrl.startsWith("data:image/webp") ? "webp" : "png";
+        const webpFilename = `${baseName}.${ext}`;
         resolve({ dataUrl: webpDataUrl, filename: webpFilename });
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        reject(new Error("Failed to process image for WebP conversion."));
+        const reader = new FileReader();
+        reader.onload = () => {
+          const baseName = sanitizeName(file.name.replace(/\.[^/.]+$/, ""));
+          const parts = file.name.split('.');
+          const ext = parts.length > 1 ? parts.pop() : 'png';
+          resolve({ dataUrl: reader.result, filename: `${baseName}.${ext}` });
+        };
+        reader.onerror = () => reject(new Error("Failed to process image file."));
+        reader.readAsDataURL(file);
       };
       img.src = url;
     });
@@ -1469,6 +1489,9 @@
 
   function mediaView() {
     const files = state.content.media || [];
+    state.mediaPreviewCache = state.mediaPreviewCache || {};
+    const fallbackSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='140' viewBox='0 0 200 140'%3E%3Crect width='100%25' height='100%25' fill='%23edebe6'/%3E%3Ctext x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-size='10' font-family='monospace' fill='%23888'%3E%5B SYNCING ASSET %5D%3C/text%3E%3Ctext x='50%25' y='65%25' dominant-baseline='middle' text-anchor='middle' font-size='8' font-family='monospace' fill='%23e03c31'%3EVERCEL DEPLOYING...%3C/text%3E%3C/svg%3E";
+
     return chrome(
       "07 / MEDIA",
       `<div class="admin-toolbar"><h1>IMAGES & MEDIA<span class="red-stop">.</span></h1>
@@ -1481,12 +1504,13 @@
       <div class="admin-media">${files.length ? files.map((file) => {
         const refs = file.references || [];
         const refCount = refs.length;
+        const previewSrc = state.mediaPreviewCache[file.path] || file.path;
         const refBadge = refCount > 0 
           ? `<span class="admin-badge published" style="display:block;margin:6px 0;white-space:normal;word-break:break-all">USED IN ${refCount} DOC(S)</span>`
           : `<span class="admin-badge draft" style="display:block;margin:6px 0">UNUSED</span>`;
         return `
         <article class="admin-file">
-          <img src="${esc(file.path)}" alt="${esc(file.name)}">
+          <img src="${esc(previewSrc)}" alt="${esc(file.name)}" onerror="this.onerror=null;this.src='${fallbackSvg}'">
           <p><b>${esc(file.name)}</b></p>
           <p style="color:#666;font-size:10px;word-break:break-all">${esc(file.path)}</p>
           ${refBadge}
@@ -1611,7 +1635,10 @@
       const file = form.elements.file.files[0];
       if (!file) throw new Error("Choose an image first.");
       const { dataUrl, filename } = await convertToWebp(file);
-      await api("/api/media", { method: "POST", body: { folder: formValue(form, "folder"), filename, data: dataUrl } });
+      const folder = formValue(form, "folder");
+      const res = await api("/api/media", { method: "POST", body: { folder, filename, data: dataUrl } });
+      state.mediaPreviewCache = state.mediaPreviewCache || {};
+      state.mediaPreviewCache[res.path || `/assets/images/${folder}/${filename}`] = dataUrl;
       state.message = "Image uploaded. Public site rebuilt.";
       state.content = null;
       return;

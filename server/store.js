@@ -500,6 +500,9 @@ function removeMedia({ folder, filename, force }) {
     throw new Error(`Cannot delete. Image is referenced by ${refs.length} document(s): ${refNames}`);
   }
 
+  const relPath = `src/assets/images/${folder}/${name}`.replace(/\\/g, "/");
+  mediaBufferCache.delete(relPath);
+
   safeUnlinkFile(file);
   return { ok: true };
 }
