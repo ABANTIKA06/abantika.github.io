@@ -1,6 +1,5 @@
 {
-  "version": 2,
-  "buildCommand": "npx @11ty/eleventy",
+  "buildCommand": "npm run build",
   "outputDirectory": "_site",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },

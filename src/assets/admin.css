@@ -597,7 +597,9 @@ a.wikilink {
     font-size: 9px;
     gap: 8px;
   }
-/* Animated Circle Arrow Button to Return to Home Website */
+}
+
+/* Animated Circle Arrow Button to Return to Home Website (Desktop & Mobile) */
 .admin-gate-top {
   padding: 24px 28px 0;
   display: flex;
