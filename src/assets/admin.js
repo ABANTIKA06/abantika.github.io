@@ -1329,7 +1329,7 @@
 
       const saveBtn = document.getElementById("ps-apply-save-btn");
       saveBtn.disabled = true;
-      saveBtn.innerHTML = "PROCESSING & UPLOADING... <b>⏳</b>";
+      saveBtn.innerHTML = "PROCESSING & SAVING PORTRAIT... <b>⏳</b>";
 
       try {
         const cvs = document.getElementById("portrait-studio-canvas");
@@ -1355,7 +1355,16 @@
         }
 
         modal.style.display = "none";
-        alert("Editorial portrait successfully cropped, filtered & saved!");
+
+        // Auto-submit the About form to persist portrait path to content/about.md and rebuild public site
+        const aboutFormEl = document.querySelector('form[data-form="about"]');
+        if (aboutFormEl) {
+          await onSubmit(aboutFormEl, "true");
+          state.message = "Filtered editorial portrait saved and published to public site!";
+          await render();
+        } else {
+          alert("Editorial portrait successfully cropped, filtered & saved!");
+        }
       } catch (err) {
         alert(`Save failed: ${err.message}`);
       } finally {
