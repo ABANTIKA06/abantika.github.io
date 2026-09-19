@@ -14,8 +14,8 @@ technologies:
   - PLOTLY
 featured: true
 published: true
-art: dots
-artLabel: ''
+art: waves
+artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
 cover: ''
 github: ''
 live: 'https://anomalyiq.onrender.com/'
