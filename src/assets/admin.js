@@ -345,10 +345,16 @@
   }
 
   function chrome(title, body) {
+    const isCurrent = (path) => {
+      if (path === "/" && hash() === "/") return true;
+      if (path !== "/" && hash().startsWith(path)) return true;
+      return false;
+    };
+
     return `
       <header class="admin-header">
         <a class="admin-brand" href="#/">ABANTIKA<small>ADMIN / PRIVATE CONSOLE</small></a>
-        <div class="admin-user">
+        <div class="admin-user desktop-only">
           <a href="/" class="admin-home-circle-btn" title="Return to Home Website" aria-label="Return to public portfolio homepage">
             <span class="circle-icon">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -361,16 +367,30 @@
           <span>@${esc(state.user.login)}</span>
           <button class="admin-btn" data-act="logout" type="button">SIGN OUT</button>
         </div>
+        <button type="button" class="mobile-menu-btn admin-mobile-toggle" id="admin-mobile-toggle-btn" aria-label="Toggle admin navigation menu" aria-expanded="false">
+          <span class="menu-bar"></span>
+          <span class="menu-bar"></span>
+          <span class="menu-bar"></span>
+        </button>
       </header>
-      <nav class="admin-nav" aria-label="Admin">
-        <a href="#/" class="${hash() === "/" ? "active" : ""}"><i>01</i> HOME</a>
-        <a href="#/about" class="${hash().startsWith("/about") ? "active" : ""}"><i>02</i> ABOUT</a>
-        <a href="#/projects" class="${hash().startsWith("/projects") ? "active" : ""}"><i>03</i> PROJECTS</a>
-        <a href="#/blog" class="${hash().startsWith("/blog") ? "active" : ""}"><i>04</i> BLOG</a>
-        <a href="#/journal" class="${hash().startsWith("/journal") ? "active" : ""}"><i>05</i> JOURNAL</a>
-        <a href="#/notes" class="${hash().startsWith("/notes") ? "active" : ""}"><i>06</i> NOTES</a>
-        <a href="#/media" class="${hash().startsWith("/media") ? "active" : ""}"><i>07</i> MEDIA</a>
-        <a href="#/settings" class="${hash().startsWith("/settings") ? "active" : ""}"><i>08</i> SETTINGS</a>
+      <nav class="admin-nav" id="admin-nav" aria-label="Admin">
+        <div class="admin-nav-links">
+          <a href="#/" class="${isCurrent("/") ? "active" : ""}"><i>01</i> HOME</a>
+          <a href="#/about" class="${isCurrent("/about") ? "active" : ""}"><i>02</i> ABOUT</a>
+          <a href="#/projects" class="${isCurrent("/projects") ? "active" : ""}"><i>03</i> PROJECTS</a>
+          <a href="#/blog" class="${isCurrent("/blog") ? "active" : ""}"><i>04</i> BLOG</a>
+          <a href="#/journal" class="${isCurrent("/journal") ? "active" : ""}"><i>05</i> JOURNAL</a>
+          <a href="#/notes" class="${isCurrent("/notes") ? "active" : ""}"><i>06</i> NOTES</a>
+          <a href="#/media" class="${isCurrent("/media") ? "active" : ""}"><i>07</i> MEDIA</a>
+          <a href="#/settings" class="${isCurrent("/settings") ? "active" : ""}"><i>08</i> SETTINGS</a>
+        </div>
+        <div class="admin-user-mobile mobile-only">
+          <span class="admin-mobile-username">LOGGED IN AS <b>@${esc(state.user.login)}</b></span>
+          <div class="admin-mobile-actions">
+            <a href="/" class="admin-btn secondary" style="justify-content:center">RETURN TO HOME <b>→</b></a>
+            <button class="admin-btn danger" data-act="logout" type="button" style="justify-content:center">SIGN OUT</button>
+          </div>
+        </div>
       </nav>
       <main class="admin-main">
         ${state.error ? `<p class="admin-msg error">${esc(state.error)}</p>` : ""}
@@ -1980,6 +2000,28 @@
   }
 
   app.addEventListener("click", async (event) => {
+    const adminToggleBtn = event.target.closest("#admin-mobile-toggle-btn");
+    if (adminToggleBtn) {
+      const nav = document.getElementById("admin-nav");
+      if (nav) {
+        const isOpen = nav.classList.toggle("mobile-open");
+        adminToggleBtn.classList.toggle("active", isOpen);
+        adminToggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+      return;
+    }
+
+    const adminNavLink = event.target.closest("#admin-nav a, #admin-nav button");
+    if (adminNavLink) {
+      const nav = document.getElementById("admin-nav");
+      const toggleBtn = document.getElementById("admin-mobile-toggle-btn");
+      if (nav) nav.classList.remove("mobile-open");
+      if (toggleBtn) {
+        toggleBtn.classList.remove("active");
+        toggleBtn.setAttribute("aria-expanded", "false");
+      }
+    }
+
     const act = event.target.closest("[data-act]");
     const copy = event.target.closest("[data-copy]");
     const del = event.target.closest("[data-del-name]");
