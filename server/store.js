@@ -223,6 +223,24 @@ function journalFile(id) {
   return path.join(CONTENT, "journal", `${id}.md`);
 }
 
+function deleteProject(slug) {
+  const file = projectFile(slug);
+  safeUnlinkFile(file);
+  return { ok: true, slug };
+}
+
+function deleteBlog(slug) {
+  const file = blogFile(slug);
+  safeUnlinkFile(file);
+  return { ok: true, slug };
+}
+
+function deleteJournal(id) {
+  const file = journalFile(id);
+  safeUnlinkFile(file);
+  return { ok: true, id };
+}
+
 function saveProject(input, { isNew = false } = {}) {
   const today = new Date().toISOString().slice(0, 10);
   const title = String(input.title || "").trim() || "Untitled Project";
@@ -711,6 +729,9 @@ module.exports = {
   getNote,
   saveNote,
   deleteNote,
+  deleteProject,
+  deleteBlog,
+  deleteJournal,
   promoteNote,
   listMedia,
   getMediaBuffer,

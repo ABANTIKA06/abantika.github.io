@@ -312,6 +312,127 @@
   animation: adminStroke 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.25s forwards;
 }
 
+/* Animated Bauhaus Delete Cross Icon */
+.admin-cross-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.admin-cross-circle {
+  stroke: var(--red);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  fill: rgba(230, 57, 70, 0.04);
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: adminStroke 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+.admin-cross-line1,
+.admin-cross-line2 {
+  stroke: var(--red);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+}
+.admin-cross-line1 {
+  animation: adminStroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.25s forwards;
+}
+.admin-cross-line2 {
+  animation: adminStroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.4s forwards;
+}
+
+/* Sudo Delete Box & Danger Button */
+.sudo-delete-box {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--red);
+}
+.sudo-delete-box label {
+  display: block;
+  font: 11px/1.5 var(--mono);
+  color: var(--ink);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.sudo-delete-box code {
+  color: var(--red);
+  font-weight: 700;
+  background: rgba(230, 57, 70, 0.08);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+.sudo-delete-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.sudo-delete-input:focus {
+  outline: none;
+  border-color: var(--red);
+}
+.sudo-delete-input.valid {
+  border-color: #22a722 !important;
+  box-shadow: 0 0 0 2px rgba(34, 167, 34, 0.15);
+}
+.admin-btn-danger {
+  background: var(--red) !important;
+  color: #fff !important;
+  border-color: var(--red) !important;
+}
+.admin-btn-danger:hover:not(:disabled) {
+  background: #c52a36 !important;
+  border-color: #c52a36 !important;
+}
+.admin-btn-danger:disabled,
+.admin-btn-danger[disabled] {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* Row List Delete Wrapper */
+.admin-row-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.admin-row-wrapper .admin-row {
+  flex: 1;
+}
+.admin-row-delete-btn {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.admin-row-delete-btn:hover {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+}
+
 @keyframes adminStroke {
   100% { stroke-dashoffset: 0; }
 }

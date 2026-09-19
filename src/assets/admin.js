@@ -471,7 +471,7 @@
   }
 
 
-  function rows(items, hrefFn) {
+  function rows(items, hrefFn, deleteType) {
     if (!items.length) return `<p>No entries yet.</p>`;
     return `<div class="admin-list">${items
       .map((item) => {
@@ -479,7 +479,11 @@
         const label = item.title;
         const meta = item.date || item.number || "";
         const status = item.published ? "PUBLISHED" : "DRAFT";
-        return `<a class="admin-row" href="${esc(href)}"><span>${esc(meta)}</span><b>${esc(label)}</b><span class="admin-badge ${item.published ? "published" : "draft"}">${status}</span><span>→</span></a>`;
+        const key = item.slug || item.id || "";
+        const deleteBtn = deleteType
+          ? `<button type="button" class="admin-row-delete-btn" data-act="delete-${deleteType}" data-${deleteType === "journal" ? "id" : "slug"}="${esc(key)}" data-title="${esc(label)}" title="Delete item">✕</button>`
+          : "";
+        return `<div class="admin-row-wrapper"><a class="admin-row" href="${esc(href)}"><span>${esc(meta)}</span><b>${esc(label)}</b><span class="admin-badge ${item.published ? "published" : "draft"}">${status}</span><span>→</span></a>${deleteBtn}</div>`;
       })
       .join("")}</div>`;
   }
@@ -615,6 +619,80 @@
     document.body.appendChild(root);
   }
 
+  function showDeleteConfirmModal({ kicker, type, title, onConfirm }) {
+    document.querySelector(".admin-modal-root")?.remove();
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal" role="dialog" aria-modal="true" style="border:2px solid var(--red)">
+        <div class="admin-tick-container">
+          <svg class="admin-cross-icon" viewBox="0 0 52 52">
+            <circle class="admin-cross-circle" cx="26" cy="26" r="23" />
+            <path class="admin-cross-line1" d="M17 17 L35 35" />
+            <path class="admin-cross-line2" d="M35 17 L17 35" />
+          </svg>
+          <div>
+            <p class="admin-kicker" style="color:var(--red);margin:0">${esc(kicker || "00 / DANGER ZONE")}</p>
+            <h2 id="admin-modal-title" style="margin:4px 0 0;font-size:clamp(22px, 3vw, 32px);color:var(--red)">DELETE ${esc(type.toUpperCase())}?<span class="red-stop">.</span></h2>
+          </div>
+        </div>
+        <p style="margin-top:12px;font-size:14px;line-height:1.5">
+          You are about to permanently delete <strong>"${esc(title)}"</strong>.
+          This action will remove the ${esc(type)} file from the repository and trigger a public site redeploy.
+        </p>
+        <div class="sudo-delete-box">
+          <label for="sudo-delete-input">To confirm deletion, please type <code>sudo delete</code> below:</label>
+          <input type="text" id="sudo-delete-input" class="sudo-delete-input" placeholder="sudo delete" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="admin-actions" style="margin-top:20px">
+          <button type="button" class="admin-btn" data-dismiss="true">CANCEL</button>
+          <button type="button" class="admin-btn admin-btn-danger" id="confirm-sudo-delete-btn" disabled>DELETE PERMANENTLY</button>
+        </div>
+      </div>`;
+
+    const inputEl = root.querySelector("#sudo-delete-input");
+    const confirmBtn = root.querySelector("#confirm-sudo-delete-btn");
+
+    inputEl?.addEventListener("input", () => {
+      const val = inputEl.value.trim();
+      if (val === "sudo delete") {
+        confirmBtn.removeAttribute("disabled");
+        inputEl.classList.add("valid");
+      } else {
+        confirmBtn.setAttribute("disabled", "true");
+        inputEl.classList.remove("valid");
+      }
+    });
+
+    const close = () => {
+      document.removeEventListener("keydown", onKey);
+      root.remove();
+    };
+
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      }
+    };
+
+    root.addEventListener("click", (event) => {
+      if (event.target.closest("[data-dismiss]")) {
+        close();
+      } else if (event.target.closest("#confirm-sudo-delete-btn")) {
+        if (inputEl.value.trim() === "sudo delete") {
+          close();
+          onConfirm();
+        }
+      }
+    });
+
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(root);
+    setTimeout(() => inputEl?.focus(), 100);
+  }
+
   function projectForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
     const sections = (item.sections && item.sections.length ? item.sections : [
@@ -658,6 +736,7 @@
           <button class="admin-btn" type="submit" data-publish="false">SAVE DRAFT <b>→</b></button>
           <button class="admin-btn" type="button" data-act="preview-project">PREVIEW <b>→</b></button>
           <button class="admin-btn primary" type="submit" data-publish="true">PUBLISH <b>→</b></button>
+          ${!isNew ? `<button class="admin-btn admin-btn-danger" type="button" data-act="delete-project" data-slug="${esc(item.slug)}" data-title="${esc(item.title)}">DELETE PROJECT</button>` : ""}
         </div>
       </form>`
     );
@@ -685,6 +764,7 @@
           <button class="admin-btn" type="submit" data-publish="false">SAVE DRAFT <b>→</b></button>
           <button class="admin-btn" type="button" data-act="preview-blog">PREVIEW <b>→</b></button>
           <button class="admin-btn primary" type="submit" data-publish="true">PUBLISH <b>→</b></button>
+          ${!isNew ? `<button class="admin-btn admin-btn-danger" type="button" data-act="delete-blog" data-slug="${esc(item.slug)}" data-title="${esc(item.title)}">DELETE ARTICLE</button>` : ""}
         </div>
       </form>`
     );
@@ -706,7 +786,7 @@
           <button class="admin-btn primary" type="submit" data-publish="false">SAVE NOTE <b>→</b></button>
           ${!isNew ? `<button class="admin-btn" type="button" data-act="promote-note" data-target="blog">PROMOTE TO BLOG <b>→</b></button>
           <button class="admin-btn" type="button" data-act="promote-note" data-target="project">PROMOTE TO PROJECT <b>→</b></button>
-          <button class="admin-btn" type="button" data-act="delete-note">DELETE NOTE</button>` : ""}
+          <button class="admin-btn admin-btn-danger" type="button" data-act="delete-note">DELETE NOTE</button>` : ""}
         </div>
       </form>`
     );
@@ -735,6 +815,7 @@
           <button class="admin-btn primary" type="submit" data-publish="false">SAVE JOURNAL ENTRY <b>→</b></button>
           <button class="admin-btn" type="button" data-act="preview-journal">PREVIEW <b>→</b></button>
           <button class="admin-btn" type="submit" data-publish="true">PUBLISH <b>→</b></button>
+          ${!isNew ? `<button class="admin-btn admin-btn-danger" type="button" data-act="delete-journal" data-id="${esc(item.id)}" data-title="${esc(item.title)}">DELETE ENTRY</button>` : ""}
         </div>
       </form>`
     );
@@ -1733,26 +1814,26 @@
       const overview = await api("/api/overview");
       app.innerHTML = dashboard(overview);
     } else if (path === "/projects") {
-      app.innerHTML = chrome("03 / PROJECTS", `<div class="admin-toolbar"><h1>CASE STUDIES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/projects/new">NEW PROJECT <b>→</b></a></div>${rows(state.content.projects, (item) => `#/projects/${item.slug}`)}`);
+      app.innerHTML = chrome("03 / PROJECTS", `<div class="admin-toolbar"><h1>CASE STUDIES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/projects/new">NEW PROJECT <b>→</b></a></div>${rows(state.content.projects, (item) => `#/projects/${item.slug}`, "project")}`);
     } else if (path === "/projects/new") {
       app.innerHTML = projectForm({}, true);
     } else if (parts[0] === "projects" && parts[1]) {
       const item = state.content.projects.find((p) => p.slug === parts[1]) || {};
       app.innerHTML = projectForm(item, false);
     } else if (path === "/blog") {
-      app.innerHTML = chrome("04 / BLOG", `<div class="admin-toolbar"><h1>ARTICLES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/blog/new">NEW ARTICLE <b>→</b></a></div>${rows(state.content.blog, (item) => `#/blog/${item.slug}`)}`);
+      app.innerHTML = chrome("04 / BLOG", `<div class="admin-toolbar"><h1>ARTICLES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/blog/new">NEW ARTICLE <b>→</b></a></div>${rows(state.content.blog, (item) => `#/blog/${item.slug}`, "blog")}`);
     } else if (path === "/blog/new") {
       app.innerHTML = blogForm({}, true);
     } else if (parts[0] === "blog" && parts[1]) {
       app.innerHTML = blogForm(state.content.blog.find((p) => p.slug === parts[1]) || {}, false);
     } else if (path === "/journal") {
-      app.innerHTML = chrome("05 / JOURNAL", `<div class="admin-toolbar"><h1>FIELD NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/journal/new">NEW NOTE <b>→</b></a></div>${rows(state.content.journal, (item) => `#/journal/${item.id}`)}`);
+      app.innerHTML = chrome("05 / JOURNAL", `<div class="admin-toolbar"><h1>FIELD NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/journal/new">NEW NOTE <b>→</b></a></div>${rows(state.content.journal, (item) => `#/journal/${item.id}`, "journal")}`);
     } else if (path === "/journal/new") {
       app.innerHTML = journalForm({}, true);
     } else if (parts[0] === "journal" && parts[1]) {
       app.innerHTML = journalForm(state.content.journal.find((p) => p.id === parts[1]) || {}, false);
     } else if (path === "/notes") {
-      app.innerHTML = chrome("06 / NOTES", `<div class="admin-toolbar"><h1>RESEARCH NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/notes/new">NEW NOTE <b>→</b></a></div>${rows(state.content.notes || [], (item) => `#/notes/${item.slug}`)}`);
+      app.innerHTML = chrome("06 / NOTES", `<div class="admin-toolbar"><h1>RESEARCH NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/notes/new">NEW NOTE <b>→</b></a></div>${rows(state.content.notes || [], (item) => `#/notes/${item.slug}`, "note")}`);
     } else if (path === "/notes/new") {
       app.innerHTML = noteForm({}, true);
     } else if (parts[0] === "notes" && parts[1]) {
@@ -2163,26 +2244,89 @@
         if (name === "preview-project") { syncAllWysiwyg(act.closest("form")); projectPreview(act.closest("form")); }
         if (name === "preview-blog") { syncAllWysiwyg(act.closest("form")); blogPreview(act.closest("form")); }
         if (name === "preview-journal") { syncAllWysiwyg(act.closest("form")); journalPreview(act.closest("form")); }
+        if (name === "delete-project") {
+          const form = act.closest("form");
+          const slug = act.getAttribute("data-slug") || form?.getAttribute("data-slug");
+          const title = act.getAttribute("data-title") || slug || "Project";
+          showDeleteConfirmModal({
+            kicker: "03 / DELETE PROJECT",
+            type: "project",
+            title,
+            onConfirm: async () => {
+              const prog = showProgressModal({ kicker: "03 / PROJECT", title: "DELETING PROJECT...", copy: "Removing project and rebuilding site." });
+              try {
+                await api(`/api/projects/${encodeURIComponent(slug)}`, { method: "DELETE" });
+                state.content = null;
+                prog.finish("PROJECT DELETED", `Project "${title}" has been deleted.`);
+                go("/projects");
+              } catch (e) {
+                prog.fail(e.message);
+              }
+            }
+          });
+        }
+        if (name === "delete-blog") {
+          const form = act.closest("form");
+          const slug = act.getAttribute("data-slug") || form?.getAttribute("data-slug");
+          const title = act.getAttribute("data-title") || slug || "Article";
+          showDeleteConfirmModal({
+            kicker: "04 / DELETE ARTICLE",
+            type: "article",
+            title,
+            onConfirm: async () => {
+              const prog = showProgressModal({ kicker: "04 / BLOG", title: "DELETING ARTICLE...", copy: "Removing article and rebuilding site." });
+              try {
+                await api(`/api/blog/${encodeURIComponent(slug)}`, { method: "DELETE" });
+                state.content = null;
+                prog.finish("ARTICLE DELETED", `Article "${title}" has been deleted.`);
+                go("/blog");
+              } catch (e) {
+                prog.fail(e.message);
+              }
+            }
+          });
+        }
+        if (name === "delete-journal") {
+          const form = act.closest("form");
+          const id = act.getAttribute("data-id") || form?.getAttribute("data-id");
+          const title = act.getAttribute("data-title") || id || "Journal Entry";
+          showDeleteConfirmModal({
+            kicker: "05 / DELETE JOURNAL",
+            type: "journal entry",
+            title,
+            onConfirm: async () => {
+              const prog = showProgressModal({ kicker: "05 / JOURNAL", title: "DELETING JOURNAL ENTRY...", copy: "Removing entry and rebuilding site." });
+              try {
+                await api(`/api/journal/${encodeURIComponent(id)}`, { method: "DELETE" });
+                state.content = null;
+                prog.finish("JOURNAL ENTRY DELETED", `Journal entry "${title}" has been deleted.`);
+                go("/journal");
+              } catch (e) {
+                prog.fail(e.message);
+              }
+            }
+          });
+        }
         if (name === "delete-note") {
           const form = act.closest("form");
-          const slug = form.getAttribute("data-slug");
-          const ok = await askCommit({
+          const slug = act.getAttribute("data-slug") || form?.getAttribute("data-slug");
+          const title = act.getAttribute("data-title") || slug || "Note";
+          showDeleteConfirmModal({
             kicker: "06 / DELETE NOTE",
-            title: "DELETE NOTE",
-            copy: `Are you sure you want to delete "${slug}"?`,
-            confirmLabel: "YES, DELETE",
-            primary: true
+            type: "note",
+            title,
+            onConfirm: async () => {
+              const prog = showProgressModal({ kicker: "06 / NOTE", title: "DELETING NOTE...", copy: "Removing note and rebuilding site." });
+              try {
+                await api(`/api/notes/${encodeURIComponent(slug)}`, { method: "DELETE" });
+                state.content = null;
+                prog.finish("NOTE DELETED", `Note "${title}" has been deleted.`);
+                go("/notes");
+              } catch (e) {
+                prog.fail(e.message);
+              }
+            }
           });
-          if (!ok) return;
-          const prog = showProgressModal({ kicker: "06 / NOTE", title: "DELETING NOTE...", copy: "Removing note and rebuilding site." });
-          try {
-            await api(`/api/notes/${encodeURIComponent(slug)}`, { method: "DELETE" });
-            state.content = null;
-            prog.finish("NOTE DELETED", "Note has been deleted.");
-            go("/notes");
-          } catch (e) {
-            prog.fail(e.message);
-          }
         }
         if (name === "promote-note") {
           const form = act.closest("form");

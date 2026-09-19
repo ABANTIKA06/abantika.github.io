@@ -392,6 +392,33 @@ async function handle(req, res) {
       });
       return true;
     }
+    if (req.method === "DELETE" && url.pathname.startsWith("/api/projects/")) {
+      const slug = decodeURIComponent(url.pathname.slice("/api/projects/".length));
+      const resData = store.deleteProject(slug);
+      await saved(resData, {
+        commitMessage: `content: delete project ${slug}`,
+        filePaths: [path.join("content", "projects", `${slug}.md`)]
+      });
+      return true;
+    }
+    if (req.method === "DELETE" && url.pathname.startsWith("/api/blog/")) {
+      const slug = decodeURIComponent(url.pathname.slice("/api/blog/".length));
+      const resData = store.deleteBlog(slug);
+      await saved(resData, {
+        commitMessage: `blog: delete article ${slug}`,
+        filePaths: [path.join("content", "blog", `${slug}.md`)]
+      });
+      return true;
+    }
+    if (req.method === "DELETE" && url.pathname.startsWith("/api/journal/")) {
+      const id = decodeURIComponent(url.pathname.slice("/api/journal/".length));
+      const resData = store.deleteJournal(id);
+      await saved(resData, {
+        commitMessage: `journal: delete entry ${id}`,
+        filePaths: [path.join("content", "journal", `${id}.md`)]
+      });
+      return true;
+    }
     if (route === "PUT /api/about") {
       const resData = store.saveAbout(body);
       await saved(resData, {
