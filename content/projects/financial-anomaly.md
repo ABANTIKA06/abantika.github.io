@@ -16,6 +16,7 @@ featured: true
 published: true
 art: waves
 artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
+customArt: ''
 cover: ''
 github: ''
 live: 'https://anomalyiq.onrender.com/'
