@@ -414,9 +414,24 @@
   }
 
   function dashboard(overview) {
+    const syncWarning = !state.config.githubSync ? `
+      <div style="border:2px solid var(--red);padding:16px 20px;margin-bottom:28px;background:#fff8f8">
+        <p class="admin-kicker" style="color:var(--red);margin-bottom:6px">⚠ GITHUB SYNC NOT CONFIGURED</p>
+        <p style="font:12px/1.6 var(--mono);margin:0">
+          Saves are written to the server but <strong>the public website will NOT update</strong> because
+          <code>GITHUB_TOKEN</code>, <code>GITHUB_REPO_OWNER</code>, and <code>GITHUB_REPO_NAME</code>
+          are not set. Add these as environment variables in Vercel → Project Settings → Environment Variables,
+          then redeploy. Until then, changes are lost when Vercel restarts the serverless function.
+        </p>
+      </div>` : `
+      <div style="border:1px solid var(--line);padding:12px 16px;margin-bottom:28px;display:flex;align-items:center;gap:10px">
+        <span style="color:#22a722;font:11px var(--mono)">✓ GITHUB SYNC ACTIVE</span>
+        <span style="font:11px var(--mono);color:#888">— saves will commit to GitHub and trigger a Vercel redeploy automatically.</span>
+      </div>`;
     return chrome(
       "01 / HOME",
       `<h1>CONSOLE<span class="red-stop">.</span></h1>
+      ${syncWarning}
       <section class="admin-grid">
         <div class="admin-stat"><span>PROJECTS</span><strong>${overview.projects.published}</strong><p>${overview.projects.draft} DRAFT / ${overview.projects.total} TOTAL</p></div>
         <div class="admin-stat"><span>BLOG</span><strong>${overview.blog.published}</strong><p>${overview.blog.draft} DRAFT / ${overview.blog.total} TOTAL</p></div>
@@ -426,6 +441,7 @@
       <p>${esc(overview.lastPublished || "—")}</p>`
     );
   }
+
 
   function rows(items, hrefFn) {
     if (!items.length) return `<p>No entries yet.</p>`;

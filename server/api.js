@@ -230,44 +230,47 @@ async function handle(req, res) {
     const body = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method) ? await readBody(req) : {};
 
     async function saved(payload, { commitMessage, filePaths = [] } = {}) {
-      send(res, 200, { ...payload, rebuilt: true, githubSync: { pending: true } });
+      // On Vercel serverless the process is terminated the moment we call send().
+      // Any fire-and-forget async work after send() is silently killed before it
+      // can finish. So we MUST commit to GitHub BEFORE sending the response.
+      let syncResult = { pending: false };
 
-      (async () => {
+      if (githubSync.isConfigured() && filePaths.length) {
         try {
-          await rebuild();
+          const filesToCommit = filePaths.map((fp) => {
+            const abs = path.isAbsolute(fp) ? fp : path.join(env.ROOT, fp);
+            const rel = path.relative(env.ROOT, abs).replace(/\\/g, "/");
+
+            const cachedBuf = store.getMediaBuffer ? store.getMediaBuffer(rel) : null;
+            if (cachedBuf) {
+              return { path: rel, content: cachedBuf.toString("base64"), isBase64: true };
+            }
+
+            if (!fs.existsSync(abs)) {
+              return { path: rel, isDelete: true };
+            }
+            const ext = path.extname(abs).toLowerCase();
+            const isBinary = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".woff", ".woff2"].includes(ext);
+            if (isBinary) {
+              const buf = fs.readFileSync(abs);
+              return { path: rel, content: buf.toString("base64"), isBase64: true };
+            } else {
+              const text = fs.readFileSync(abs, "utf8");
+              return { path: rel, content: text };
+            }
+          });
+          syncResult = await githubSync.commitFiles(filesToCommit, commitMessage || "content: update site files");
         } catch (err) {
-          console.error("Rebuild error:", err);
+          console.error("GitHub Sync error:", err);
+          syncResult = { error: err.message };
         }
-        if (githubSync.isConfigured() && filePaths.length) {
-          try {
-            const filesToCommit = filePaths.map((fp) => {
-              const abs = path.isAbsolute(fp) ? fp : path.join(env.ROOT, fp);
-              const rel = path.relative(env.ROOT, abs).replace(/\\/g, "/");
+      }
 
-              const cachedBuf = store.getMediaBuffer ? store.getMediaBuffer(rel) : null;
-              if (cachedBuf) {
-                return { path: rel, content: cachedBuf.toString("base64"), isBase64: true };
-              }
+      // Send response AFTER GitHub sync so Vercel does not kill the process early
+      send(res, 200, { ...payload, rebuilt: true, githubSync: syncResult });
 
-              if (!fs.existsSync(abs)) {
-                return { path: rel, isDelete: true };
-              }
-              const ext = path.extname(abs).toLowerCase();
-              const isBinary = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".woff", ".woff2"].includes(ext);
-              if (isBinary) {
-                const buf = fs.readFileSync(abs);
-                return { path: rel, content: buf.toString("base64"), isBase64: true };
-              } else {
-                const text = fs.readFileSync(abs, "utf8");
-                return { path: rel, content: text };
-              }
-            });
-            await githubSync.commitFiles(filesToCommit, commitMessage || "content: update site files");
-          } catch (err) {
-            console.error("GitHub Sync error:", err);
-          }
-        }
-      })();
+      // Best-effort local rebuild (works in dev; silently ignored on Vercel read-only FS)
+      rebuild().catch((err) => console.error("Rebuild error:", err));
     }
 
     if (route === "GET /api/notes") {
