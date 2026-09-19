@@ -41,14 +41,14 @@
         reject(new Error("No file provided."));
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        reject(new Error("File exceeds 10MB limit."));
+      if (file.size > 25 * 1024 * 1024) {
+        reject(new Error("File exceeds 25MB limit."));
         return;
       }
       const sanitizeName = (name) => path.basename(String(name || "")).replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
       const reader = new FileReader();
       reader.onload = () => resolve({ dataUrl: reader.result, filename: sanitizeName(file.name) });
-      reader.onerror = () => reject(new Error("Failed to read image file."));
+      reader.onerror = () => reject(new Error("Failed to read file."));
       reader.readAsDataURL(file);
     });
   }
@@ -1477,7 +1477,7 @@
       `<div class="admin-toolbar"><h1>IMAGES & MEDIA<span class="red-stop">.</span></h1>
         <form data-form="media-upload" class="admin-form" style="grid-template-columns:1fr 1fr auto;align-items:end;max-width:none">
           <label>FOLDER<select name="folder"><option>projects</option><option>blog</option><option>journal</option><option>about</option></select></label>
-          <label>FILE<input type="file" name="file" accept="image/*"></label>
+          <label>FILE<input type="file" name="file" accept="image/*,application/pdf,video/mp4,.pdf,.mp4"></label>
           <button class="admin-btn primary" type="submit">UPLOAD <b>→</b></button>
         </form>
       </div>
@@ -1488,9 +1488,16 @@
         const refBadge = refCount > 0 
           ? `<span class="admin-badge published" style="display:block;margin:6px 0;white-space:normal;word-break:break-all">USED IN ${refCount} DOC(S)</span>`
           : `<span class="admin-badge draft" style="display:block;margin:6px 0">UNUSED</span>`;
+        const ext = String(file.name || "").split(".").pop().toLowerCase();
+        let previewHtml = `<img src="${esc(previewSrc)}" alt="${esc(file.name)}" onerror="this.onerror=null;this.src='${fallbackSvg}'">`;
+        if (ext === "pdf") {
+          previewHtml = `<div style="height:140px;background:#171717;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font:11px var(--mono)"><span style="font-size:32px;margin-bottom:6px">📄</span><b>PDF DOCUMENT</b></div>`;
+        } else if (ext === "mp4") {
+          previewHtml = `<video src="${esc(previewSrc)}" controls style="width:100%;height:140px;object-fit:cover;background:#000"></video>`;
+        }
         return `
         <article class="admin-file">
-          <img src="${esc(previewSrc)}" alt="${esc(file.name)}" onerror="this.onerror=null;this.src='${fallbackSvg}'">
+          ${previewHtml}
           <p><b>${esc(file.name)}</b></p>
           <p style="color:#666;font-size:10px;word-break:break-all">${esc(file.path)}</p>
           ${refBadge}

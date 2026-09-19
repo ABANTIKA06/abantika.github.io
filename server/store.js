@@ -478,7 +478,7 @@ async function saveMedia({ folder, filename, data }) {
   const name = safeName(filename);
   const buf = Buffer.from(String(data || "").replace(/^data:[^;]+;base64,/, ""), "base64");
   if (!buf.length) throw new Error("empty file");
-  if (buf.length > 10 * 1024 * 1024) throw new Error("file exceeds 10MB limit.");
+  if (buf.length > 25 * 1024 * 1024) throw new Error("file exceeds 25MB limit.");
 
   const relPath = `src/assets/images/${folder}/${name}`.replace(/\\/g, "/");
   mediaBufferCache.set(relPath, buf);
@@ -486,7 +486,14 @@ async function saveMedia({ folder, filename, data }) {
   if (r2.isConfigured()) {
     try {
       const ext = path.extname(name).toLowerCase();
-      const contentType = ext === ".webp" ? "image/webp" : ext === ".png" ? "image/png" : ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" : ext === ".svg" ? "image/svg+xml" : "application/octet-stream";
+      const contentType = ext === ".pdf" ? "application/pdf"
+        : ext === ".mp4" ? "video/mp4"
+        : ext === ".webp" ? "image/webp"
+        : ext === ".png" ? "image/png"
+        : ext === ".jpg" || ext === ".jpeg" ? "image/jpeg"
+        : ext === ".svg" ? "image/svg+xml"
+        : ext === ".gif" ? "image/gif"
+        : "application/octet-stream";
       const uploaded = await r2.uploadMedia({ folder, filename: name, buffer: buf, contentType });
       return { folder, name, path: uploaded.path, r2: true };
     } catch (err) {

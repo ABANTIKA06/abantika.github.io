@@ -22,8 +22,8 @@ function readBody(req) {
     let size = 0;
     req.on("data", (chunk) => {
       size += chunk.length;
-      if (size > 14 * 1024 * 1024) {
-        reject(new Error("payload too large (max 10MB file)"));
+      if (size > 36 * 1024 * 1024) {
+        reject(new Error("payload too large (max 25MB file)"));
         req.destroy();
         return;
       }
