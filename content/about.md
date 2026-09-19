@@ -1,6 +1,6 @@
 ---
 title: 'A blend of analysis, creativity and curiosity.'
-portrait: 'https://pub-65f85f4baefb46c4b29927f0c91b7302.r2.dev/about/test.jpg'
+portrait: '/assets/images/about/photo_2026-01-26_17-39-34.jpg'
 headline:
   - A BLEND OF
   - 'ANALYSIS,'
