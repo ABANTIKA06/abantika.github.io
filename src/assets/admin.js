@@ -502,7 +502,7 @@
     }, 30000);
 
     return {
-      finish: (successTitle, successCopy, viewUrl) => {
+      finish: (successTitle, successCopy, viewUrl, isWarning = false, kicker = "") => {
         clearTimeout(watchdogTimer);
         clearInterval(interval);
         const bar = document.getElementById("admin-pbar");
@@ -510,13 +510,14 @@
         const statusEl = document.getElementById("admin-pstatus");
         if (bar) bar.style.width = "100%";
         if (txt) txt.textContent = "100%";
-        if (statusEl) statusEl.textContent = "COMPLETE!";
+        if (statusEl) statusEl.textContent = isWarning ? "SAVED LOCALLY" : "COMPLETE!";
         setTimeout(() => {
           showSuccessModal({
-            kicker: "00 / SUCCESSFUL",
+            kicker: kicker || (isWarning ? "00 / SYNC WARNING" : "00 / SUCCESSFUL"),
             title: successTitle || "PUBLISHED SUCCESSFULLY",
             copy: successCopy || "Changes committed and static site rebuilt.",
-            viewUrl
+            viewUrl,
+            isWarning
           });
         }, 200);
       },
@@ -537,24 +538,28 @@
     };
   }
 
-  function showSuccessModal({ kicker, title, copy, viewUrl }) {
+  function showSuccessModal({ kicker, title, copy, viewUrl, isWarning = false }) {
     document.querySelector(".admin-modal-root")?.remove();
     const root = document.createElement("div");
     root.className = "admin-modal-root";
-    root.innerHTML = `
-      <div class="admin-modal-backdrop" data-dismiss="true"></div>
-      <div class="admin-modal" role="dialog" aria-modal="true">
-        <div class="admin-tick-container">
-          <svg class="admin-tick-icon" viewBox="0 0 52 52">
+    const iconHtml = isWarning
+      ? `<div style="font-size:36px;line-height:1;margin-right:12px">⚠️</div>`
+      : `<svg class="admin-tick-icon" viewBox="0 0 52 52">
             <circle class="admin-tick-circle" cx="26" cy="26" r="23" />
             <path class="admin-tick-check" d="M14 27 l7 7 l17 -17" />
-          </svg>
+          </svg>`;
+    const titleColor = isWarning ? "color:var(--red)" : "";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal" role="dialog" aria-modal="true" style="${isWarning ? "border:2px solid var(--red)" : ""}">
+        <div class="admin-tick-container">
+          ${iconHtml}
           <div>
             <p class="admin-kicker" style="color:var(--red);margin:0">${esc(kicker || "00 / SUCCESSFUL")}</p>
-            <h2 id="admin-modal-title" style="margin:4px 0 0;font-size:clamp(28px, 4vw, 40px)">${esc(title)}<span class="red-stop">.</span></h2>
+            <h2 id="admin-modal-title" style="margin:4px 0 0;font-size:clamp(24px, 3.5vw, 36px);${titleColor}">${esc(title)}<span class="red-stop">.</span></h2>
           </div>
         </div>
-        <p>${esc(copy)}</p>
+        <p style="white-space:pre-wrap;margin-top:12px">${esc(copy)}</p>
         <div class="admin-actions">
           <button type="button" class="admin-btn" data-commit="close">CLOSE</button>
           ${viewUrl ? `<a href="${esc(viewUrl)}" target="_blank" rel="noopener" class="admin-btn primary">VIEW PUBLISHED PAGE <b>→</b></a>` : ""}
@@ -2397,14 +2402,28 @@
       let viewUrl = "";
       if (savedResult && savedResult.url && isPublish) viewUrl = savedResult.url;
 
-      const successTitle = isMedia ? "UPLOADED SUCCESSFULLY" : (isPublish ? "PUBLISHED SUCCESSFULLY" : "DRAFT SAVED SUCCESSFULLY");
-      const successCopy = isMedia
+      const sync = savedResult && savedResult.githubSync;
+      let successTitle = isMedia ? "UPLOADED SUCCESSFULLY" : (isPublish ? "PUBLISHED SUCCESSFULLY" : "DRAFT SAVED SUCCESSFULLY");
+      let successCopy = isMedia
         ? `"${name}" has been uploaded to Cloudflare R2 media storage.`
         : (isPublish
           ? `"${name}" has been published and updated.`
           : `"${name}" has been saved as a draft.`);
+      let isWarning = false;
 
-      prog.finish(successTitle, successCopy, viewUrl);
+      if (sync && sync.error) {
+        isWarning = true;
+        successTitle = "SAVED LOCALLY (SYNC ERROR)";
+        successCopy = `"${name}" was saved locally, but GitHub sync failed:\n\n${sync.error}\n\nPlease check your GITHUB_TOKEN and repository permissions on Vercel.`;
+      } else if (sync && sync.synced === false && sync.reason === "not_configured") {
+        isWarning = true;
+        successTitle = "SAVED LOCALLY (SYNC WARNING)";
+        successCopy = `"${name}" was saved locally, but GitHub sync is NOT configured.\n\nTo auto-deploy changes to the public site, set GITHUB_TOKEN, GITHUB_REPO_OWNER, and GITHUB_REPO_NAME in Vercel environment variables.`;
+      } else if (sync && sync.synced) {
+        successCopy += `\n\n✅ GitHub commit: ${sync.sha ? sync.sha.slice(0, 7) : "synced"} (Vercel build triggered)`;
+      }
+
+      prog.finish(successTitle, successCopy, viewUrl, isWarning);
 
       if (type === "project") go("/projects");
       if (type === "blog") go("/blog");

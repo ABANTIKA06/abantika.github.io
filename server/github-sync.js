@@ -4,35 +4,54 @@ function isConfigured() {
   return Boolean(env.githubToken && env.githubRepoOwner && env.githubRepoName);
 }
 
-async function request(path, options = {}) {
+async function request(path, options = {}, retries = 3) {
   if (!isConfigured()) {
     throw new Error("GitHub repository syncing is not configured. Missing GITHUB_TOKEN, GITHUB_REPO_OWNER, or GITHUB_REPO_NAME.");
   }
   const url = `https://api.github.com/repos/${env.githubRepoOwner}/${env.githubRepoName}${path}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "authorization": `Bearer ${env.githubToken}`,
-      "accept": "application/vnd.github+json",
-      "user-agent": "abantika-admin-sync",
-      "x-github-api-version": "2022-11-28",
-      ...(options.headers || {})
+  
+  let lastError;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        ...options,
+        headers: {
+          "authorization": `Bearer ${env.githubToken}`,
+          "accept": "application/vnd.github+json",
+          "user-agent": "abantika-admin-sync",
+          "x-github-api-version": "2022-11-28",
+          ...(options.headers || {})
+        }
+      });
+
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { raw: text };
+      }
+
+      if (!res.ok) {
+        const errorMsg = data.message || res.statusText || "GitHub API Error";
+        // Do not retry 4xx auth or client errors except 429 rate limits
+        if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+          throw new Error(`GitHub Sync Failed (${res.status}): ${errorMsg}`);
+        }
+        throw new Error(`GitHub Sync Temporary Error (${res.status}): ${errorMsg}`);
+      }
+      return data;
+    } catch (err) {
+      lastError = err;
+      if (err.message.includes("GitHub Sync Failed (40") && !err.message.includes("429")) {
+        throw err; // Permanent client error, don't retry
+      }
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
     }
-  });
-
-  const text = await res.text();
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    data = { raw: text };
   }
-
-  if (!res.ok) {
-    const errorMsg = data.message || res.statusText || "GitHub API Error";
-    throw new Error(`GitHub Sync Failed (${res.status}): ${errorMsg}`);
-  }
-  return data;
+  throw lastError || new Error("GitHub Sync Failed after retries.");
 }
 
 async function createBlob(content, isBase64 = false) {
