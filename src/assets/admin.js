@@ -35,72 +35,21 @@
     }
   }
 
-  function convertToWebp(file, maxDimension = 1200, quality = 0.75) {
+  function convertToWebp(file) {
     return new Promise((resolve, reject) => {
       if (!file) {
         reject(new Error("No file provided."));
         return;
       }
-      const sanitizeName = (name) => path.basename(String(name || "")).replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
-
-      if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
-        const reader = new FileReader();
-        reader.onload = () => resolve({ dataUrl: reader.result, filename: sanitizeName(file.name) });
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+      if (file.size > 10 * 1024 * 1024) {
+        reject(new Error("File exceeds 10MB limit."));
         return;
       }
-
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxDimension || height > maxDimension) {
-          if (width > height) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-
-        let webpDataUrl = "";
-        try {
-          webpDataUrl = canvas.toDataURL("image/webp", quality);
-        } catch(e) {}
-
-        if (!webpDataUrl || !webpDataUrl.startsWith("data:image/webp")) {
-          webpDataUrl = canvas.toDataURL("image/png");
-        }
-
-        const baseName = sanitizeName(file.name.replace(/\.[^/.]+$/, ""));
-        const ext = webpDataUrl.startsWith("data:image/webp") ? "webp" : "png";
-        const webpFilename = `${baseName}.${ext}`;
-        resolve({ dataUrl: webpDataUrl, filename: webpFilename });
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        const reader = new FileReader();
-        reader.onload = () => {
-          const baseName = sanitizeName(file.name.replace(/\.[^/.]+$/, ""));
-          const parts = file.name.split('.');
-          const ext = parts.length > 1 ? parts.pop() : 'png';
-          resolve({ dataUrl: reader.result, filename: `${baseName}.${ext}` });
-        };
-        reader.onerror = () => reject(new Error("Failed to process image file."));
-        reader.readAsDataURL(file);
-      };
-      img.src = url;
+      const sanitizeName = (name) => path.basename(String(name || "")).replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
+      const reader = new FileReader();
+      reader.onload = () => resolve({ dataUrl: reader.result, filename: sanitizeName(file.name) });
+      reader.onerror = () => reject(new Error("Failed to read image file."));
+      reader.readAsDataURL(file);
     });
   }
 
