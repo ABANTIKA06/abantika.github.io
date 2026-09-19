@@ -298,7 +298,19 @@
     return `
       <header class="admin-header">
         <a class="admin-brand" href="#/">ABANTIKA<small>ADMIN / PRIVATE CONSOLE</small></a>
-        <div class="admin-user"><span>@${esc(state.user.login)}</span><a class="admin-btn" href="/?v=${Date.now()}" target="_blank" rel="noopener">VIEW SITE :8080</a><button class="admin-btn" data-act="logout" type="button">SIGN OUT</button></div>
+        <div class="admin-user">
+          <a href="/" class="admin-home-circle-btn" title="Return to Home Website" aria-label="Return to public portfolio homepage">
+            <span class="circle-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </span>
+            <span class="circle-btn-text">RETURN TO HOME</span>
+          </a>
+          <span>@${esc(state.user.login)}</span>
+          <button class="admin-btn" data-act="logout" type="button">SIGN OUT</button>
+        </div>
       </header>
       <nav class="admin-nav" aria-label="Admin">
         <a href="#/" class="${hash() === "/" ? "active" : ""}"><i>01</i> HOME</a>
@@ -320,6 +332,17 @@
 
   function gate() {
     return `
+      <div class="admin-gate-top">
+        <a href="/" class="admin-home-circle-btn" title="Return to Home Website" aria-label="Return to public portfolio homepage">
+          <span class="circle-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </span>
+          <span class="circle-btn-text">RETURN TO HOME</span>
+        </a>
+      </div>
       <div class="admin-gate">
         <p class="admin-kicker">00 / PRIVATE CONSOLE</p>
         <h1>ABANTIKA / ADMIN<span class="red-stop">.</span></h1>
