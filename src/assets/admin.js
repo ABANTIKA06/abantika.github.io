@@ -698,11 +698,11 @@
         ${area("APPROACH", "approach", about.approach || "")}
         ${area("MARGIN NOTE", "marginNote", (about.marginNote || []).join("\n"))}
 
-        <!-- EDITORIAL PORTRAIT PHOTO STUDIO CONTAINER -->
+        <!-- RECODED EDITORIAL PORTRAIT MANAGER -->
         <div class="portrait-studio-container">
           <div class="portrait-studio-header">
-            <h3>EDITORIAL PORTRAIT STUDIO</h3>
-            <span class="studio-badge">CROP & CANVA FILTERS</span>
+            <h3>EDITORIAL PORTRAIT MANAGER</h3>
+            <span class="studio-badge">CLOUDFLARE R2 & STUDIO FILTERS</span>
           </div>
           <div class="portrait-studio-body">
             <div class="portrait-plate-preview" id="portrait-studio-preview-box">
@@ -714,17 +714,21 @@
             </div>
             <div class="portrait-studio-controls-area">
               <div style="margin-bottom:12px">
-                <label class="admin-kicker" style="margin-bottom:4px;display:block">PORTRAIT PATH</label>
+                <label class="admin-kicker" style="margin-bottom:4px;display:block">PORTRAIT PATH / IMAGE URL</label>
                 <input type="text" name="portrait" id="portrait-path-input" class="admin-input" value="${portraitPath}" placeholder="/assets/images/about/portrait.webp">
               </div>
-              <div class="portrait-studio-actions">
-                <button type="button" class="admin-btn primary" id="open-portrait-studio-btn">
-                  📷 UPLOAD & EDIT PHOTO STUDIO <b>→</b>
+              <div class="portrait-studio-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <input type="file" id="portrait-direct-upload-input" accept="image/*" style="display:none">
+                <button type="button" class="admin-btn primary" id="portrait-direct-upload-btn" style="min-width:0;justify-content:center">
+                  📤 UPLOAD NEW FILE <b>→</b>
                 </button>
-                <button type="button" class="admin-btn secondary" id="pick-library-portrait-btn">
+                <button type="button" class="admin-btn secondary" id="pick-library-portrait-btn" style="min-width:0;justify-content:center">
                   🖼️ CHOOSE FROM LIBRARY <b>→</b>
                 </button>
-                ${portraitPath ? `<button type="button" class="admin-btn danger" id="clear-portrait-btn">REMOVE PORTRAIT</button>` : ''}
+                <button type="button" class="admin-btn" id="open-portrait-studio-btn" style="min-width:0;justify-content:center">
+                  🎨 CROP & FILTER STUDIO <b>→</b>
+                </button>
+                ${portraitPath ? `<button type="button" class="admin-btn danger" id="clear-portrait-btn" style="min-width:0;justify-content:center">❌ REMOVE</button>` : ''}
               </div>
             </div>
           </div>
@@ -2001,9 +2005,15 @@
         return;
       }
 
+      const directUploadBtn = event.target.closest("#portrait-direct-upload-btn");
       const openStudioBtn = event.target.closest("#open-portrait-studio-btn");
       const pickLibraryBtn = event.target.closest("#pick-library-portrait-btn");
       const clearPortraitBtn = event.target.closest("#clear-portrait-btn");
+
+      if (directUploadBtn) {
+        document.getElementById("portrait-direct-upload-input")?.click();
+        return;
+      }
 
       if (openStudioBtn) {
         const pathVal = document.getElementById("portrait-path-input")?.value.trim() || "";
@@ -2159,6 +2169,80 @@
     if (editable) {
       const wrapper = editable.closest(".wysiwyg-wrapper");
       syncWysiwyg(wrapper);
+    }
+  });
+
+  app.addEventListener("change", async (event) => {
+    const directFileInput = event.target.closest("#portrait-direct-upload-input");
+    if (directFileInput && directFileInput.files && directFileInput.files[0]) {
+      const file = directFileInput.files[0];
+      const directBtn = document.getElementById("portrait-direct-upload-btn");
+      if (directBtn) {
+        directBtn.disabled = true;
+        directBtn.innerHTML = "UPLOADING TO R2... ⏳";
+      }
+
+      try {
+        const folder = "about";
+        const baseName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-") || `portrait-${Date.now()}`;
+        let uploadedPath = "";
+
+        try {
+          const presigned = await api("/api/r2-presign", {
+            method: "POST",
+            body: { folder, filename: baseName, contentType: file.type || "image/webp" }
+          });
+          if (presigned && presigned.uploadUrl) {
+            const r2Res = await fetch(presigned.uploadUrl, {
+              method: "PUT",
+              body: file,
+              headers: { "content-type": file.type || "image/webp" }
+            });
+            if (r2Res.ok) {
+              uploadedPath = presigned.publicUrl;
+            }
+          }
+        } catch(e) {
+          console.warn("R2 presigned error, falling back to API proxy:", e);
+        }
+
+        if (!uploadedPath) {
+          const { dataUrl, filename } = await convertToWebp(file);
+          const res = await api("/api/media", {
+            method: "POST",
+            body: { folder, filename, data: dataUrl }
+          });
+          uploadedPath = res.path;
+        }
+
+        const pathInput = document.getElementById("portrait-path-input");
+        if (pathInput) pathInput.value = uploadedPath;
+
+        const previewBox = document.getElementById("portrait-studio-preview-box");
+        if (previewBox) {
+          previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${uploadedPath}" alt="Portrait Preview"><b></b>`;
+        }
+
+        if (state.content && state.content.about) {
+          state.content.about.portrait = uploadedPath;
+        }
+
+        const aboutFormEl = document.querySelector('form[data-form="about"]');
+        if (aboutFormEl) {
+          const savedData = await onSubmit(aboutFormEl, "true");
+          if (state.content) state.content.about = savedData;
+          state.message = "New portrait image uploaded and saved to Cloudflare R2!";
+          await render();
+        }
+      } catch(err) {
+        alert("Upload failed: " + err.message);
+      } finally {
+        if (directBtn) {
+          directBtn.disabled = false;
+          directBtn.innerHTML = "📤 UPLOAD NEW FILE <b>→</b>";
+        }
+        directFileInput.value = "";
+      }
     }
   });
 
