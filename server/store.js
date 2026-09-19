@@ -11,7 +11,10 @@ const {
   loadNotes,
   loadAbout,
   loadSkills,
-  loadSettings
+  loadSettings,
+  setVirtualFile,
+  getVirtualFile,
+  deleteVirtualFile
 } = require("../src/lib/content");
 
 const IMAGES = path.join(ROOT, "src", "assets", "images");
@@ -75,6 +78,7 @@ function requireFields(data, fields, label) {
 }
 
 function safeWriteFile(file, content, encoding = "utf8") {
+  setVirtualFile(file, content);
   try {
     ensureDir(path.dirname(file));
     fs.writeFileSync(file, content, encoding);
@@ -86,6 +90,7 @@ function safeWriteFile(file, content, encoding = "utf8") {
 }
 
 function safeUnlinkFile(file) {
+  deleteVirtualFile(file);
   try {
     if (fs.existsSync(file)) {
       fs.unlinkSync(file);
@@ -708,6 +713,7 @@ module.exports = {
   loadProjects,
   loadBlog,
   loadJournal,
-  loadNotes
+  loadNotes,
+  getVirtualFile
 };
 

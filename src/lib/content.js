@@ -136,17 +136,73 @@ function monthShort(date) {
   return MONTHS[month - 1];
 }
 
+const virtualFileStore = new Map();
+
+function setVirtualFile(filePath, content) {
+  if (!filePath) return;
+  const abs = path.isAbsolute(filePath) ? path.normalize(filePath) : path.normalize(path.join(ROOT, filePath));
+  const rel = path.relative(ROOT, abs).replace(/\\/g, "/");
+  virtualFileStore.set(abs, content);
+  virtualFileStore.set(rel, content);
+  virtualFileStore.delete(abs + ":deleted");
+  virtualFileStore.delete(rel + ":deleted");
+}
+
+function getVirtualFile(filePath) {
+  if (!filePath) return null;
+  const abs = path.isAbsolute(filePath) ? path.normalize(filePath) : path.normalize(path.join(ROOT, filePath));
+  const rel = path.relative(ROOT, abs).replace(/\\/g, "/");
+  if (virtualFileStore.get(abs + ":deleted") || virtualFileStore.get(rel + ":deleted")) {
+    return null;
+  }
+  return virtualFileStore.get(abs) || virtualFileStore.get(rel);
+}
+
+function deleteVirtualFile(filePath) {
+  if (!filePath) return;
+  const abs = path.isAbsolute(filePath) ? path.normalize(filePath) : path.normalize(path.join(ROOT, filePath));
+  const rel = path.relative(ROOT, abs).replace(/\\/g, "/");
+  virtualFileStore.delete(abs);
+  virtualFileStore.delete(rel);
+  virtualFileStore.set(abs + ":deleted", true);
+  virtualFileStore.set(rel + ":deleted", true);
+}
+
+function isVirtualDeleted(filePath) {
+  if (!filePath) return false;
+  const abs = path.isAbsolute(filePath) ? path.normalize(filePath) : path.normalize(path.join(ROOT, filePath));
+  const rel = path.relative(ROOT, abs).replace(/\\/g, "/");
+  return Boolean(virtualFileStore.get(abs + ":deleted") || virtualFileStore.get(rel + ":deleted"));
+}
+
 function listMarkdown(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((name) => name.endsWith(".md"))
-    .sort()
-    .map((name) => path.join(dir, name));
+  const normDir = path.normalize(dir);
+  const diskFiles = fs.existsSync(dir)
+    ? fs.readdirSync(dir).filter((name) => name.endsWith(".md")).map((name) => path.join(normDir, name))
+    : [];
+  
+  const set = new Set(diskFiles.filter((f) => !isVirtualDeleted(f)));
+  for (const [key] of virtualFileStore.entries()) {
+    if (key.endsWith(".md") && !key.includes(":deleted")) {
+      const absKey = path.isAbsolute(key) ? path.normalize(key) : path.normalize(path.join(ROOT, key));
+      if (path.dirname(absKey) === normDir) {
+        if (!isVirtualDeleted(absKey)) {
+          set.add(absKey);
+        }
+      }
+    }
+  }
+  return Array.from(set).sort();
 }
 
 function loadMarkdownFile(file, type) {
-  const parsed = matter(fs.readFileSync(file, "utf8"));
+  const virt = getVirtualFile(file);
+  let parsed;
+  if (virt) {
+    parsed = matter(virt);
+  } else {
+    parsed = matter(fs.readFileSync(file, "utf8"));
+  }
   const data = parsed.data || {};
   const rel = path.relative(ROOT, file).replace(/\\/g, "/");
   requireFields(data, REQUIRED[type], rel);
@@ -326,8 +382,14 @@ function loadAllContent() {
 
 function loadAbout() {
   const file = path.join(CONTENT, "about.md");
-  if (!fs.existsSync(file)) fail("content/about.md", "file is required");
-  const parsed = matter(fs.readFileSync(file, "utf8"));
+  const virt = getVirtualFile(file);
+  let parsed;
+  if (virt) {
+    parsed = matter(virt);
+  } else {
+    if (!fs.existsSync(file)) fail("content/about.md", "file is required");
+    parsed = matter(fs.readFileSync(file, "utf8"));
+  }
   const data = parsed.data || {};
   if (!data.title) fail("content/about.md", `missing required field "title"`);
   return {
@@ -342,6 +404,10 @@ function loadAbout() {
 
 function loadYaml(name) {
   const file = path.join(CONTENT, name);
+  const virt = getVirtualFile(file);
+  if (virt) {
+    return yaml.load(virt) || {};
+  }
   if (!fs.existsSync(file)) fail(`content/${name}`, "file is required");
   return yaml.load(fs.readFileSync(file, "utf8")) || {};
 }
@@ -390,6 +456,9 @@ module.exports = {
   loadAllContent,
   loadAbout,
   loadSkills,
-  loadSettings
+  loadSettings,
+  setVirtualFile,
+  getVirtualFile,
+  deleteVirtualFile
 };
 

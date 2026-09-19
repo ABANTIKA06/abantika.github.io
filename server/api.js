@@ -246,6 +246,11 @@ async function handle(req, res) {
               return { path: rel, content: cachedBuf.toString("base64"), isBase64: true };
             }
 
+            const virtContent = store.getVirtualFile ? store.getVirtualFile(abs) : null;
+            if (virtContent !== null && virtContent !== undefined) {
+              return { path: rel, content: virtContent };
+            }
+
             if (!fs.existsSync(abs)) {
               return { path: rel, isDelete: true };
             }
