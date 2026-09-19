@@ -5,6 +5,7 @@ const session = require("./session");
 const store = require("./store");
 const { rebuild } = require("./rebuild");
 const githubSync = require("./github-sync");
+const r2 = require("./r2");
 
 function send(res, status, body, headers = {}) {
   const payload = typeof body === "string" ? body : JSON.stringify(body);
@@ -393,6 +394,19 @@ async function handle(req, res) {
     }
     if (route === "GET /api/media") {
       send(res, 200, store.listMedia());
+      return true;
+    }
+    if (route === "POST /api/r2-presign") {
+      const presigned = await r2.getSignedUploadUrl({
+        folder: body.folder || "about",
+        filename: body.filename,
+        contentType: body.contentType || "application/octet-stream"
+      });
+      if (!presigned) {
+        send(res, 503, { error: "Cloudflare R2 storage is not configured." });
+        return true;
+      }
+      send(res, 200, presigned);
       return true;
     }
     if (route === "POST /api/media") {

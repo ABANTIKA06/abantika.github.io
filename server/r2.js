@@ -92,8 +92,30 @@ async function removeMedia({ folder = "about", filename, key }) {
   return true;
 }
 
+async function getSignedUploadUrl({ folder = "about", filename, contentType = "application/octet-stream" }) {
+  const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+  const creds = getCredentials();
+  const client = getR2Client();
+  if (!creds || !client) return null;
+
+  const key = `${folder}/${filename}`.replace(/^\/+/, "");
+  const command = new PutObjectCommand({
+    Bucket: creds.bucket,
+    Key: key,
+    ContentType: contentType
+  });
+
+  const uploadUrl = await getSignedUrl(client, command, { expiresIn: 900 });
+  const publicUrl = creds.publicDomain
+    ? `${creds.publicDomain}/${key}`
+    : `https://${creds.bucket}.${creds.accountId}.r2.cloudflarestorage.com/${key}`;
+
+  return { uploadUrl, publicUrl, key };
+}
+
 module.exports = {
   isConfigured,
   uploadMedia,
-  removeMedia
+  removeMedia,
+  getSignedUploadUrl
 };

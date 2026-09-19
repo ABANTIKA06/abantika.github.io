@@ -1620,15 +1620,43 @@
     }
     if (type === "media-upload") {
       const file = form.elements.file.files[0];
-      if (!file) throw new Error("Choose an image first.");
-      const { dataUrl, filename } = await convertToWebp(file);
-      const folder = formValue(form, "folder");
-      const res = await api("/api/media", { method: "POST", body: { folder, filename, data: dataUrl } });
+      if (!file) throw new Error("Choose a file first.");
+      if (file.size > 25 * 1024 * 1024) throw new Error("File exceeds 25MB limit.");
+
+      const folder = formValue(form, "folder") || "about";
+      const baseName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
+
+      let uploadedPath = "";
+      try {
+        const presigned = await api("/api/r2-presign", {
+          method: "POST",
+          body: { folder, filename: baseName, contentType: file.type || "application/octet-stream" }
+        });
+        if (presigned && presigned.uploadUrl) {
+          const r2Res = await fetch(presigned.uploadUrl, {
+            method: "PUT",
+            body: file,
+            headers: { "content-type": file.type || "application/octet-stream" }
+          });
+          if (r2Res.ok) {
+            uploadedPath = presigned.publicUrl;
+          }
+        }
+      } catch (err) {
+        console.warn("Direct R2 presigned upload error, falling back to API proxy:", err);
+      }
+
+      if (!uploadedPath) {
+        const { dataUrl, filename } = await convertToWebp(file);
+        const res = await api("/api/media", { method: "POST", body: { folder, filename, data: dataUrl } });
+        uploadedPath = res.path;
+      }
+
       state.mediaPreviewCache = state.mediaPreviewCache || {};
-      state.mediaPreviewCache[res.path || `/assets/images/${folder}/${filename}`] = dataUrl;
-      state.message = "Image uploaded. Public site rebuilt.";
+      state.mediaPreviewCache[uploadedPath] = URL.createObjectURL(file);
+      state.message = "Media uploaded successfully to Cloudflare R2.";
       state.content = null;
-      return;
+      return { path: uploadedPath };
     }
     let published = formValue(form, "published");
     if (publishFlag === "true") published = true;
