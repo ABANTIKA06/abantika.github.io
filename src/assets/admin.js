@@ -2013,6 +2013,16 @@
         if (previewBox) {
           previewBox.innerHTML = `<div class="portrait-placeholder-box"><span>PORTRAIT<br>PLACEHOLDER</span></div><b></b>`;
         }
+        const aboutFormEl = document.querySelector('form[data-form="about"]');
+        if (aboutFormEl) {
+          try {
+            await onSubmit(aboutFormEl, "true");
+            state.message = "Portrait removed and saved!";
+            await render();
+          } catch(err) {
+            console.error("Auto-save removed portrait failed:", err);
+          }
+        }
         return;
       }
 
@@ -2120,6 +2130,16 @@
   });
 
   app.addEventListener("input", (event) => {
+    const portraitInput = event.target.closest("#portrait-path-input");
+    if (portraitInput) {
+      const val = portraitInput.value.trim();
+      const previewBox = document.getElementById("portrait-studio-preview-box");
+      if (previewBox) {
+        previewBox.innerHTML = val 
+          ? `<img id="portrait-studio-active-img" src="${esc(val)}" alt="Portrait Preview"><b></b>`
+          : `<div class="portrait-placeholder-box"><span>PORTRAIT<br>PLACEHOLDER</span></div><b></b>`;
+      }
+    }
     const editable = event.target.closest(".wysiwyg-editable");
     if (editable) {
       const wrapper = editable.closest(".wysiwyg-wrapper");
