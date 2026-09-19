@@ -25,7 +25,18 @@ module.exports = function (eleventyConfig) {
     return `https://${trimmed}`;
   }
 
+  function absoluteUrl(url, baseUrl) {
+    if (!url || typeof url !== "string") return `${baseUrl || "https://abantika-xplore.vercel.app"}/assets/og-image.png`;
+    const trimmed = url.trim();
+    if (!trimmed) return `${baseUrl || "https://abantika-xplore.vercel.app"}/assets/og-image.png`;
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    const cleanBase = String(baseUrl || "https://abantika-xplore.vercel.app").replace(/\/$/, "");
+    const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    return `${cleanBase}${cleanPath}`;
+  }
+
   eleventyConfig.addFilter("urlFix", urlFix);
+  eleventyConfig.addFilter("absoluteUrl", absoluteUrl);
   eleventyConfig.addFilter("markdown", renderMarkdown);
   eleventyConfig.addFilter("published", (items) => (items || []).filter((item) => item.published));
   eleventyConfig.addFilter("featured", (items) =>

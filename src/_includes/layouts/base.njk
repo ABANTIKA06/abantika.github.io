@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ description or site.description }}">
     <meta name="theme-color" content="#f2f0ea">
+    <meta property="og:site_name" content="{{ site.name }}">
     <meta property="og:title" content="{{ title or site.name }}">
     <meta property="og:description" content="{{ description or site.ogDescription }}">
     <meta property="og:type" content="{{ ogType or 'website' }}">
     <meta property="og:url" content="{{ site.url }}{{ page.url }}">
-    <meta property="og:image" content="{{ site.url }}{{ image or '/assets/og-image.png' }}">
+    <meta property="og:image" content="{{ image | absoluteUrl(site.url) }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Abantika — Data Analyst & Data Scientist Portfolio Preview">
+    <meta property="og:image:alt" content="{{ title or site.name }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ title or site.name }}">
     <meta name="twitter:description" content="{{ description or site.ogDescription }}">
-    <meta name="twitter:image" content="{{ site.url }}{{ image or '/assets/og-image.png' }}">
+    <meta name="twitter:image" content="{{ image | absoluteUrl(site.url) }}">
     <link rel="canonical" href="{{ site.url }}{{ page.url }}">
     <link rel="stylesheet" href="/assets/styles.css">
     <title>{{ title or site.name }}</title>
@@ -376,6 +377,32 @@
             else startPlay();
           }, { passive: true });
         });
+
+        // Social Share Fallback Handler
+        var shareRail = document.querySelector(".share-rail");
+        if (shareRail) {
+          shareRail.addEventListener("click", function (e) {
+            var btn = e.target.closest("button");
+            if (!btn) return;
+            var network = btn.getAttribute("data-network");
+            var currentUrl = encodeURIComponent(window.location.href);
+            var currentTitle = encodeURIComponent(document.title);
+
+            if (network === "linkedin") {
+              window.open("https://www.linkedin.com/sharing/share-offsite/?url=" + currentUrl, "_blank", "width=600,height=600,noopener,noreferrer");
+            } else if (network === "twitter") {
+              window.open("https://twitter.com/intent/tweet?text=" + currentTitle + "&url=" + currentUrl, "_blank", "width=600,height=500,noopener,noreferrer");
+            } else if (network === "sharethis") {
+              if (navigator.share) {
+                navigator.share({ title: document.title, url: window.location.href }).catch(function () {});
+              } else {
+                navigator.clipboard.writeText(window.location.href).then(function () {
+                  alert("Link copied to clipboard!");
+                }).catch(function () {});
+              }
+            }
+          });
+        }
       });
     </script>
   </body>

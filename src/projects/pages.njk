@@ -9,8 +9,8 @@ share: true
 ogType: article
 eleventyComputed:
   title: "{{ project.title }} — Abantika"
-  description: "{{ project.description }}"
-  image: "{{ project.cover }}"
+  description: "{{ project.summary | publicText(project.description) }}"
+  image: "{{ project.cover or project.customArt }}"
 ---
 {% set relatedArticles = blog | relatedTo(project.slug) %}
 {% set relatedNotes = journal | relatedTo(project.slug) %}

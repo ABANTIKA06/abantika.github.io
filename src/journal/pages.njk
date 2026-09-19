@@ -8,8 +8,9 @@ layout: base.njk
 share: true
 ogType: article
 eleventyComputed:
-  title: "{{ note.title | safe }} — Abantika"
-  description: "{{ note.summary or note.title }}"
+  title: "{{ note.title | safe }} — Field Note — Abantika"
+  description: "{{ note.summary or note.sections.did or note.title }}"
+  image: "{{ note.cover or (related and (related.cover or related.customArt)) }}"
 ---
 {% set related = projects | findBySlug(note.project) %}
 <div class="page-shell">
