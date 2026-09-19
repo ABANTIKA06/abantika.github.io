@@ -13,7 +13,7 @@
 
   async function api(path, opts = {}) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000);
+    const timer = setTimeout(() => controller.abort(), 25000);
     try {
       const res = await fetch(path, {
         credentials: "include",
@@ -35,7 +35,7 @@
     }
   }
 
-  function convertToWebp(file, maxDimension = 1440, quality = 0.80) {
+  function convertToWebp(file, maxDimension = 1200, quality = 0.75) {
     return new Promise((resolve, reject) => {
       if (!file) {
         reject(new Error("No file provided."));
@@ -478,7 +478,7 @@
       clearInterval(interval);
       root.remove();
       alert("Save operation took longer than expected. Please check your connection or credentials.");
-    }, 12000);
+    }, 30000);
 
     return {
       finish: (successTitle, successCopy, viewUrl) => {
