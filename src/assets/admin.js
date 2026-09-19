@@ -519,9 +519,12 @@
           ${viewUrl ? `<a href="${esc(viewUrl)}" target="_blank" rel="noopener" class="admin-btn primary">VIEW PUBLISHED PAGE <b>→</b></a>` : ""}
         </div>
       </div>`;
-    const finish = () => {
+    const finish = async () => {
       document.removeEventListener("keydown", onKey);
       root.remove();
+      if (!state.content) {
+        await render();
+      }
     };
     const onKey = (event) => {
       if (event.key === "Escape" || event.key === "Enter") {
