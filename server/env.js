@@ -36,7 +36,7 @@ module.exports = {
   githubClientId: required("GITHUB_CLIENT_ID"),
   githubClientSecret: required("GITHUB_CLIENT_SECRET"),
   allowedGithubUser: required("ALLOWED_GITHUB_USER"),
-  sessionSecret: required("SESSION_SECRET"),
+  sessionSecret: required("SESSION_SECRET") || "abantika-session-secret-default-key-2026",
   adminDevLogin: required("ADMIN_DEV_LOGIN"),
   adminPasscode: required("ADMIN_PASSCODE") || "abantika2026",
   githubToken: required("GITHUB_TOKEN"),
