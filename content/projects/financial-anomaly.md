@@ -14,7 +14,7 @@ technologies:
   - PLOTLY
 featured: true
 published: true
-art: waves
+art: bars
 artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
 customArt: ''
 cover: ''
