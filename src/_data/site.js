@@ -1,4 +1,4 @@
-require("./stamp.json");
+try { require("./stamp.json"); } catch (e) {}
 const { loadSettings } = require("../lib/content");
 
 module.exports = function () {

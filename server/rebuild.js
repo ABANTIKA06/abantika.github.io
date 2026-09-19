@@ -7,7 +7,15 @@ const STAMP = path.join(env.ROOT, "src", "_data", "stamp.json");
 let queue = Promise.resolve();
 
 function writeStamp() {
-  fs.writeFileSync(STAMP, `${JSON.stringify({ rebuiltAt: new Date().toISOString() }, null, 2)}\n`);
+  try {
+    const dir = path.dirname(STAMP);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(STAMP, `${JSON.stringify({ rebuiltAt: new Date().toISOString() }, null, 2)}\n`);
+  } catch (err) {
+    // Ignore read-only filesystem errors on Vercel serverless environment
+  }
 }
 
 function bustRequire(file) {
@@ -19,17 +27,21 @@ function bustRequire(file) {
 }
 
 async function runEleventy() {
-  const dataDir = path.join(env.ROOT, "src", "_data");
-  if (fs.existsSync(dataDir)) {
-    fs.readdirSync(dataDir).forEach((file) => {
-      bustRequire(path.join(dataDir, file));
-    });
+  try {
+    const dataDir = path.join(env.ROOT, "src", "_data");
+    if (fs.existsSync(dataDir)) {
+      fs.readdirSync(dataDir).forEach((file) => {
+        bustRequire(path.join(dataDir, file));
+      });
+    }
+    bustRequire(path.join(env.ROOT, "src", "lib", "content.js"));
+    const Eleventy = require("@11ty/eleventy");
+    const elev = new Eleventy();
+    await elev.init();
+    await elev.write();
+  } catch (err) {
+    // Ignore write errors on Vercel serverless environment
   }
-  bustRequire(path.join(env.ROOT, "src", "lib", "content.js"));
-  const Eleventy = require("@11ty/eleventy");
-  const elev = new Eleventy();
-  await elev.init();
-  await elev.write();
 }
 
 function rebuild() {
