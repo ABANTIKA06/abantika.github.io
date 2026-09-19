@@ -14,8 +14,9 @@ technologies:
   - PLOTLY
 featured: true
 published: true
-art: dots
+art: bars
 artLabel: ''
+customArt: ''
 cover: ''
 github: ''
 live: 'https://anomalyiq.onrender.com/'
