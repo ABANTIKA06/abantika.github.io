@@ -336,9 +336,13 @@ async function handle(req, res) {
     if (req.method === "PUT" && url.pathname.startsWith("/api/projects/")) {
       const slug = decodeURIComponent(url.pathname.slice("/api/projects/".length));
       const resData = store.saveProject({ ...body, slug });
+      const filePaths = [path.join("content", "projects", `${resData.slug || slug}.md`)];
+      if (slug && resData.slug && slug !== resData.slug) {
+        filePaths.push(path.join("content", "projects", `${slug}.md`));
+      }
       await saved(resData, {
         commitMessage: `content: update project ${resData.title || slug}`,
-        filePaths: [path.join("content", "projects", `${slug}.md`)]
+        filePaths
       });
       return true;
     }
@@ -353,9 +357,13 @@ async function handle(req, res) {
     if (req.method === "PUT" && url.pathname.startsWith("/api/blog/")) {
       const slug = decodeURIComponent(url.pathname.slice("/api/blog/".length));
       const resData = store.saveBlog({ ...body, slug });
+      const filePaths = [path.join("content", "blog", `${resData.slug || slug}.md`)];
+      if (slug && resData.slug && slug !== resData.slug) {
+        filePaths.push(path.join("content", "blog", `${slug}.md`));
+      }
       await saved(resData, {
         commitMessage: `blog: update ${resData.title || slug}`,
-        filePaths: [path.join("content", "blog", `${slug}.md`)]
+        filePaths
       });
       return true;
     }
@@ -363,16 +371,20 @@ async function handle(req, res) {
       const resData = store.saveJournal(body, { isNew: true });
       await saved(resData, {
         commitMessage: `journal: add entry ${resData.date || body.date}`,
-        filePaths: [path.join("content", "journal", `${resData.date || body.date}-${resData.slug || "note"}.md`)]
+        filePaths: [path.join("content", "journal", `${resData.id}.md`)]
       });
       return true;
     }
     if (req.method === "PUT" && url.pathname.startsWith("/api/journal/")) {
       const id = decodeURIComponent(url.pathname.slice("/api/journal/".length));
       const resData = store.saveJournal(body, { id });
+      const filePaths = [path.join("content", "journal", `${resData.id || id}.md`)];
+      if (id && resData.id && id !== resData.id) {
+        filePaths.push(path.join("content", "journal", `${id}.md`));
+      }
       await saved(resData, {
         commitMessage: `journal: update ${id}`,
-        filePaths: [path.join("content", "journal", `${id}.md`)]
+        filePaths
       });
       return true;
     }
