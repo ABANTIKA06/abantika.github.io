@@ -17,6 +17,15 @@ module.exports = function (eleventyConfig) {
     ]
   });
 
+  function urlFix(url) {
+    if (!url || typeof url !== "string") return "";
+    const trimmed = url.trim();
+    if (!trimmed || trimmed === "#") return "";
+    if (/^(https?:\/\/|mailto:|tel:|\/)/i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  }
+
+  eleventyConfig.addFilter("urlFix", urlFix);
   eleventyConfig.addFilter("markdown", renderMarkdown);
   eleventyConfig.addFilter("published", (items) => (items || []).filter((item) => item.published));
   eleventyConfig.addFilter("featured", (items) =>

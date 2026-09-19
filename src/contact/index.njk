@@ -15,9 +15,9 @@ title: Contact — Abantika
   </section>
   <section class="contact-details">
     <p class="eyebrow">OTHER WAYS TO CONNECT</p>
-    <a href="{{ site.linkedin or '#' }}">LINKEDIN <b>↗</b></a>
-    <a href="{{ site.github or '#' }}">GITHUB <b>↗</b></a>
-    <p class="contact-note">{% if site.linkedin and site.github %}{{ site.email }}{% else %}[PLACEHOLDER — Replace the email address and profile links before publishing.]{% endif %}</p>
+    {% if site.linkedin %}<a href="{{ site.linkedin }}" target="_blank" rel="noopener noreferrer">LINKEDIN <b>↗</b></a>{% endif %}
+    {% if site.github %}<a href="{{ site.github }}" target="_blank" rel="noopener noreferrer">GITHUB <b>↗</b></a>{% endif %}
+    <p class="contact-note">{% if site.linkedin or site.github %}{{ site.email }}{% else %}[PLACEHOLDER — Set your LinkedIn and GitHub URLs in Admin > Settings.]{% endif %}</p>
   </section>
 </main>
 {% include "components/footer.njk" %}

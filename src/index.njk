@@ -88,8 +88,8 @@ title: Abantika — Data Analyst & Data Scientist
     <h2 id="contact-title">LET’S BUILD<br>SOMETHING IMPACTFUL<span class="red-stop">.</span></h2>
     <div class="contact-copy"><p>{{ site.contactBlurb }}</p><a class="button button-primary" href="mailto:{{ site.email }}">EMAIL ME <b>→</b></a></div>
     <div class="contact-links">
-      <a href="{{ site.linkedin or '#' }}">LINKEDIN</a>
-      <a href="{{ site.github or '#' }}">GITHUB</a>
+      {% if site.linkedin %}<a href="{{ site.linkedin }}" target="_blank" rel="noopener noreferrer">LINKEDIN <b>↗</b></a>{% endif %}
+      {% if site.github %}<a href="{{ site.github }}" target="_blank" rel="noopener noreferrer">GITHUB <b>↗</b></a>{% endif %}
       <p>{{ site.availabilityLines | join("<br>") | safe }}</p>
     </div>
   </section>

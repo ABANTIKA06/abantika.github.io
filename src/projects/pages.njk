@@ -22,6 +22,16 @@ eleventyComputed:
       <h1>{{ project.headline | joinLines | safe }}<span class="red-stop">.</span></h1>
       <p>{{ project.description }}</p>
       <div class="case-tech">{{ project.techLabel }}</div>
+      {% if project.github or project.live %}
+      <div class="case-links" style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+        {% if project.github %}
+        <a class="button button-secondary" href="{{ project.github | urlFix }}" target="_blank" rel="noopener noreferrer">GITHUB REPO <b>↗</b></a>
+        {% endif %}
+        {% if project.live %}
+        <a class="button button-primary" href="{{ project.live | urlFix }}" target="_blank" rel="noopener noreferrer">LIVE DEMO <b>↗</b></a>
+        {% endif %}
+      </div>
+      {% endif %}
     </header>
     <div class="case-art {{ project.artClass }}" aria-label="Abstract project visualization">{% if project.art != "dots" %}<span></span>{% endif %}<p class="case-art-label">{{ project.artLabel }}</p></div>
     <div class="detail-with-share">

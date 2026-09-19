@@ -27,12 +27,18 @@ const defaultLinkOpen =
   };
 
 md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
-  const href = tokens[idx].attrGet("href") || "";
+  let href = tokens[idx].attrGet("href") || "";
   if (/^\s*javascript:/i.test(href) || /^\s*data:/i.test(href)) {
     tokens[idx].attrSet("href", "#");
-  } else if (/^https?:/i.test(href)) {
-    tokens[idx].attrSet("rel", "noopener noreferrer");
-    tokens[idx].attrSet("target", "_blank");
+  } else {
+    if (/^(www\.|[a-z0-9-]+\.[a-z]{2,})/i.test(href) && !/^(https?:\/\/|mailto:|tel:|\/|#)/i.test(href)) {
+      href = `https://${href}`;
+      tokens[idx].attrSet("href", href);
+    }
+    if (/^https?:/i.test(href)) {
+      tokens[idx].attrSet("rel", "noopener noreferrer");
+      tokens[idx].attrSet("target", "_blank");
+    }
   }
   return defaultLinkOpen(tokens, idx, options, env, self);
 };
@@ -44,10 +50,9 @@ const defaultImage =
   };
 
 md.renderer.rules.image = function (tokens, idx, options, env, self) {
-  const src = tokens[idx].attrGet("src") || "";
-  if (!src.startsWith("/assets/")) {
+  let src = tokens[idx].attrGet("src") || "";
+  if (/^\s*javascript:/i.test(src) || /^\s*data:text\/html/i.test(src)) {
     tokens[idx].attrSet("src", "");
-    tokens[idx].attrSet("alt", tokens[idx].content || "");
   }
   return defaultImage(tokens, idx, options, env, self);
 };
