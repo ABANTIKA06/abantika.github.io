@@ -73,10 +73,32 @@ function requireFields(data, fields, label) {
   });
 }
 
+function safeWriteFile(file, content, encoding = "utf8") {
+  try {
+    ensureDir(path.dirname(file));
+    fs.writeFileSync(file, content, encoding);
+  } catch (err) {
+    if (err.code !== "EROFS" && !String(err.message).includes("read-only")) {
+      throw err;
+    }
+  }
+}
+
+function safeUnlinkFile(file) {
+  try {
+    if (fs.existsSync(file)) {
+      fs.unlinkSync(file);
+    }
+  } catch (err) {
+    if (err.code !== "EROFS" && !String(err.message).includes("read-only")) {
+      throw err;
+    }
+  }
+}
+
 function writeMarkdown(file, data, body = "") {
-  ensureDir(path.dirname(file));
   const raw = matter.stringify(body.replace(/^\n+/, ""), data);
-  fs.writeFileSync(file, raw.endsWith("\n") ? raw : `${raw}\n`, "utf8");
+  safeWriteFile(file, raw.endsWith("\n") ? raw : `${raw}\n`, "utf8");
 }
 
 function overview() {
@@ -342,7 +364,7 @@ function saveSkills(input) {
   Object.entries(data).forEach(([key, items]) => {
     if (!items.length) throw new Error(`skills: group "${key}" cannot be empty`);
   });
-  fs.writeFileSync(path.join(CONTENT, "skills.yml"), yaml.dump(data), "utf8");
+  safeWriteFile(path.join(CONTENT, "skills.yml"), yaml.dump(data), "utf8");
   return loadSkills();
 }
 
@@ -364,7 +386,7 @@ function saveSettings(input) {
     footerNote: String(input.footerNote || "").trim(),
     copyrightYear: Number(input.copyrightYear || new Date().getFullYear())
   };
-  fs.writeFileSync(path.join(CONTENT, "settings.yml"), yaml.dump(data), "utf8");
+  safeWriteFile(path.join(CONTENT, "settings.yml"), yaml.dump(data), "utf8");
   return loadSettings();
 }
 
@@ -428,8 +450,7 @@ function saveMedia({ folder, filename, data }) {
   if (!buf.length) throw new Error("empty file");
   if (buf.length > 2.5 * 1024 * 1024) throw new Error("file exceeds 2.5MB limit.");
   const dir = path.join(IMAGES, folder);
-  ensureDir(dir);
-  fs.writeFileSync(path.join(dir, name), buf);
+  safeWriteFile(path.join(dir, name), buf, null);
   return { folder, name, path: `/assets/images/${folder}/${name}` };
 }
 
@@ -438,7 +459,6 @@ function removeMedia({ folder, filename, force }) {
   const name = safeName(filename);
   const imgPath = `/assets/images/${folder}/${name}`;
   const file = path.join(IMAGES, folder, name);
-  if (!fs.existsSync(file)) throw new Error("file not found");
 
   const refs = findMediaReferences(imgPath, name);
   if (refs.length > 0 && !force) {
@@ -446,7 +466,7 @@ function removeMedia({ folder, filename, force }) {
     throw new Error(`Cannot delete. Image is referenced by ${refs.length} document(s): ${refNames}`);
   }
 
-  fs.unlinkSync(file);
+  safeUnlinkFile(file);
   return { ok: true };
 }
 
@@ -489,8 +509,7 @@ function saveNote(payload) {
 function deleteNote(slugOrFilename) {
   const name = slugOrFilename.endsWith(".md") ? slugOrFilename : `${slugOrFilename}.md`;
   const file = path.join(CONTENT, "notes", name);
-  if (!fs.existsSync(file)) throw new Error(`Note not found: ${name}`);
-  fs.unlinkSync(file);
+  safeUnlinkFile(file);
   return { ok: true, filename: name };
 }
 
