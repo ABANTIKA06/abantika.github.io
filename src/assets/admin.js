@@ -777,9 +777,10 @@
     document.querySelector(".admin-modal-root")?.remove();
     let mediaFiles = [];
     try {
-      mediaFiles = await api("/api/media");
+      const res = await api("/api/media");
+      mediaFiles = Array.isArray(res) ? res : (Array.isArray(state.content?.media) ? state.content.media : []);
     } catch(e) {
-      mediaFiles = state.content?.media || [];
+      mediaFiles = Array.isArray(state.content?.media) ? state.content.media : [];
     }
 
     const root = document.createElement("div");
@@ -1462,9 +1463,10 @@
     document.querySelector(".admin-modal-root")?.remove();
     let mediaFiles = [];
     try {
-      mediaFiles = await api("/api/media");
+      const res = await api("/api/media");
+      mediaFiles = Array.isArray(res) ? res : (Array.isArray(state.content?.media) ? state.content.media : []);
     } catch(e) {
-      mediaFiles = state.content?.media || [];
+      mediaFiles = Array.isArray(state.content?.media) ? state.content.media : [];
     }
 
     const root = document.createElement("div");
@@ -1510,7 +1512,7 @@
   }
 
   function mediaView() {
-    const files = state.content.media || [];
+    const files = Array.isArray(state.content?.media) ? state.content.media : [];
     state.mediaPreviewCache = state.mediaPreviewCache || {};
     const fallbackSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='140' viewBox='0 0 200 140'%3E%3Crect width='100%25' height='100%25' fill='%23edebe6'/%3E%3Ctext x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-size='10' font-family='monospace' fill='%23888'%3E%5B SYNCING ASSET %5D%3C/text%3E%3Ctext x='50%25' y='65%25' dominant-baseline='middle' text-anchor='middle' font-size='8' font-family='monospace' fill='%23e03c31'%3EVERCEL DEPLOYING...%3C/text%3E%3C/svg%3E";
 

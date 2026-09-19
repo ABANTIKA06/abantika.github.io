@@ -222,7 +222,7 @@ async function handle(req, res) {
         about: store.loadAbout(),
         skills: store.loadSkills(),
         settings: store.loadSettings(),
-        media: store.listMedia()
+        media: await store.listMedia()
       });
       return true;
     }
