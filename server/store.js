@@ -233,7 +233,7 @@ function saveProject(input, { isNew = false } = {}) {
 
   requireFields({ title, slug, description, date, category, technologies }, ["title", "slug", "description", "date", "category", "technologies"], "project");
   const file = projectFile(slug);
-  if (isNew && fs.existsSync(file)) throw new Error(`project "${slug}" already exists`);
+  if (isNew && (fs.existsSync(file) || Boolean(getVirtualFile(file)))) throw new Error(`project "${slug}" already exists`);
   const data = {
     title,
     slug,
@@ -268,7 +268,7 @@ function saveBlog(input, { isNew = false } = {}) {
   const slug = slugify(input.slug || input.title);
   requireFields({ ...input, slug }, ["title", "slug", "description", "date"], "blog");
   const file = blogFile(slug);
-  if (isNew && fs.existsSync(file)) throw new Error(`article "${slug}" already exists`);
+  if (isNew && (fs.existsSync(file) || Boolean(getVirtualFile(file)))) throw new Error(`article "${slug}" already exists`);
   const data = {
     type: "blog",
     title: String(input.title).trim(),
@@ -313,7 +313,7 @@ function saveJournal(input, { id, isNew = false } = {}) {
   requireFields(input, ["date", "title"], "journal");
   const nextId = id || journalId(input.date, input.title);
   const file = journalFile(nextId);
-  if (isNew && fs.existsSync(file)) throw new Error(`journal entry "${nextId}" already exists`);
+  if (isNew && (fs.existsSync(file) || Boolean(getVirtualFile(file)))) throw new Error(`journal entry "${nextId}" already exists`);
   const dateISO = String(input.date).slice(0, 10);
   const duplicate = loadJournal().find((item) => item.dateISO === dateISO && path.basename(item.file, ".md") !== nextId);
   if (duplicate) throw new Error(`a journal entry already exists for ${dateISO}`);
@@ -610,8 +610,14 @@ function listNotes() {
 function getNote(slugOrFilename) {
   const name = slugOrFilename.endsWith(".md") ? slugOrFilename : `${slugOrFilename}.md`;
   const file = path.join(CONTENT, "notes", name);
-  if (!fs.existsSync(file)) throw new Error(`Note not found: ${name}`);
-  const parsed = matter(fs.readFileSync(file, "utf8"));
+  const virt = getVirtualFile(file);
+  let parsed;
+  if (virt) {
+    parsed = matter(virt);
+  } else {
+    if (!fs.existsSync(file)) throw new Error(`Note not found: ${name}`);
+    parsed = matter(fs.readFileSync(file, "utf8"));
+  }
   return {
     filename: name,
     slug: path.basename(name, ".md"),
