@@ -188,6 +188,20 @@
     };
   }
 
+  /** Show an inline status message in .admin-main without a full re-render */
+  function showAdminMsg(text, isError = false) {
+    state.message = text;
+    let el = document.querySelector(".admin-main .admin-msg");
+    if (!el) {
+      el = document.createElement("p");
+      el.className = "admin-msg";
+      const main = document.querySelector(".admin-main");
+      if (main) main.insertBefore(el, main.firstChild);
+    }
+    el.textContent = text;
+    el.classList.toggle("error", isError);
+  }
+
   function formValue(form, name) {
     const field = form.elements[name];
     if (!field) return "";
@@ -1443,9 +1457,10 @@
         const aboutFormEl = document.querySelector('form[data-form="about"]');
         if (aboutFormEl) {
           const savedData = await onSubmit(aboutFormEl, "true");
-          if (state.content) state.content.about = savedData;
-          state.message = "Filtered editorial portrait saved and published to public site!";
-          await render();
+          if (state.content && savedData && typeof savedData === "object") {
+            state.content.about = { ...savedData, portrait: savedPath };
+          }
+          showAdminMsg("Filtered editorial portrait saved and published to public site!");
         } else {
           alert("Editorial portrait successfully cropped, filtered & saved!");
         }
@@ -1522,28 +1537,37 @@
 
     root.querySelectorAll(".portrait-picker-item").forEach((item) => {
       item.addEventListener("click", async () => {
-        const path = item.getAttribute("data-path");
+        const chosenPath = item.getAttribute("data-path");
+
+        // 1. Update the form input and preview in-place BEFORE the modal is removed
         const pathInput = document.getElementById("portrait-path-input");
-        if (pathInput) pathInput.value = path;
+        if (pathInput) pathInput.value = chosenPath;
         const previewBox = document.getElementById("portrait-studio-preview-box");
         if (previewBox) {
-          previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${path}" alt="Portrait Preview"><b></b>`;
+          previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${esc(chosenPath)}" alt="Portrait Preview"><b></b>`;
         }
+        // 2. Update in-memory state immediately
         if (state.content && state.content.about) {
-          state.content.about.portrait = path;
+          state.content.about.portrait = chosenPath;
         }
+        // 3. Close the modal
         root.remove();
-        
+
+        // 4. Persist to server — do NOT call render() afterward; the DOM is already correct
         const aboutFormEl = document.querySelector('form[data-form="about"]');
         if (aboutFormEl) {
+          // Show saving indicator inline
+          showAdminMsg("Saving portrait…");
           try {
             const savedData = await onSubmit(aboutFormEl, "true");
-            if (state.content) state.content.about = savedData;
-            state.message = "Portrait updated from library and saved!";
-            await render();
+            // Merge only known about fields back into state, preserving the chosen path
+            if (state.content && savedData && typeof savedData === "object") {
+              state.content.about = { ...savedData, portrait: chosenPath };
+            }
+            showAdminMsg("Portrait updated from library and saved!");
           } catch(err) {
             console.error("Auto-save about portrait failed:", err);
-            alert("Save portrait failed: " + err.message);
+            showAdminMsg("Save failed: " + err.message, true);
           }
         }
       });
@@ -2040,12 +2064,13 @@
         if (aboutFormEl) {
           try {
             const savedData = await onSubmit(aboutFormEl, "true");
-            if (state.content) state.content.about = savedData;
-            state.message = "Portrait removed and saved!";
-            await render();
+            if (state.content && savedData && typeof savedData === "object") {
+              state.content.about = { ...savedData, portrait: "" };
+            }
+            showAdminMsg("Portrait removed and saved!");
           } catch(err) {
             console.error("Auto-save removed portrait failed:", err);
-            alert("Remove portrait failed: " + err.message);
+            showAdminMsg("Remove portrait failed: " + err.message, true);
           }
         }
         return;
@@ -2230,9 +2255,10 @@
         const aboutFormEl = document.querySelector('form[data-form="about"]');
         if (aboutFormEl) {
           const savedData = await onSubmit(aboutFormEl, "true");
-          if (state.content) state.content.about = savedData;
-          state.message = "New portrait image uploaded and saved to Cloudflare R2!";
-          await render();
+          if (state.content && savedData && typeof savedData === "object") {
+            state.content.about = { ...savedData, portrait: uploadedPath };
+          }
+          showAdminMsg("New portrait image uploaded and saved to Cloudflare R2!");
         }
       } catch(err) {
         alert("Upload failed: " + err.message);
