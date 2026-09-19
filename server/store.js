@@ -412,8 +412,16 @@ function findMediaReferences(imgPath, imgName) {
   return refs;
 }
 
+const mediaBufferCache = new Map();
+
+function getMediaBuffer(relPath) {
+  const norm = String(relPath || "").replace(/\\/g, "/");
+  return mediaBufferCache.get(norm);
+}
+
 function listMedia() {
   const items = [];
+  const seenPaths = new Set();
   FOLDERS.forEach((folder) => {
     const dir = path.join(IMAGES, folder);
     if (!fs.existsSync(dir)) return;
@@ -423,6 +431,7 @@ function listMedia() {
       const stat = fs.statSync(file);
       if (!stat.isFile()) return;
       const imgPath = `/assets/images/${folder}/${name}`;
+      seenPaths.add(imgPath);
       const references = findMediaReferences(imgPath, name);
       items.push({
         folder,
@@ -434,6 +443,26 @@ function listMedia() {
       });
     });
   });
+
+  for (const [relPath, buf] of mediaBufferCache.entries()) {
+    const parts = relPath.split("/");
+    const folder = parts[parts.length - 2];
+    const name = parts[parts.length - 1];
+    const imgPath = `/assets/images/${folder}/${name}`;
+    if (!seenPaths.has(imgPath)) {
+      seenPaths.add(imgPath);
+      const references = findMediaReferences(imgPath, name);
+      items.push({
+        folder,
+        name,
+        path: imgPath,
+        size: buf.length,
+        updated: new Date().toISOString(),
+        references
+      });
+    }
+  }
+
   return items.sort((a, b) => a.path.localeCompare(b.path));
 }
 
@@ -450,7 +479,12 @@ function saveMedia({ folder, filename, data }) {
   if (!buf.length) throw new Error("empty file");
   if (buf.length > 4.5 * 1024 * 1024) throw new Error("file exceeds 4.5MB limit.");
   const dir = path.join(IMAGES, folder);
-  safeWriteFile(path.join(dir, name), buf, null);
+  const fullPath = path.join(dir, name);
+  safeWriteFile(fullPath, buf, null);
+
+  const relPath = `src/assets/images/${folder}/${name}`.replace(/\\/g, "/");
+  mediaBufferCache.set(relPath, buf);
+
   return { folder, name, path: `/assets/images/${folder}/${name}` };
 }
 
@@ -573,6 +607,7 @@ module.exports = {
   deleteNote,
   promoteNote,
   listMedia,
+  getMediaBuffer,
   saveMedia,
   removeMedia,
   loadProjects,

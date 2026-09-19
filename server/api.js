@@ -236,6 +236,12 @@ async function handle(req, res) {
           const filesToCommit = filePaths.map((fp) => {
             const abs = path.isAbsolute(fp) ? fp : path.join(env.ROOT, fp);
             const rel = path.relative(env.ROOT, abs).replace(/\\/g, "/");
+
+            const cachedBuf = store.getMediaBuffer ? store.getMediaBuffer(rel) : null;
+            if (cachedBuf) {
+              return { path: rel, content: cachedBuf.toString("base64"), isBase64: true };
+            }
+
             if (!fs.existsSync(abs)) {
               return { path: rel, isDelete: true };
             }
