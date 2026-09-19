@@ -317,13 +317,34 @@ function loadProjects() {
   return listMarkdown(path.join(CONTENT, "projects"))
     .map((file) => {
       const item = loadMarkdownFile(file, "project");
-      const art = item.art === "architecture" || item.art === "chart" ? item.art : "dots";
+      const art = item.art || "dots";
+      const customArt = item.customArt || "";
+      const artClassMap = {
+        chart: "line-chart",
+        architecture: "architecture",
+        bars: "data-bars",
+        scatter: "scatter-plot",
+        waves: "sine-waves",
+        matrix: "matrix-grid",
+        custom: "custom-art"
+      };
+      const rowArtClassMap = {
+        chart: "row-art-chart",
+        architecture: "row-art-architecture",
+        bars: "row-art-bars",
+        scatter: "row-art-scatter",
+        waves: "row-art-waves",
+        matrix: "row-art-matrix",
+        custom: "row-art-custom"
+      };
+      const artClass = artClassMap[art] || (customArt ? "custom-art" : "dots");
+      const rowArtClass = rowArtClassMap[art] || (customArt ? "row-art-custom" : "row-art-dots");
       return {
         ...item,
         art,
-        artClass: art === "chart" ? "line-chart" : art === "architecture" ? "architecture" : "dots",
-        rowArtClass:
-          art === "chart" ? "row-art-chart" : art === "architecture" ? "row-art-architecture" : "row-art-dots",
+        customArt,
+        artClass,
+        rowArtClass,
         url: `/projects/${item.slug}/`,
         techLabel: (item.technologies || []).map((tech) => String(tech).toUpperCase()).join(" / "),
         headline: item.headline && item.headline.length ? item.headline : [item.title.toUpperCase()],

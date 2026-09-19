@@ -15,7 +15,11 @@ title: Projects — Abantika
       {% for project in listed %}
       <a class="project-row" href="{{ project.url }}">
         <span>{{ project.number }}</span>
-        <div class="row-art {{ project.rowArtClass }}" aria-hidden="true"></div>
+        <div class="row-art {{ project.rowArtClass }}" aria-hidden="true">
+          {% if project.customArt or project.art == "custom" %}
+          <img src="{{ (project.customArt or project.cover) | urlFix }}" alt="" class="row-custom-art-img" />
+          {% endif %}
+        </div>
         <h2>{{ project.title | editorialBreak | safe }}</h2>
         <p>{{ project.techLabel }}</p>
         <b aria-hidden="true">→</b>

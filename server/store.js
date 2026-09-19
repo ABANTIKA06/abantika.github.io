@@ -160,8 +160,9 @@ function publicProject(item) {
     technologies: item.technologies || [],
     featured: Boolean(item.featured),
     published: Boolean(item.published),
-    art: item.art,
+    art: item.art || "dots",
     artLabel: item.artLabel || "",
+    customArt: item.customArt || "",
     cover: item.cover || "",
     github: item.github || "",
     live: item.live || "",
@@ -253,6 +254,9 @@ function saveProject(input, { isNew = false } = {}) {
   requireFields({ title, slug, description, date, category, technologies }, ["title", "slug", "description", "date", "category", "technologies"], "project");
   const file = projectFile(slug);
   if (isNew && (fs.existsSync(file) || Boolean(getVirtualFile(file)))) throw new Error(`project "${slug}" already exists`);
+  const validArt = ["dots", "architecture", "chart", "bars", "scatter", "waves", "matrix", "custom"];
+  const art = validArt.includes(input.art) ? input.art : "dots";
+  const customArt = String(input.customArt || "").trim();
   const data = {
     title,
     slug,
@@ -265,8 +269,9 @@ function saveProject(input, { isNew = false } = {}) {
     technologies,
     featured: bool(input.featured),
     published: bool(input.published),
-    art: ["architecture", "chart", "dots"].includes(input.art) ? input.art : "dots",
+    art,
     artLabel: String(input.artLabel || "").trim(),
+    customArt,
     cover: String(input.cover || "").trim(),
     github: String(input.github || "").trim(),
     live: String(input.live || "").trim(),

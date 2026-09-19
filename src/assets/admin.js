@@ -719,13 +719,25 @@
         ${area("SUMMARY", "summary", item.summary || "")}
         ${area("TECHNOLOGIES (ONE PER LINE)", "technologies", (item.technologies || []).join("\n"), "", true)}
         ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
-        ${sel("ART", "art", item.art || "dots", [
-          { value: "dots", label: "DOTS" },
-          { value: "architecture", label: "ARCHITECTURE" },
-          { value: "chart", label: "CHART" }
+        ${sel("ART VISUALIZATION STYLE", "art", item.art || "dots", [
+          { value: "dots", label: "DOTS GRID (DEFAULT)" },
+          { value: "architecture", label: "BAUHAUS ARCHITECTURE" },
+          { value: "chart", label: "LINE CHART" },
+          { value: "bars", label: "DATA BARS" },
+          { value: "scatter", label: "SCATTER PLOT" },
+          { value: "waves", label: "SINE WAVES" },
+          { value: "matrix", label: "MATRIX GRID" },
+          { value: "custom", label: "CUSTOM UPLOADED ART (IMAGE / SVG)" }
         ])}
-        ${input("ART LABEL", "artLabel", item.artLabel || "")}
-        ${input("COVER PATH", "cover", item.cover || "")}
+        ${input("CUSTOM ART IMAGE/SVG PATH", "customArt", item.customArt || "", 'id="field-customArt"')}
+        <div style="margin:-8px 0 16px;display:flex;gap:10px">
+          <button type="button" class="admin-btn" data-act="pick-custom-art">CHOOSE / UPLOAD CUSTOM ARTWORK ↗</button>
+        </div>
+        ${input("ART CAPTION / LABEL", "artLabel", item.artLabel || "")}
+        ${input("COVER PATH", "cover", item.cover || "", 'id="field-cover"')}
+        <div style="margin:-8px 0 16px;display:flex;gap:10px">
+          <button type="button" class="admin-btn" data-act="pick-cover">CHOOSE COVER IMAGE ↗</button>
+        </div>
         ${input("GITHUB URL", "github", item.github || "")}
         ${input("LIVE URL", "live", item.live || "")}
         ${sections}
@@ -919,6 +931,127 @@
         <div class="admin-actions"><button class="admin-btn primary" type="submit">SAVE SKILLS <b>→</b></button></div>
       </form>`
     );
+  }
+
+  async function showMediaSelectModal(onSelect) {
+    document.querySelector(".admin-modal-root")?.remove();
+    let mediaFiles = [];
+    try {
+      const res = await api("/api/media");
+      mediaFiles = Array.isArray(res) ? res : (Array.isArray(state.content?.media) ? state.content.media : []);
+    } catch(e) {
+      mediaFiles = Array.isArray(state.content?.media) ? state.content.media : [];
+    }
+
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal image-picker-modal" role="dialog" aria-modal="true" style="width:min(680px, 100%)">
+        <p class="admin-kicker">07 / ARTWORK & MEDIA PICKER</p>
+        <h2 style="margin-bottom:12px">SELECT OR UPLOAD ARTWORK<span class="red-stop">.</span></h2>
+        
+        <div class="image-picker-tabs" style="display:flex;gap:6px;margin-bottom:14px">
+          <button type="button" class="wysiwyg-tab active" data-img-tab="library">SELECT FROM MEDIA LIBRARY</button>
+          <button type="button" class="wysiwyg-tab" data-img-tab="upload">UPLOAD NEW ART / IMAGE</button>
+        </div>
+
+        <div class="image-picker-pane" id="img-pane-library">
+          <div class="admin-media-grid-picker" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:10px;max-height:220px;overflow-y:auto;border:1px solid var(--line);padding:10px">
+            ${mediaFiles.length ? mediaFiles.map((f) => `
+              <div class="picker-item" data-path="${esc(f.path)}" style="border:1px solid var(--line);padding:6px;cursor:pointer;background:#f7f5ef">
+                <img src="${esc(f.path)}" alt="${esc(f.name)}" style="width:100%;height:70px;object-fit:cover">
+                <span style="font:9px var(--mono);display:block;margin-top:4px;word-break:break-all">${esc(f.name)}</span>
+              </div>
+            `).join("") : `<p style="font:11px var(--mono)">No images in library yet.</p>`}
+          </div>
+        </div>
+
+        <div class="image-picker-pane" id="img-pane-upload" style="display:none">
+          <label style="display:block;margin-bottom:10px;font:10px var(--mono)">FOLDER
+            <select id="picker-folder"><option>projects</option><option>blog</option><option>journal</option><option>about</option></select>
+          </label>
+          <label style="display:block;margin-bottom:10px;font:10px var(--mono)">CHOOSE ART / IMAGE FILE (SVG / PNG / JPG / WEBP)
+            <input type="file" id="picker-file" accept="image/*,.svg">
+          </label>
+          <button type="button" class="admin-btn" id="picker-upload-btn">UPLOAD TO LIBRARY <b>→</b></button>
+        </div>
+
+        <div style="margin-top:16px">
+          <label style="font:10px var(--mono)">SELECTED ART / IMAGE PATH
+            <input type="text" id="picker-selected-path" placeholder="/assets/images/projects/art.svg">
+          </label>
+        </div>
+
+        <div class="admin-actions" style="margin-top:20px">
+          <button type="button" class="admin-btn" data-dismiss="true">CANCEL</button>
+          <button type="button" class="admin-btn primary" id="picker-select-btn">USE THIS ARTWORK <b>→</b></button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(root);
+
+    let selectedPath = "";
+
+    const bindPickerItems = () => {
+      root.querySelectorAll(".picker-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          root.querySelectorAll(".picker-item").forEach((i) => (i.style.borderColor = "var(--line)"));
+          item.style.borderColor = "var(--red)";
+          selectedPath = item.getAttribute("data-path");
+          root.querySelector("#picker-selected-path").value = selectedPath;
+        });
+      });
+    };
+    bindPickerItems();
+
+    root.querySelectorAll("[data-img-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        root.querySelectorAll("[data-img-tab]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.getAttribute("data-img-tab");
+        root.querySelector("#img-pane-library").style.display = tab === "library" ? "block" : "none";
+        root.querySelector("#img-pane-upload").style.display = tab === "upload" ? "block" : "none";
+      });
+    });
+
+    root.querySelector("#picker-upload-btn")?.addEventListener("click", async () => {
+      const fileInput = root.querySelector("#picker-file");
+      const folderSelect = root.querySelector("#picker-folder");
+      const file = fileInput.files[0];
+      if (!file) { alert("Select a file first."); return; }
+      try {
+        let payload;
+        if (file.type && file.type.includes("svg")) {
+          const text = await file.text();
+          const base64 = btoa(unescape(encodeURIComponent(text)));
+          payload = { folder: folderSelect.value, filename: file.name, data: `data:image/svg+xml;base64,${base64}` };
+        } else {
+          const { dataUrl, filename } = await convertToWebp(file);
+          payload = { folder: folderSelect.value, filename, data: dataUrl };
+        }
+        const res = await api("/api/media", { method: "POST", body: payload });
+        selectedPath = res.path;
+        root.querySelector("#picker-selected-path").value = selectedPath;
+        alert("Artwork uploaded successfully!");
+      } catch (err) {
+        alert("Upload failed: " + err.message);
+      }
+    });
+
+    root.querySelector("#picker-select-btn")?.addEventListener("click", () => {
+      const pathVal = root.querySelector("#picker-selected-path").value.trim() || selectedPath;
+      if (pathVal) {
+        root.remove();
+        onSelect(pathVal);
+      } else {
+        alert("Please select or upload an image first.");
+      }
+    });
+
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-dismiss]")) root.remove();
+    });
   }
 
   async function showImagePickerModal(wrapper) {
@@ -1931,6 +2064,7 @@
         headline: formValue(form, "headline"),
         art: formValue(form, "art"),
         artLabel: formValue(form, "artLabel"),
+        customArt: formValue(form, "customArt"),
         cover: formValue(form, "cover"),
         github: formValue(form, "github"),
         live: formValue(form, "live"),
@@ -2244,6 +2378,18 @@
         if (name === "preview-project") { syncAllWysiwyg(act.closest("form")); projectPreview(act.closest("form")); }
         if (name === "preview-blog") { syncAllWysiwyg(act.closest("form")); blogPreview(act.closest("form")); }
         if (name === "preview-journal") { syncAllWysiwyg(act.closest("form")); journalPreview(act.closest("form")); }
+        if (name === "pick-custom-art") {
+          showMediaSelectModal((selectedPath) => {
+            const input = document.getElementById("field-customArt");
+            if (input) input.value = selectedPath;
+          });
+        }
+        if (name === "pick-cover") {
+          showMediaSelectModal((selectedPath) => {
+            const input = document.getElementById("field-cover");
+            if (input) input.value = selectedPath;
+          });
+        }
         if (name === "delete-project") {
           const form = act.closest("form");
           const slug = act.getAttribute("data-slug") || form?.getAttribute("data-slug");

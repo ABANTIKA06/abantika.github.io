@@ -33,7 +33,13 @@ eleventyComputed:
       </div>
       {% endif %}
     </header>
-    <div class="case-art {{ project.artClass }}" aria-label="Abstract project visualization">{% if project.art != "dots" %}<span></span>{% endif %}<p class="case-art-label">{{ project.artLabel }}</p></div>
+    <div class="case-art {{ project.artClass }}" aria-label="Abstract project visualization">
+      {% if project.customArt or project.art == "custom" %}
+      <img src="{{ (project.customArt or project.cover) | urlFix }}" alt="{{ project.artLabel or project.title }}" class="custom-art-img" />
+      {% endif %}
+      {% if project.art != "dots" and project.art != "custom" and not project.customArt %}<span></span>{% endif %}
+      <p class="case-art-label">{{ project.artLabel }}</p>
+    </div>
     <div class="detail-with-share">
       <article class="case-body">
         {% for section in project.sections %}
