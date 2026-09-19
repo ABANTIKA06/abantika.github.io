@@ -720,14 +720,18 @@
         ${area("TECHNOLOGIES (ONE PER LINE)", "technologies", (item.technologies || []).join("\n"), "", true)}
         ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
         ${sel("ART VISUALIZATION STYLE", "art", item.art || "dots", [
-          { value: "dots", label: "DOTS GRID (DEFAULT)" },
-          { value: "architecture", label: "BAUHAUS ARCHITECTURE" },
-          { value: "chart", label: "LINE CHART" },
-          { value: "bars", label: "DATA BARS" },
-          { value: "scatter", label: "SCATTER PLOT" },
-          { value: "waves", label: "SINE WAVES" },
-          { value: "matrix", label: "MATRIX GRID" },
-          { value: "custom", label: "CUSTOM UPLOADED ART (IMAGE / SVG)" }
+          { value: "dots", label: "01 — ORBITAL DOTS / CONSTELLATION" },
+          { value: "architecture", label: "02 — SYSTEM MESH / ARCHITECTURE" },
+          { value: "chart", label: "03 — TREND LINE / ANALYTICAL CHART" },
+          { value: "bars", label: "04 — SPECTRAL BARS / FREQUENCY" },
+          { value: "scatter", label: "05 — CORRELATION CLUSTER / SCATTER" },
+          { value: "waves", label: "06 — SINE WAVES / HARMONIC DYNAMICS" },
+          { value: "matrix", label: "07 — NEURAL MATRIX / BINARY FIELD" },
+          { value: "geometric", label: "08 — VORONOI MESH / GEOMETRIC" },
+          { value: "circuit", label: "09 — QUANTUM CIRCUIT / LOGIC NODES" },
+          { value: "radial", label: "10 — RADIAL BURST / PHASOR VECTOR" },
+          { value: "heatmap", label: "11 — DENSITY MATRIX / HEATMAP" },
+          { value: "custom", label: "12 — CUSTOM IMAGE / UPLOADED ARTWORK ↗" }
         ])}
         ${input("CUSTOM ART IMAGE/SVG PATH", "customArt", item.customArt || "", 'id="field-customArt"')}
         <div style="margin:-8px 0 16px;display:flex;gap:10px">

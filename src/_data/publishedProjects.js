@@ -1,6 +1,6 @@
 try { require("./stamp.json"); } catch (e) {}
-const { loadAllContent } = require("../lib/content");
 
 module.exports = function () {
+  const { loadAllContent } = require("../lib/content");
   return loadAllContent().projects.filter((item) => item.published);
 };

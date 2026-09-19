@@ -320,21 +320,31 @@ function loadProjects() {
       const art = item.art || "dots";
       const customArt = item.customArt || "";
       const artClassMap = {
-        chart: "line-chart",
+        dots: "dots",
         architecture: "architecture",
+        chart: "line-chart",
         bars: "data-bars",
         scatter: "scatter-plot",
         waves: "sine-waves",
         matrix: "matrix-grid",
+        geometric: "geometric-mesh",
+        circuit: "circuit-nodes",
+        radial: "radial-burst",
+        heatmap: "heatmap-grid",
         custom: "custom-art"
       };
       const rowArtClassMap = {
-        chart: "row-art-chart",
+        dots: "row-art-dots",
         architecture: "row-art-architecture",
+        chart: "row-art-chart",
         bars: "row-art-bars",
         scatter: "row-art-scatter",
         waves: "row-art-waves",
         matrix: "row-art-matrix",
+        geometric: "row-art-geometric",
+        circuit: "row-art-circuit",
+        radial: "row-art-radial",
+        heatmap: "row-art-heatmap",
         custom: "row-art-custom"
       };
       const artClass = artClassMap[art] || (customArt ? "custom-art" : "dots");

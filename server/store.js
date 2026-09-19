@@ -254,7 +254,7 @@ function saveProject(input, { isNew = false } = {}) {
   requireFields({ title, slug, description, date, category, technologies }, ["title", "slug", "description", "date", "category", "technologies"], "project");
   const file = projectFile(slug);
   if (isNew && (fs.existsSync(file) || Boolean(getVirtualFile(file)))) throw new Error(`project "${slug}" already exists`);
-  const validArt = ["dots", "architecture", "chart", "bars", "scatter", "waves", "matrix", "custom"];
+  const validArt = ["dots", "architecture", "chart", "bars", "scatter", "waves", "matrix", "geometric", "circuit", "radial", "heatmap", "custom"];
   const art = validArt.includes(input.art) ? input.art : "dots";
   const customArt = String(input.customArt || "").trim();
   const data = {
