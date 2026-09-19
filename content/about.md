@@ -1,6 +1,6 @@
 ---
 title: 'A blend of analysis, creativity and curiosity.'
-portrait: '/assets/images/about/photo_2026-01-26_17-39-34.jpg'
+portrait: 'https://pub-65f85f4baefb46c4b29927f0c91b7302.r2.dev/about/test.jpg'
 headline:
   - A BLEND OF
   - 'ANALYSIS,'
@@ -11,9 +11,7 @@ homeHeadline:
   - 'ANALYSIS, CREATIVITY'
   - AND CURIOSITY
 intro: Analyzing data for Insights
-homeSummary: >-
-  [PLACEHOLDER — Replace this short biography with Abantika’s real background,
-  interests, and approach to analytical work.]
+homeSummary: Analyzing data for Insights
 approachEyebrow: A WORKING APPROACH
 approachHeadline:
   - LOOK CLOSELY.
