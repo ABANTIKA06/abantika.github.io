@@ -12,7 +12,7 @@ technologies:
   - PLOTLY
   - MATPLOTLIB
 featured: false
-published: true
+published: false
 art: dots
 artLabel: ''
 cover: ''
