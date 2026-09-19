@@ -1,6 +1,6 @@
 <header class="site-header" aria-label="Main navigation">
   <a class="brand" href="/" aria-label="{{ site.shortName }} home"><span>{{ site.shortName | upper }}</span><small>{{ site.role | upper }}</small></a>
-  <nav class="main-nav" aria-label="Primary navigation">
+  <nav class="main-nav" id="main-nav" aria-label="Primary navigation">
     <a href="/" {% if page.url == "/" %}class="active" aria-current="page"{% endif %}><i>01</i> HOME</a>
     <a href="/about/" {% if page.url == "/about/" %}class="active" aria-current="page"{% endif %}><i>02</i> ABOUT</a>
     <a href="/projects/" {% if page.url.startsWith("/projects/") %}class="active" aria-current="page"{% endif %}><i>03</i> PROJECTS</a>
@@ -10,18 +10,26 @@
     <a href="/contact/" {% if page.url == "/contact/" %}class="active" aria-current="page"{% endif %}><i>07</i> CONTACT</a>
   </nav>
 
-  <div class="header-search-box" id="header-search-box">
-    <button type="button" class="search-icon-btn" aria-label="Search portfolio" id="search-toggle-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-    </button>
-    <div class="search-input-wrapper">
-      <input type="text" id="site-search-input" placeholder="SEARCH PORTFOLIO..." autocomplete="off" spellcheck="false">
-      <span class="search-status-badge" id="search-status-badge">SEARCH</span>
+  <div class="header-right-controls">
+    <div class="header-search-box" id="header-search-box">
+      <button type="button" class="search-icon-btn" aria-label="Search portfolio" id="search-toggle-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+      <div class="search-input-wrapper">
+        <input type="text" id="site-search-input" placeholder="SEARCH PORTFOLIO..." autocomplete="off" spellcheck="false">
+        <span class="search-status-badge" id="search-status-badge">SEARCH</span>
+      </div>
+      <div class="search-results-pane" id="search-results-pane" style="display:none"></div>
     </div>
-    <div class="search-results-pane" id="search-results-pane" style="display:none"></div>
+
+    <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span class="menu-bar"></span>
+      <span class="menu-bar"></span>
+      <span class="menu-bar"></span>
+    </button>
   </div>
 
   <span class="header-dot" aria-hidden="true"></span>

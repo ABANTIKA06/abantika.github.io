@@ -297,6 +297,24 @@
           });
         }
 
+        var mobileBtn = document.getElementById("mobile-menu-btn");
+        var mainNav = document.getElementById("main-nav");
+        if (mobileBtn && mainNav) {
+          mobileBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var isOpen = mainNav.classList.toggle("mobile-open");
+            mobileBtn.classList.toggle("active", isOpen);
+            mobileBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          });
+          document.addEventListener("click", function (e) {
+            if (!mainNav.contains(e.target) && !mobileBtn.contains(e.target)) {
+              mainNav.classList.remove("mobile-open");
+              mobileBtn.classList.remove("active");
+              mobileBtn.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+
         var videos = document.querySelectorAll("video[data-hover-play]");
         videos.forEach(function (video) {
           video.muted = true;
