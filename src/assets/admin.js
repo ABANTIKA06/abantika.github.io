@@ -448,21 +448,29 @@
     let pct = 15;
     const interval = setInterval(() => {
       if (pct < 85) {
-        pct += Math.floor(Math.random() * 10) + 6;
+        pct += Math.floor(Math.random() * 8) + 4;
         if (pct > 85) pct = 85;
-        const bar = document.getElementById("admin-pbar");
-        const txt = document.getElementById("admin-ppercent");
-        if (bar) bar.style.width = pct + "%";
-        if (txt) txt.textContent = pct + "%";
+      } else if (pct < 98) {
+        pct += 1;
+        const statusEl = document.getElementById("admin-pstatus");
+        if (statusEl && pct > 88) {
+          statusEl.textContent = "COMMITTING TO GITHUB & VERCEL EDGE...";
+        }
       }
-    }, 180);
+      const bar = document.getElementById("admin-pbar");
+      const txt = document.getElementById("admin-ppercent");
+      if (bar) bar.style.width = pct + "%";
+      if (txt) txt.textContent = pct + "%";
+    }, 250);
     return {
       finish: (successTitle, successCopy, viewUrl) => {
         clearInterval(interval);
         const bar = document.getElementById("admin-pbar");
         const txt = document.getElementById("admin-ppercent");
+        const statusEl = document.getElementById("admin-pstatus");
         if (bar) bar.style.width = "100%";
         if (txt) txt.textContent = "100%";
+        if (statusEl) statusEl.textContent = "COMPLETE!";
         setTimeout(() => {
           showSuccessModal({
             kicker: "00 / SUCCESSFUL",
@@ -470,7 +478,7 @@
             copy: successCopy || "Changes committed and static site rebuilt.",
             viewUrl
           });
-        }, 250);
+        }, 200);
       },
       fail: (errMessage) => {
         clearInterval(interval);
