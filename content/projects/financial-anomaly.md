@@ -1,7 +1,7 @@
 ---
 title: FINANCIAL ANOMALY
 slug: financial-anomaly
-number: '00'
+number: '01'
 date: '2026-09-19'
 year: 2026
 category: FINANCE ANALYSIS
@@ -14,7 +14,7 @@ technologies:
   - PLOTLY
 featured: true
 published: true
-art: bars
+art: radial
 artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
 customArt: ''
 cover: ''
