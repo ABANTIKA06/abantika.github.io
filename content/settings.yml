@@ -1,14 +1,20 @@
 name: Abantika
 role: Data Analyst · Data Scientist
 siteTitle: Abantika — Data Analyst & Data Scientist
-url: https://abantika-xplore.vercel.app
+url: 'https://abantika-xplore.vercel.app'
 email: hello@example.com
-linkedin: ""
-github: ""
-description: Abantika is a data analyst and data scientist turning data into clear insights and real impact.
-ogDescription: An editorial portfolio of data work, research, and analytical notes.
-heroLede: I’m a data analyst and data scientist who finds patterns, solves problems and builds data-driven solutions that make a difference.
-contactBlurb: Have a question, an opportunity, or just want to talk about data? I’d love to hear from you.
+linkedin: ''
+github: ''
+description: >-
+  Abantika is a data analyst and data scientist turning data into clear insights
+  and real impact.
+ogDescription: ''
+heroLede: >-
+  I’m a data analyst and data scientist who finds patterns, solves problems and
+  builds data-driven solutions that make a difference.
+contactBlurb: >-
+  Have a question, an opportunity, or just want to talk about data? I’d love to
+  hear from you.
 availability:
   - OPEN TO OPPORTUNITIES
   - WORLDWIDE
