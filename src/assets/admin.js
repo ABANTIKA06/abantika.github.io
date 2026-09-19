@@ -12,15 +12,27 @@
       .replace(/"/g, "&quot;");
 
   async function api(path, opts = {}) {
-    const res = await fetch(path, {
-      credentials: "include",
-      headers: { "content-type": "application/json", ...(opts.headers || {}) },
-      ...opts,
-      body: opts.body && typeof opts.body !== "string" ? JSON.stringify(opts.body) : opts.body
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || res.statusText);
-    return data;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    try {
+      const res = await fetch(path, {
+        credentials: "include",
+        signal: controller.signal,
+        headers: { "content-type": "application/json", ...(opts.headers || {}) },
+        ...opts,
+        body: opts.body && typeof opts.body !== "string" ? JSON.stringify(opts.body) : opts.body
+      });
+      clearTimeout(timer);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    } catch(err) {
+      clearTimeout(timer);
+      if (err.name === "AbortError") {
+        throw new Error("Request timed out. Please try again.");
+      }
+      throw err;
+    }
   }
 
   function convertToWebp(file, maxDimension = 1440, quality = 0.80) {
@@ -462,8 +474,15 @@
       if (bar) bar.style.width = pct + "%";
       if (txt) txt.textContent = pct + "%";
     }, 40);
+    const watchdogTimer = setTimeout(() => {
+      clearInterval(interval);
+      root.remove();
+      alert("Save operation took longer than expected. Please check your connection or credentials.");
+    }, 12000);
+
     return {
       finish: (successTitle, successCopy, viewUrl) => {
+        clearTimeout(watchdogTimer);
         clearInterval(interval);
         const bar = document.getElementById("admin-pbar");
         const txt = document.getElementById("admin-ppercent");
@@ -481,6 +500,7 @@
         }, 200);
       },
       fail: (errMessage) => {
+        clearTimeout(watchdogTimer);
         clearInterval(interval);
         root.remove();
         state.error = errMessage;

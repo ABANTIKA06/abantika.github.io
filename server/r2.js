@@ -1,4 +1,5 @@
 const { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
+const { NodeHttpHandler } = require("@smithy/node-http-handler");
 const env = require("./env");
 
 function getCredentials() {
@@ -23,6 +24,10 @@ function getR2Client() {
     endpoint: `https://${creds.accountId}.r2.cloudflarestorage.com`,
     forcePathStyle: true,
     maxAttempts: 1,
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: 2000,
+      requestTimeout: 2500
+    }),
     credentials: {
       accessKeyId: creds.accessKeyId,
       secretAccessKey: creds.secretAccessKey
