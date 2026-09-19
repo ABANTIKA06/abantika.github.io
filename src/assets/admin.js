@@ -1429,12 +1429,17 @@
           previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${savedPath}" alt="Portrait Preview"><b></b>`;
         }
 
+        if (state.content && state.content.about) {
+          state.content.about.portrait = savedPath;
+        }
+
         modal.style.display = "none";
 
         // Auto-submit the About form to persist portrait path to content/about.md and rebuild public site
         const aboutFormEl = document.querySelector('form[data-form="about"]');
         if (aboutFormEl) {
-          await onSubmit(aboutFormEl, "true");
+          const savedData = await onSubmit(aboutFormEl, "true");
+          if (state.content) state.content.about = savedData;
           state.message = "Filtered editorial portrait saved and published to public site!";
           await render();
         } else {
@@ -1520,16 +1525,21 @@
         if (previewBox) {
           previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${path}" alt="Portrait Preview"><b></b>`;
         }
+        if (state.content && state.content.about) {
+          state.content.about.portrait = path;
+        }
         root.remove();
         
         const aboutFormEl = document.querySelector('form[data-form="about"]');
         if (aboutFormEl) {
           try {
-            await onSubmit(aboutFormEl, "true");
+            const savedData = await onSubmit(aboutFormEl, "true");
+            if (state.content) state.content.about = savedData;
             state.message = "Portrait updated from library and saved!";
             await render();
           } catch(err) {
             console.error("Auto-save about portrait failed:", err);
+            alert("Save portrait failed: " + err.message);
           }
         }
       });
@@ -1874,7 +1884,7 @@
         }
       });
       state.message = "About saved. Open VIEW SITE to see it on the homepage and About page.";
-      state.content = null;
+      if (state.content) state.content.about = res;
       return res;
     }
     if (type === "settings") {
@@ -2013,14 +2023,19 @@
         if (previewBox) {
           previewBox.innerHTML = `<div class="portrait-placeholder-box"><span>PORTRAIT<br>PLACEHOLDER</span></div><b></b>`;
         }
+        if (state.content && state.content.about) {
+          state.content.about.portrait = "";
+        }
         const aboutFormEl = document.querySelector('form[data-form="about"]');
         if (aboutFormEl) {
           try {
-            await onSubmit(aboutFormEl, "true");
+            const savedData = await onSubmit(aboutFormEl, "true");
+            if (state.content) state.content.about = savedData;
             state.message = "Portrait removed and saved!";
             await render();
           } catch(err) {
             console.error("Auto-save removed portrait failed:", err);
+            alert("Remove portrait failed: " + err.message);
           }
         }
         return;
