@@ -409,6 +409,38 @@ async function handle(req, res) {
       send(res, 200, presigned);
       return true;
     }
+    if (route === "POST /api/media-chunk") {
+      const { uploadId, folder, filename, chunkIndex, totalChunks, data } = body;
+      if (!uploadId || !filename || data === undefined) {
+        send(res, 400, { error: "Invalid chunk payload" });
+        return true;
+      }
+
+      global.chunkBufferCache = global.chunkBufferCache || new Map();
+      let session = global.chunkBufferCache.get(uploadId);
+      if (!session) {
+        session = { folder: folder || "about", filename, totalChunks, chunks: new Array(totalChunks), received: 0 };
+        global.chunkBufferCache.set(uploadId, session);
+      }
+
+      const buf = Buffer.from(String(data || "").replace(/^data:[^;]+;base64,/, ""), "base64");
+      session.chunks[chunkIndex] = buf;
+      session.received += 1;
+
+      if (session.received >= totalChunks) {
+        global.chunkBufferCache.delete(uploadId);
+        const completeBuffer = Buffer.concat(session.chunks);
+        const resData = await store.saveMediaBuffer({ folder: session.folder, filename: session.filename, buffer: completeBuffer });
+        await saved(resData, {
+          commitMessage: `media: add ${resData.name}`,
+          filePaths: [path.join("src", "assets", "images", resData.folder, resData.name)]
+        });
+        return true;
+      }
+
+      send(res, 200, { ok: true, received: session.received, totalChunks });
+      return true;
+    }
     if (route === "POST /api/media") {
       const resData = await store.saveMedia(body);
       await saved(resData, {

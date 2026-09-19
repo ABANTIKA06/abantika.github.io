@@ -473,15 +473,14 @@ function safeName(name) {
   return base;
 }
 
-async function saveMedia({ folder, filename, data }) {
+async function saveMediaBuffer({ folder, filename, buffer }) {
   if (!FOLDERS.includes(folder)) throw new Error("invalid media folder");
   const name = safeName(filename);
-  const buf = Buffer.from(String(data || "").replace(/^data:[^;]+;base64,/, ""), "base64");
-  if (!buf.length) throw new Error("empty file");
-  if (buf.length > 25 * 1024 * 1024) throw new Error("file exceeds 25MB limit.");
+  if (!buffer || !buffer.length) throw new Error("empty file");
+  if (buffer.length > 30 * 1024 * 1024) throw new Error("file exceeds 30MB limit.");
 
   const relPath = `src/assets/images/${folder}/${name}`.replace(/\\/g, "/");
-  mediaBufferCache.set(relPath, buf);
+  mediaBufferCache.set(relPath, buffer);
 
   if (r2.isConfigured()) {
     try {
@@ -494,7 +493,7 @@ async function saveMedia({ folder, filename, data }) {
         : ext === ".svg" ? "image/svg+xml"
         : ext === ".gif" ? "image/gif"
         : "application/octet-stream";
-      const uploaded = await r2.uploadMedia({ folder, filename: name, buffer: buf, contentType });
+      const uploaded = await r2.uploadMedia({ folder, filename: name, buffer, contentType });
       return { folder, name, path: uploaded.path, r2: true };
     } catch (err) {
       console.error("Cloudflare R2 upload error, falling back to local/git:", err);
@@ -503,9 +502,14 @@ async function saveMedia({ folder, filename, data }) {
 
   const dir = path.join(IMAGES, folder);
   const fullPath = path.join(dir, name);
-  safeWriteFile(fullPath, buf, null);
+  safeWriteFile(fullPath, buffer, null);
 
   return { folder, name, path: `/assets/images/${folder}/${name}` };
+}
+
+async function saveMedia({ folder, filename, data }) {
+  const buf = Buffer.from(String(data || "").replace(/^data:[^;]+;base64,/, ""), "base64");
+  return saveMediaBuffer({ folder, filename, buffer: buf });
 }
 
 async function removeMedia({ folder, filename, force }) {
@@ -640,6 +644,7 @@ module.exports = {
   listMedia,
   getMediaBuffer,
   saveMedia,
+  saveMediaBuffer,
   removeMedia,
   loadProjects,
   loadBlog,

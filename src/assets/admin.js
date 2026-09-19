@@ -35,7 +35,7 @@
     }
   }
 
-  function convertToWebp(file) {
+  function convertToWebp(file, maxDimension = 1440, quality = 0.80) {
     return new Promise((resolve, reject) => {
       if (!file) {
         reject(new Error("No file provided."));
@@ -46,10 +46,52 @@
         return;
       }
       const sanitizeName = (name) => path.basename(String(name || "")).replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
-      const reader = new FileReader();
-      reader.onload = () => resolve({ dataUrl: reader.result, filename: sanitizeName(file.name) });
-      reader.onerror = () => reject(new Error("Failed to read file."));
-      reader.readAsDataURL(file);
+
+      const isRasterImage = file.type && file.type.startsWith("image/") && !file.type.includes("svg");
+      if (isRasterImage) {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          let webpDataUrl = "";
+          try {
+            webpDataUrl = canvas.toDataURL("image/webp", quality);
+          } catch(e) {}
+          if (webpDataUrl && webpDataUrl.startsWith("data:image/webp")) {
+            const baseName = sanitizeName(file.name.replace(/\.[^/.]+$/, ""));
+            resolve({ dataUrl: webpDataUrl, filename: `${baseName}.webp` });
+            return;
+          }
+          readRaw();
+        };
+        img.onerror = () => readRaw();
+        img.src = url;
+        return;
+      }
+
+      function readRaw() {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ dataUrl: reader.result, filename: sanitizeName(file.name) });
+        reader.onerror = () => reject(new Error("Failed to read file."));
+        reader.readAsDataURL(file);
+      }
+      readRaw();
     });
   }
 
@@ -1648,8 +1690,23 @@
 
       if (!uploadedPath) {
         const { dataUrl, filename } = await convertToWebp(file);
-        const res = await api("/api/media", { method: "POST", body: { folder, filename, data: dataUrl } });
-        uploadedPath = res.path;
+        const CHUNK_SIZE = 1.5 * 1024 * 1024;
+        if (dataUrl.length <= CHUNK_SIZE) {
+          const res = await api("/api/media", { method: "POST", body: { folder, filename, data: dataUrl } });
+          uploadedPath = res.path;
+        } else {
+          const uploadId = `up-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+          const totalChunks = Math.ceil(dataUrl.length / CHUNK_SIZE);
+          let lastRes = {};
+          for (let i = 0; i < totalChunks; i++) {
+            const chunkData = dataUrl.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+            lastRes = await api("/api/media-chunk", {
+              method: "POST",
+              body: { uploadId, folder, filename, chunkIndex: i, totalChunks, data: chunkData }
+            });
+          }
+          uploadedPath = lastRes.path || `/assets/images/${folder}/${filename}`;
+        }
       }
 
       state.mediaPreviewCache = state.mediaPreviewCache || {};
