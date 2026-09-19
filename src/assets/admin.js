@@ -1123,8 +1123,27 @@
       updateStudioUiControls();
       drawPortraitStudioCanvas();
     };
-    img.onerror = () => {
-      drawPortraitStudioCanvas();
+    img.onerror = async () => {
+      try {
+        const resp = await fetch(src);
+        const blob = await resp.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const fallbackImg = new Image();
+          fallbackImg.onload = () => {
+            portraitStudioState.activeImg = fallbackImg;
+            portraitStudioState.zoom = 100;
+            portraitStudioState.panX = 0;
+            portraitStudioState.panY = 0;
+            updateStudioUiControls();
+            drawPortraitStudioCanvas();
+          };
+          fallbackImg.src = reader.result;
+        };
+        reader.readAsDataURL(blob);
+      } catch (e) {
+        drawPortraitStudioCanvas();
+      }
     };
     img.src = src;
   }
@@ -1493,7 +1512,7 @@
     document.body.appendChild(root);
 
     root.querySelectorAll(".portrait-picker-item").forEach((item) => {
-      item.addEventListener("click", () => {
+      item.addEventListener("click", async () => {
         const path = item.getAttribute("data-path");
         const pathInput = document.getElementById("portrait-path-input");
         if (pathInput) pathInput.value = path;
@@ -1502,7 +1521,17 @@
           previewBox.innerHTML = `<img id="portrait-studio-active-img" src="${path}" alt="Portrait Preview"><b></b>`;
         }
         root.remove();
-        openPortraitStudio(path);
+        
+        const aboutFormEl = document.querySelector('form[data-form="about"]');
+        if (aboutFormEl) {
+          try {
+            await onSubmit(aboutFormEl, "true");
+            state.message = "Portrait updated from library and saved!";
+            await render();
+          } catch(err) {
+            console.error("Auto-save about portrait failed:", err);
+          }
+        }
       });
     });
 
