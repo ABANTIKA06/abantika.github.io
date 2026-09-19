@@ -48,7 +48,7 @@ async function uploadMedia({ folder = "about", filename, buffer, contentType = "
 
   const key = `${folder}/${filename}`.replace(/^\/+/, "");
 
-  await client.send(
+  const uploadPromise = client.send(
     new PutObjectCommand({
       Bucket: creds.bucket,
       Key: key,
@@ -56,6 +56,12 @@ async function uploadMedia({ folder = "about", filename, buffer, contentType = "
       ContentType: contentType
     })
   );
+
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("R2 upload timed out after 3000ms")), 3000);
+  });
+
+  await Promise.race([uploadPromise, timeoutPromise]);
 
   const publicUrl = creds.publicDomain
     ? `${creds.publicDomain}/${key}`
