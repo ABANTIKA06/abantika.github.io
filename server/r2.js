@@ -22,6 +22,7 @@ function getR2Client() {
     region: "auto",
     endpoint: `https://${creds.accountId}.r2.cloudflarestorage.com`,
     forcePathStyle: true,
+    maxAttempts: 1,
     credentials: {
       accessKeyId: creds.accessKeyId,
       secretAccessKey: creds.secretAccessKey
