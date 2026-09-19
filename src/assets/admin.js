@@ -23,7 +23,7 @@
     return data;
   }
 
-  function convertToWebp(file, maxDimension = 1920, quality = 0.82) {
+  function convertToWebp(file, maxDimension = 1440, quality = 0.80) {
     return new Promise((resolve, reject) => {
       if (!file) {
         reject(new Error("No file provided."));
@@ -461,7 +461,7 @@
       const txt = document.getElementById("admin-ppercent");
       if (bar) bar.style.width = pct + "%";
       if (txt) txt.textContent = pct + "%";
-    }, 250);
+    }, 40);
     return {
       finish: (successTitle, successCopy, viewUrl) => {
         clearInterval(interval);
