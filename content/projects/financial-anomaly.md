@@ -14,7 +14,7 @@ technologies:
   - PLOTLY
 featured: true
 published: true
-art: bars
+art: scatter
 artLabel: ''
 customArt: ''
 cover: ''
