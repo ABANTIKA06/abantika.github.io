@@ -448,7 +448,7 @@ function saveMedia({ folder, filename, data }) {
   const name = safeName(filename);
   const buf = Buffer.from(String(data || "").replace(/^data:[^;]+;base64,/, ""), "base64");
   if (!buf.length) throw new Error("empty file");
-  if (buf.length > 2.5 * 1024 * 1024) throw new Error("file exceeds 2.5MB limit.");
+  if (buf.length > 4.5 * 1024 * 1024) throw new Error("file exceeds 4.5MB limit.");
   const dir = path.join(IMAGES, folder);
   safeWriteFile(path.join(dir, name), buf, null);
   return { folder, name, path: `/assets/images/${folder}/${name}` };
