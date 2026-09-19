@@ -39,16 +39,23 @@ function isConfigured() {
   return Boolean(getCredentials());
 }
 
-async function uploadMedia({ folder = "about", filename, buffer, contentType = "image/webp" }) {
+let r2Cache = null;
+let r2CacheTime = 0;
+const R2_CACHE_TTL = 20000;
+
+function invalidateR2Cache() {
+  r2Cache = null;
+  r2CacheTime = 0;
+}
+
+async function uploadMedia({ folder = "about", filename, buffer, contentType = "application/octet-stream" }) {
   const creds = getCredentials();
   const client = getR2Client();
-  if (!creds || !client) {
-    throw new Error("Cloudflare R2 is not configured properly.");
-  }
+  if (!creds || !client) throw new Error("Cloudflare R2 is not configured.");
 
   const key = `${folder}/${filename}`.replace(/^\/+/, "");
 
-  const uploadPromise = client.send(
+  await client.send(
     new PutObjectCommand({
       Bucket: creds.bucket,
       Key: key,
@@ -57,11 +64,7 @@ async function uploadMedia({ folder = "about", filename, buffer, contentType = "
     })
   );
 
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error("R2 upload timed out after 3000ms")), 3000);
-  });
-
-  await Promise.race([uploadPromise, timeoutPromise]);
+  invalidateR2Cache();
 
   const publicUrl = creds.publicDomain
     ? `${creds.publicDomain}/${key}`
@@ -89,6 +92,8 @@ async function removeMedia({ folder = "about", filename, key }) {
       Key: objectKey
     })
   );
+
+  invalidateR2Cache();
   return true;
 }
 
@@ -110,10 +115,15 @@ async function getSignedUploadUrl({ folder = "about", filename, contentType = "a
     ? `${creds.publicDomain}/${key}`
     : `https://${creds.bucket}.${creds.accountId}.r2.cloudflarestorage.com/${key}`;
 
+  invalidateR2Cache();
   return { uploadUrl, publicUrl, key };
 }
 
-async function listMedia() {
+async function listMedia(forceRefresh = false) {
+  if (!forceRefresh && r2Cache && (Date.now() - r2CacheTime < R2_CACHE_TTL)) {
+    return r2Cache;
+  }
+
   const creds = getCredentials();
   const client = getR2Client();
   if (!creds || !client) return [];
@@ -124,7 +134,7 @@ async function listMedia() {
     });
     const res = await client.send(command);
     const contents = res.Contents || [];
-    return contents.map((obj) => {
+    const items = contents.map((obj) => {
       const key = obj.Key || "";
       const parts = key.split("/");
       const folder = parts.length > 1 ? parts[0] : "about";
@@ -143,6 +153,10 @@ async function listMedia() {
         key
       };
     });
+
+    r2Cache = items;
+    r2CacheTime = Date.now();
+    return items;
   } catch (err) {
     console.error("Cloudflare R2 listMedia error:", err);
     return [];
@@ -154,5 +168,6 @@ module.exports = {
   uploadMedia,
   removeMedia,
   getSignedUploadUrl,
-  listMedia
+  listMedia,
+  invalidateR2Cache
 };

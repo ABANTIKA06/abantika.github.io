@@ -391,19 +391,33 @@ function saveSettings(input) {
   return loadSettings();
 }
 
-function findMediaReferences(imgPath, imgName) {
-  const allDocs = [
-    ...loadProjects(),
-    ...loadBlog(),
-    ...loadJournal(),
-    ...loadNotes()
-  ];
+function precomputeDocumentCorpus() {
+  try {
+    const allDocs = [
+      ...loadProjects(),
+      ...loadBlog(),
+      ...loadJournal(),
+      ...loadNotes()
+    ];
+    return allDocs.map((doc) => ({
+      title: doc.title || doc.slug || doc.dateISO,
+      type: doc.type,
+      url: doc.url,
+      file: doc.file,
+      text: `${JSON.stringify(doc || {})} ${doc.body || ""}`
+    }));
+  } catch (err) {
+    console.error("Corpus precompute error:", err);
+    return [];
+  }
+}
+
+function findMediaReferencesInCorpus(corpus, imgPath, imgName) {
   const refs = [];
-  allDocs.forEach((doc) => {
-    const text = `${JSON.stringify(doc || {})} ${doc.body || ""}`;
-    if (text.includes(imgPath) || text.includes(imgName)) {
+  corpus.forEach((doc) => {
+    if (doc.text.includes(imgPath) || doc.text.includes(imgName)) {
       refs.push({
-        title: doc.title || doc.slug || doc.dateISO,
+        title: doc.title,
         type: doc.type,
         url: doc.url,
         file: doc.file
@@ -413,26 +427,45 @@ function findMediaReferences(imgPath, imgName) {
   return refs;
 }
 
+function findMediaReferences(imgPath, imgName) {
+  const corpus = precomputeDocumentCorpus();
+  return findMediaReferencesInCorpus(corpus, imgPath, imgName);
+}
+
 const mediaBufferCache = new Map();
+let mediaListCache = null;
+let mediaListCacheTime = 0;
+const MEDIA_CACHE_TTL = 15000;
+
+function invalidateStoreMediaCache() {
+  mediaListCache = null;
+  mediaListCacheTime = 0;
+  if (r2.invalidateR2Cache) r2.invalidateR2Cache();
+}
 
 function getMediaBuffer(relPath) {
   const norm = String(relPath || "").replace(/\\/g, "/");
   return mediaBufferCache.get(norm);
 }
 
-async function listMedia() {
+async function listMedia(forceRefresh = false) {
+  if (!forceRefresh && mediaListCache && (Date.now() - mediaListCacheTime < MEDIA_CACHE_TTL)) {
+    return mediaListCache;
+  }
+
   const items = [];
   const seenPaths = new Set();
   const seenNames = new Set();
+  const corpus = precomputeDocumentCorpus();
 
   if (r2.isConfigured()) {
     try {
-      const r2Items = await r2.listMedia();
+      const r2Items = await r2.listMedia(forceRefresh);
       r2Items.forEach((item) => {
         if (item.folder === "test") return;
         seenPaths.add(item.path);
         seenNames.add(item.name);
-        const references = findMediaReferences(item.path, item.name);
+        const references = findMediaReferencesInCorpus(corpus, item.path, item.name);
         items.push({ ...item, references });
       });
     } catch (e) {
@@ -452,7 +485,7 @@ async function listMedia() {
       if (!seenPaths.has(imgPath) && !seenNames.has(name)) {
         seenPaths.add(imgPath);
         seenNames.add(name);
-        const references = findMediaReferences(imgPath, name);
+        const references = findMediaReferencesInCorpus(corpus, imgPath, name);
         items.push({
           folder,
           name,
@@ -473,7 +506,7 @@ async function listMedia() {
     if (!seenPaths.has(imgPath) && !seenNames.has(name)) {
       seenPaths.add(imgPath);
       seenNames.add(name);
-      const references = findMediaReferences(imgPath, name);
+      const references = findMediaReferencesInCorpus(corpus, imgPath, name);
       items.push({
         folder,
         name,
@@ -485,7 +518,10 @@ async function listMedia() {
     }
   }
 
-  return items.sort((a, b) => b.updated.localeCompare(a.updated));
+  const sorted = items.sort((a, b) => b.updated.localeCompare(a.updated));
+  mediaListCache = sorted;
+  mediaListCacheTime = Date.now();
+  return sorted;
 }
 
 function safeName(name) {
@@ -495,6 +531,7 @@ function safeName(name) {
 }
 
 async function saveMediaBuffer({ folder, filename, buffer }) {
+  invalidateStoreMediaCache();
   if (!FOLDERS.includes(folder)) throw new Error("invalid media folder");
   const name = safeName(filename);
   if (!buffer || !buffer.length) throw new Error("empty file");
@@ -534,6 +571,7 @@ async function saveMedia({ folder, filename, data }) {
 }
 
 async function removeMedia({ folder, filename, force }) {
+  invalidateStoreMediaCache();
   if (!FOLDERS.includes(folder)) throw new Error("invalid media folder");
   const name = safeName(filename);
   const imgPath = `/assets/images/${folder}/${name}`;
