@@ -1232,3 +1232,120 @@ a.wikilink {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- V4.0.2 SECTION-BASED EDITORIAL WORKSPACE STYLING --- */
+.section-editor-workspace {
+  margin: 24px 0 32px;
+}
+.section-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  margin-bottom: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.section-card:hover {
+  border-color: var(--ink);
+}
+.section-card.collapsed .section-card-body {
+  display: none !important;
+}
+.section-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #faf8f2;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.section-card.collapsed .section-card-header {
+  border-bottom: none;
+}
+.section-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 280px;
+}
+.section-drag-handle {
+  cursor: grab;
+  color: #888;
+  font-family: var(--mono);
+  font-size: 14px;
+  user-select: none;
+}
+.section-number-badge {
+  font: 700 11px var(--mono);
+  color: var(--accent-red, #e03c31);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.section-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.section-card-actions .wysiwyg-tab {
+  padding: 4px 8px;
+  font-size: 10px;
+}
+.section-card-body {
+  padding: 16px;
+}
+.admin-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--paper, #f2f0ea);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -36px -28px 24px -28px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.admin-sticky-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-status-badge {
+  font: 700 10px var(--mono);
+  padding: 3px 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  background: #ffffff;
+}
+.admin-status-badge.published {
+  background: #2a7b4c;
+  color: #ffffff;
+  border-color: #2a7b4c;
+}
+.admin-status-badge.draft {
+  background: #f7f5ef;
+  color: #666666;
+}
+.collapsible-details-panel {
+  border: 1px solid var(--line);
+  background: #faf8f2;
+  margin-bottom: 24px;
+}
+.collapsible-details-summary {
+  padding: 12px 16px;
+  font: 700 11px var(--mono);
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #edeae2;
+}
+.collapsible-details-content {
+  padding: 16px;
+}
+

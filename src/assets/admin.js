@@ -701,62 +701,161 @@
     setTimeout(() => inputEl?.focus(), 100);
   }
 
+  function ensureSections(item, defaultSections = []) {
+    if (Array.isArray(item.sections) && item.sections.length > 0) {
+      return item.sections;
+    }
+    if (item.body && typeof item.body === "string" && item.body.includes("## ")) {
+      const parsed = [];
+      const blocks = item.body.split(/(?=^##\s+)/m);
+      blocks.forEach((block, idx) => {
+        const match = block.match(/^##\s+(?:(\d+\s*\/[^\n]*?)\n+)?([^\n]+)\n?([\s\S]*)$/);
+        if (match) {
+          const label = match[1] ? match[1].trim() : `0${idx + 1} / SECTION`;
+          const heading = match[2] ? match[2].trim() : "";
+          const body = match[3] ? match[3].trim() : "";
+          parsed.push({ label, heading, body });
+        } else if (block.trim()) {
+          parsed.push({ label: `0${idx + 1} / SECTION`, heading: "", body: block.trim() });
+        }
+      });
+      if (parsed.length > 0) return parsed;
+    }
+    if (item.body && typeof item.body === "string" && item.body.trim()) {
+      return [{ label: "01 / SECTION", heading: "MAIN CONTENT", body: item.body.trim() }];
+    }
+    return defaultSections.length > 0 ? defaultSections : [{ label: "01 / PROBLEM", heading: "THE QUESTION", body: "" }];
+  }
+
+  function renderSection(sectionData, index) {
+    const labelVal = sectionData.label || `0${index + 1} / SECTION`;
+    const headingVal = sectionData.heading || "";
+    const bodyVal = sectionData.body || "";
+    return `
+      <div class="section-card" data-section-index="${index}">
+        <div class="section-card-header">
+          <div class="section-card-title-group">
+            <span class="section-drag-handle" title="Section handle">⋮⋮</span>
+            <span class="section-number-badge">SECTION 0${index + 1}</span>
+            <input type="text" class="section-label-input" name="section-label" value="${esc(labelVal)}" placeholder="e.g. 01 / THE PROBLEM" style="width:160px;font:11px var(--mono)">
+            <input type="text" class="section-heading-input" name="section-heading" value="${esc(headingVal)}" placeholder="Section Heading (e.g. THE QUESTION)" style="flex:1;font-weight:700">
+          </div>
+          <div class="section-card-actions">
+            <button type="button" class="wysiwyg-tab section-collapse-btn" data-act="section-collapse" title="Collapse/Expand">▼</button>
+            <button type="button" class="wysiwyg-tab" data-act="section-move-up" title="Move Up">▲</button>
+            <button type="button" class="wysiwyg-tab" data-act="section-move-down" title="Move Down">▼</button>
+            <button type="button" class="wysiwyg-tab" data-act="section-duplicate" title="Duplicate Section">📋 DUPLICATE</button>
+            <button type="button" class="wysiwyg-tab section-delete-btn" data-act="section-delete" title="Delete Section" style="color:var(--accent-red,#e03c31)">🗑️</button>
+          </div>
+        </div>
+        <div class="section-card-body">
+          ${wysiwygField("", "section-body", bodyVal)}
+        </div>
+      </div>`;
+  }
+
+  function renderSectionListContainer(sectionsArray) {
+    return `
+      <div class="section-editor-workspace">
+        <div class="section-workspace-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <h3 style="margin:0;font:11px var(--mono);letter-spacing:0.1em;text-transform:uppercase">EDITORIAL CONTENT SECTIONS (<span class="section-count-tag">${sectionsArray.length}</span>)</h3>
+          <button type="button" class="admin-btn primary add-section-btn" data-act="add-section" style="font-size:11px">+ ADD SECTION <b>→</b></button>
+        </div>
+        <div class="sections-list-container" id="sections-list-container">
+          ${sectionsArray.map((sec, i) => renderSection(sec, i)).join("")}
+        </div>
+        <div style="margin-top:16px;text-align:center;padding:16px;border:1px dashed var(--line);background:#faf8f2">
+          <button type="button" class="admin-btn primary add-section-btn" data-act="add-section">+ ADD NEW SECTION <b>→</b></button>
+        </div>
+      </div>`;
+  }
+
+  function reindexSections(container) {
+    if (!container) return;
+    const cards = container.querySelectorAll(".section-card");
+    cards.forEach((card, idx) => {
+      card.setAttribute("data-section-index", idx);
+      const badge = card.querySelector(".section-number-badge");
+      if (badge) badge.textContent = `SECTION 0${idx + 1}`;
+    });
+    const countTag = container.closest(".section-editor-workspace")?.querySelector(".section-count-tag");
+    if (countTag) countTag.textContent = cards.length;
+  }
+
   function projectForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
-    const sections = (item.sections && item.sections.length ? item.sections : [
+    const sections = ensureSections(item, [
       { label: "01 / PROBLEM", heading: "THE QUESTION", body: "" },
       { label: "02 / DATA", heading: "THE EVIDENCE", body: "" },
       { label: "03 / METHODOLOGY", heading: "THE METHOD", body: "" },
       { label: "04 / RESULTS", heading: "THE OUTCOME", body: "METRIC TBD — Add only results supported by the real project record." }
-    ]).map((section, i) => `
-      <label class="wide">SECTION ${i + 1} LABEL<input name="section-label-${i}" value="${esc(section.label || "")}"></label>
-      <label>HEADING<input name="section-heading-${i}" value="${esc(section.heading || "")}"></label>
-      <label class="wide">BODY<textarea name="section-body-${i}">${esc(section.body || "")}</textarea></label>
-    `).join("");
+    ]);
     return chrome(
       isNew ? "03 / NEW PROJECT" : "03 / EDIT PROJECT",
-      `<h1>${isNew ? "NEW CASE STUDY" : esc(item.title)}<span class="red-stop">.</span></h1>
-      <form class="admin-form" data-form="project" data-new="${isNew ? "1" : ""}">
-        ${input("TITLE", "title", item.title || "", "", true)}
-        ${input("SLUG", "slug", item.slug || "")}
-        ${input("NUMBER", "number", item.number || "")}
-        ${input("DATE", "date", item.date || today, 'type="date"', true)}
-        ${input("YEAR", "year", item.year || "")}
-        ${input("CATEGORY", "category", item.category || "", "", true)}
-        ${area("DESCRIPTION", "description", item.description || "", "", true)}
-        ${area("SUMMARY", "summary", item.summary || "")}
-        ${area("TECHNOLOGIES (ONE PER LINE)", "technologies", (item.technologies || []).join("\n"), "", true)}
-        ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
-        ${sel("ART VISUALIZATION STYLE", "art", item.art || "dots", [
-          { value: "dots", label: "01 — ORBITAL DOTS / CONSTELLATION" },
-          { value: "architecture", label: "02 — SYSTEM MESH / ARCHITECTURE" },
-          { value: "chart", label: "03 — TREND LINE / ANALYTICAL CHART" },
-          { value: "bars", label: "04 — SPECTRAL BARS / FREQUENCY" },
-          { value: "scatter", label: "05 — CORRELATION CLUSTER / SCATTER" },
-          { value: "waves", label: "06 — SINE WAVES / HARMONIC DYNAMICS" },
-          { value: "matrix", label: "07 — NEURAL MATRIX / BINARY FIELD" },
-          { value: "geometric", label: "08 — VORONOI MESH / GEOMETRIC" },
-          { value: "circuit", label: "09 — QUANTUM CIRCUIT / LOGIC NODES" },
-          { value: "radial", label: "10 — RADIAL BURST / PHASOR VECTOR" },
-          { value: "heatmap", label: "11 — DENSITY MATRIX / HEATMAP" },
-          { value: "custom", label: "12 — CUSTOM IMAGE / UPLOADED ARTWORK ↗" }
-        ])}
-        ${input("CUSTOM ART IMAGE/SVG PATH", "customArt", item.customArt || "", 'id="field-customArt"')}
-        <div style="margin:-8px 0 16px;display:flex;gap:10px">
-          <button type="button" class="admin-btn" data-act="pick-custom-art">CHOOSE / UPLOAD CUSTOM ARTWORK ↗</button>
+      `
+      <div class="admin-sticky-bar">
+        <div class="admin-sticky-title">
+          <a href="#/projects" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
+          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW CASE STUDY")}</h2>
         </div>
-        ${input("ART CAPTION / LABEL", "artLabel", item.artLabel || "")}
-        ${input("COVER PATH", "cover", item.cover || "", 'id="field-cover"')}
-        <div style="margin:-8px 0 16px;display:flex;gap:10px">
-          <button type="button" class="admin-btn" data-act="pick-cover">CHOOSE COVER IMAGE ↗</button>
+        <div class="admin-actions" style="margin:0;gap:8px">
+          <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false">SAVE DRAFT <b>→</b></button>
+          <button class="admin-btn" type="button" data-act="preview-project">PREVIEW <b>→</b></button>
+          <button class="admin-btn primary" type="submit" form="project-editor-form" data-publish="true">PUBLISH <b>→</b></button>
         </div>
-        ${input("GITHUB URL", "github", item.github || "")}
-        ${input("LIVE URL", "live", item.live || "")}
-        ${sections}
-        ${wysiwygField("EXTRA MARKDOWN / CASE STUDY BODY", "body", item.body || "")}
-        ${check("FEATURED", "featured", item.featured)}
-        ${check("PUBLISHED", "published", item.published)}
-        <div class="admin-actions">
+      </div>
+
+      <form class="admin-form" id="project-editor-form" data-form="project" data-new="${isNew ? "1" : ""}">
+        <details class="collapsible-details-panel" open>
+          <summary class="collapsible-details-summary">
+            <span>01 / CASE STUDY METADATA & MEDIA SETTINGS</span>
+            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+          </summary>
+          <div class="collapsible-details-content">
+            ${input("TITLE", "title", item.title || "", "", true)}
+            ${input("SLUG", "slug", item.slug || "")}
+            ${input("NUMBER", "number", item.number || "")}
+            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("YEAR", "year", item.year || "")}
+            ${input("CATEGORY", "category", item.category || "", "", true)}
+            ${area("DESCRIPTION", "description", item.description || "", "", true)}
+            ${area("SUMMARY", "summary", item.summary || "")}
+            ${area("TECHNOLOGIES (ONE PER LINE)", "technologies", (item.technologies || []).join("\n"), "", true)}
+            ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
+            ${sel("ART VISUALIZATION STYLE", "art", item.art || "dots", [
+              { value: "dots", label: "01 — ORBITAL DOTS / CONSTELLATION" },
+              { value: "architecture", label: "02 — SYSTEM MESH / ARCHITECTURE" },
+              { value: "chart", label: "03 — TREND LINE / ANALYTICAL CHART" },
+              { value: "bars", label: "04 — SPECTRAL BARS / FREQUENCY" },
+              { value: "scatter", label: "05 — CORRELATION CLUSTER / SCATTER" },
+              { value: "waves", label: "06 — SINE WAVES / HARMONIC DYNAMICS" },
+              { value: "matrix", label: "07 — NEURAL MATRIX / BINARY FIELD" },
+              { value: "geometric", label: "08 — VORONOI MESH / GEOMETRIC" },
+              { value: "circuit", label: "09 — QUANTUM CIRCUIT / LOGIC NODES" },
+              { value: "radial", label: "10 — RADIAL BURST / PHASOR VECTOR" },
+              { value: "heatmap", label: "11 — DENSITY MATRIX / HEATMAP" },
+              { value: "custom", label: "12 — CUSTOM IMAGE / UPLOADED ARTWORK ↗" }
+            ])}
+            ${input("CUSTOM ART IMAGE/SVG PATH", "customArt", item.customArt || "", 'id="field-customArt"')}
+            <div style="margin:-8px 0 16px;display:flex;gap:10px">
+              <button type="button" class="admin-btn" data-act="pick-custom-art">CHOOSE / UPLOAD CUSTOM ARTWORK ↗</button>
+            </div>
+            ${input("ART CAPTION / LABEL", "artLabel", item.artLabel || "")}
+            ${input("COVER PATH", "cover", item.cover || "", 'id="field-cover"')}
+            <div style="margin:-8px 0 16px;display:flex;gap:10px">
+              <button type="button" class="admin-btn" data-act="pick-cover">CHOOSE COVER IMAGE ↗</button>
+            </div>
+            ${input("GITHUB URL", "github", item.github || "")}
+            ${input("LIVE URL", "live", item.live || "")}
+            ${check("FEATURED", "featured", item.featured)}
+            ${check("PUBLISHED", "published", item.published)}
+          </div>
+        </details>
+
+        ${renderSectionListContainer(sections)}
+
+        <div class="admin-actions" style="margin-top:24px">
           <button class="admin-btn" type="submit" data-publish="false">SAVE DRAFT <b>→</b></button>
           <button class="admin-btn" type="button" data-act="preview-project">PREVIEW <b>→</b></button>
           <button class="admin-btn primary" type="submit" data-publish="true">PUBLISH <b>→</b></button>
@@ -768,23 +867,51 @@
 
   function blogForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
+    const sections = ensureSections(item, [
+      { label: "01 / INTRODUCTION", heading: "THE CONTEXT", body: "" },
+      { label: "02 / ANALYSIS", heading: "THE FINDINGS", body: "" },
+      { label: "03 / CONCLUSION", heading: "THE TAKEAWAY", body: "" }
+    ]);
     return chrome(
       isNew ? "04 / NEW ARTICLE" : "04 / EDIT ARTICLE",
-      `<h1>${isNew ? "NEW ARTICLE" : esc(item.title)}<span class="red-stop">.</span></h1>
-      <form class="admin-form" data-form="blog" data-new="${isNew ? "1" : ""}">
-        ${input("TITLE", "title", item.title || "", "", true)}
-        ${input("SLUG", "slug", item.slug || "")}
-        ${input("DATE", "date", item.date || today, 'type="date"', true)}
-        ${input("CATEGORY", "category", item.category || "", "", true)}
-        ${area("TAGS (ONE PER LINE)", "tags", (item.tags || []).join("\n"))}
-        ${area("DESCRIPTION", "description", item.description || "", "", true)}
-        ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
-        ${sel("RELATED PROJECT", "relatedProject", item.relatedProject || "", [{ value: "", label: "NONE" }].concat((state.content.projects || []).map((p) => ({ value: p.slug, label: p.title }))))}
-        ${input("COVER PATH", "cover", item.cover || "")}
-        ${wysiwygField("ARTICLE CONTENT", "body", item.body || "", true)}
-        ${check("FEATURED", "featured", item.featured)}
-        ${check("PUBLISHED", "published", item.published)}
-        <div class="admin-actions">
+      `
+      <div class="admin-sticky-bar">
+        <div class="admin-sticky-title">
+          <a href="#/blog" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
+          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW ARTICLE")}</h2>
+        </div>
+        <div class="admin-actions" style="margin:0;gap:8px">
+          <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false">SAVE DRAFT <b>→</b></button>
+          <button class="admin-btn" type="button" data-act="preview-blog">PREVIEW <b>→</b></button>
+          <button class="admin-btn primary" type="submit" form="blog-editor-form" data-publish="true">PUBLISH <b>→</b></button>
+        </div>
+      </div>
+
+      <form class="admin-form" id="blog-editor-form" data-form="blog" data-new="${isNew ? "1" : ""}">
+        <details class="collapsible-details-panel">
+          <summary class="collapsible-details-summary">
+            <span>01 / ARTICLE METADATA & MEDIA SETTINGS</span>
+            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+          </summary>
+          <div class="collapsible-details-content">
+            ${input("TITLE", "title", item.title || "", "", true)}
+            ${input("SLUG", "slug", item.slug || "")}
+            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("CATEGORY", "category", item.category || "", "", true)}
+            ${area("TAGS (ONE PER LINE)", "tags", (item.tags || []).join("\n"))}
+            ${area("DESCRIPTION", "description", item.description || "", "", true)}
+            ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
+            ${sel("RELATED PROJECT", "relatedProject", item.relatedProject || "", [{ value: "", label: "NONE" }].concat((state.content.projects || []).map((p) => ({ value: p.slug, label: p.title }))))}
+            ${input("COVER PATH", "cover", item.cover || "")}
+            ${check("FEATURED", "featured", item.featured)}
+            ${check("PUBLISHED", "published", item.published)}
+          </div>
+        </details>
+
+        ${renderSectionListContainer(sections)}
+
+        <div class="admin-actions" style="margin-top:24px">
           <button class="admin-btn" type="submit" data-publish="false">SAVE DRAFT <b>→</b></button>
           <button class="admin-btn" type="button" data-act="preview-blog">PREVIEW <b>→</b></button>
           <button class="admin-btn primary" type="submit" data-publish="true">PUBLISH <b>→</b></button>
@@ -796,17 +923,41 @@
 
   function noteForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
+    const sections = ensureSections(item, [
+      { label: "01 / NOTE CONTENT", heading: "THE RESEARCH NOTE", body: item.body || "" }
+    ]);
     return chrome(
       isNew ? "06 / NEW NOTE" : "06 / EDIT NOTE",
-      `<h1>${isNew ? "NEW NOTE" : esc(item.title)}<span class="red-stop">.</span></h1>
-      <form class="admin-form" data-form="note" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
-        ${input("TITLE", "title", item.title || "", "", true)}
-        ${input("SLUG", "slug", item.slug || "")}
-        ${input("DATE", "date", item.date || today, 'type="date"', true)}
-        ${input("TAGS (COMMA SEPARATED)", "tags", (item.tags || []).join(", "))}
-        ${wysiwygField("NOTE CONTENT", "body", item.body || "", true)}
-        ${check("PUBLISHED", "published", item.published !== false)}
-        <div class="admin-actions">
+      `
+      <div class="admin-sticky-bar">
+        <div class="admin-sticky-title">
+          <a href="#/notes" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <span class="admin-status-badge ${item.published !== false ? 'published' : 'draft'}">${item.published !== false ? 'PUBLISHED' : 'DRAFT'}</span>
+          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW NOTE")}</h2>
+        </div>
+        <div class="admin-actions" style="margin:0;gap:8px">
+          <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false">SAVE NOTE <b>→</b></button>
+        </div>
+      </div>
+
+      <form class="admin-form" id="note-editor-form" data-form="note" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
+        <details class="collapsible-details-panel">
+          <summary class="collapsible-details-summary">
+            <span>01 / NOTE METADATA</span>
+            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+          </summary>
+          <div class="collapsible-details-content">
+            ${input("TITLE", "title", item.title || "", "", true)}
+            ${input("SLUG", "slug", item.slug || "")}
+            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("TAGS (COMMA SEPARATED)", "tags", (item.tags || []).join(", "))}
+            ${check("PUBLISHED", "published", item.published !== false)}
+          </div>
+        </details>
+
+        ${renderSectionListContainer(sections)}
+
+        <div class="admin-actions" style="margin-top:24px">
           <button class="admin-btn primary" type="submit" data-publish="false">SAVE NOTE <b>→</b></button>
           ${!isNew ? `<button class="admin-btn" type="button" data-act="promote-note" data-target="blog">PROMOTE TO BLOG <b>→</b></button>
           <button class="admin-btn" type="button" data-act="promote-note" data-target="project">PROMOTE TO PROJECT <b>→</b></button>
@@ -818,27 +969,54 @@
 
   function journalForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
+    const defaultSections = [
+      { label: "01 / WHAT I DID", heading: "THE WORK", body: item.did || "" },
+      { label: "02 / WHAT I LEARNED", heading: "THE INSIGHT", body: item.learned || "" },
+      { label: "03 / NEXT", heading: "THE FOLLOW-UP", body: item.next || "" }
+    ];
+    const sections = ensureSections(item, defaultSections);
     return chrome(
       isNew ? "05 / NEW NOTE" : "05 / EDIT NOTE",
-      `<h1>${isNew ? "WHAT I DID TODAY" : esc(item.title)}<span class="red-stop">.</span></h1>
-      <form class="admin-form" data-form="journal" data-id="${esc(item.id || "")}" data-new="${isNew ? "1" : ""}">
-        ${input("DATE", "date", item.date || today, 'type="date"', true)}
-        ${input("TITLE", "title", item.title || "", "", true)}
-        ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
-        ${sel("RELATED PROJECT", "project", item.project || "", [{ value: "", label: "NONE" }].concat((state.content.projects || []).map((p) => ({ value: p.slug, label: p.title }))))}
-        ${wysiwygField("WHAT I DID", "did", item.did || "", true)}
-        ${wysiwygField("WHAT I LEARNED", "learned", item.learned || "")}
-        ${wysiwygField("NEXT", "next", item.next || "")}
-        ${input("SUMMARY", "summary", item.summary || "")}
-        ${input("DATA", "data", item.data || "")}
-        ${input("METHOD", "method", item.method || "")}
-        ${input("RESULT", "result", item.result || "")}
-        ${input("TOOLS", "tools", item.tools || "")}
-        ${check("PUBLISHED", "published", item.published)}
-        <div class="admin-actions">
-          <button class="admin-btn primary" type="submit" data-publish="false">SAVE JOURNAL ENTRY <b>→</b></button>
+      `
+      <div class="admin-sticky-bar">
+        <div class="admin-sticky-title">
+          <a href="#/journal" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
+          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "DAILY JOURNAL")}</h2>
+        </div>
+        <div class="admin-actions" style="margin:0;gap:8px">
+          <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false">SAVE ENTRY <b>→</b></button>
           <button class="admin-btn" type="button" data-act="preview-journal">PREVIEW <b>→</b></button>
-          <button class="admin-btn" type="submit" data-publish="true">PUBLISH <b>→</b></button>
+          <button class="admin-btn primary" type="submit" form="journal-editor-form" data-publish="true">PUBLISH <b>→</b></button>
+        </div>
+      </div>
+
+      <form class="admin-form" id="journal-editor-form" data-form="journal" data-id="${esc(item.id || "")}" data-new="${isNew ? "1" : ""}">
+        <details class="collapsible-details-panel">
+          <summary class="collapsible-details-summary">
+            <span>01 / JOURNAL METADATA & LINKS</span>
+            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+          </summary>
+          <div class="collapsible-details-content">
+            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("TITLE", "title", item.title || "", "", true)}
+            ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
+            ${sel("RELATED PROJECT", "project", item.project || "", [{ value: "", label: "NONE" }].concat((state.content.projects || []).map((p) => ({ value: p.slug, label: p.title }))))}
+            ${input("SUMMARY", "summary", item.summary || "")}
+            ${input("DATA", "data", item.data || "")}
+            ${input("METHOD", "method", item.method || "")}
+            ${input("RESULT", "result", item.result || "")}
+            ${input("TOOLS", "tools", item.tools || "")}
+            ${check("PUBLISHED", "published", item.published)}
+          </div>
+        </details>
+
+        ${renderSectionListContainer(sections)}
+
+        <div class="admin-actions" style="margin-top:24px">
+          <button class="admin-btn" type="submit" data-publish="false">SAVE DRAFT <b>→</b></button>
+          <button class="admin-btn" type="button" data-act="preview-journal">PREVIEW <b>→</b></button>
+          <button class="admin-btn primary" type="submit" data-publish="true">PUBLISH <b>→</b></button>
           ${!isNew ? `<button class="admin-btn admin-btn-danger" type="button" data-act="delete-journal" data-id="${esc(item.id)}" data-title="${esc(item.title)}">DELETE ENTRY</button>` : ""}
         </div>
       </form>`
@@ -2037,14 +2215,42 @@
   }
 
   function collectSections(form) {
+    if (!form) return [];
+    syncAllWysiwyg(form);
+    const cards = form.querySelectorAll(".section-card");
     const sections = [];
-    for (let i = 0; i < 8; i += 1) {
-      const label = formValue(form, `section-label-${i}`);
-      const heading = formValue(form, `section-heading-${i}`);
-      const body = formValue(form, `section-body-${i}`);
-      if (label || heading || body) sections.push({ label, heading, body });
-    }
+    cards.forEach((card) => {
+      const labelInput = card.querySelector(".section-label-input");
+      const headingInput = card.querySelector(".section-heading-input");
+      const bodySource = card.querySelector(".wysiwyg-source");
+
+      const label = labelInput ? labelInput.value.trim() : "";
+      const heading = headingInput ? headingInput.value.trim() : "";
+      const body = bodySource ? bodySource.value.trim() : "";
+
+      if (label || heading || body) {
+        sections.push({ label, heading, body });
+      }
+    });
     return sections;
+  }
+
+  function serializeSectionsToMarkdown(sections) {
+    if (!Array.isArray(sections) || !sections.length) return "";
+    return sections
+      .map((sec) => {
+        const parts = [];
+        if (sec.heading) {
+          parts.push(`## ${sec.heading}`);
+        } else if (sec.label) {
+          parts.push(`## ${sec.label}`);
+        }
+        if (sec.body) {
+          parts.push(sec.body);
+        }
+        return parts.join("\n\n");
+      })
+      .join("\n\n");
   }
 
   function previewFrame(html) {
@@ -2060,18 +2266,42 @@
 
   function projectPreview(form) {
     const title = esc(formValue(form, "title"));
-    const sections = collectSections(form)
-      .map((section) => `<section><p class="case-num">${esc(section.label)}</p><h2>${esc(section.heading)}</h2><p>${esc(section.body)}</p></section>`)
+    const sections = collectSections(form);
+    const sectionsHtml = sections
+      .map(
+        (section) => `
+        <section>
+          <p class="case-num">${esc(section.label)}</p>
+          <h2>${esc(section.heading)}</h2>
+          <div>${markdownToHtml(section.body)}</div>
+        </section>`
+      )
       .join("");
-    previewFrame(`<main class="case-study"><header class="case-header"><p class="eyebrow">PROJECT PREVIEW</p><h1>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body">${sections}</article></main>`);
+    previewFrame(`<main class="case-study"><header class="case-header"><p class="eyebrow">PROJECT PREVIEW</p><h1>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body">${sectionsHtml}</article></main>`);
   }
 
   function blogPreview(form) {
-    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">BLOG PREVIEW</p><h1>${esc(formValue(form, "title"))}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body article-body"><pre style="white-space:pre-wrap;font:16px/1.6 Inter,sans-serif">${esc(formValue(form, "body"))}</pre></article></main>`);
+    const title = esc(formValue(form, "title"));
+    const sections = collectSections(form);
+    const bodyMd = serializeSectionsToMarkdown(sections);
+    const html = markdownToHtml(bodyMd);
+    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">BLOG PREVIEW</p><h1>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body article-body">${html}</article></main>`);
   }
 
   function journalPreview(form) {
-    previewFrame(`<main class="note-page"><header class="note-header"><p class="eyebrow">04 / JOURNAL</p><h1>${esc(formValue(form, "title"))}<span class="red-stop">.</span></h1></header><article class="case-body"><section><p class="case-num">01 / WHAT I DID</p><h2>THE WORK</h2><p>${esc(formValue(form, "did"))}</p></section><section><p class="case-num">02 / WHAT I LEARNED</p><h2>THE NOTE</h2><p>${esc(formValue(form, "learned"))}</p></section><section><p class="case-num">03 / NEXT</p><h2>THE FOLLOW-UP</h2><p>${esc(formValue(form, "next"))}</p></section></article></main>`);
+    const title = esc(formValue(form, "title"));
+    const sections = collectSections(form);
+    const sectionsHtml = sections
+      .map(
+        (section, idx) => `
+        <section>
+          <p class="case-num">${esc(section.label || `0${idx + 1} / SECTION`)}</p>
+          <h2>${esc(section.heading || "")}</h2>
+          <div>${markdownToHtml(section.body)}</div>
+        </section>`
+      )
+      .join("");
+    previewFrame(`<main class="note-page"><header class="note-header"><p class="eyebrow">04 / JOURNAL</p><h1>${title}<span class="red-stop">.</span></h1></header><article class="case-body">${sectionsHtml}</article></main>`);
   }
 
   async function loadContent() {
@@ -2203,6 +2433,7 @@
     if (publishFlag === "true") published = true;
     if (publishFlag === "false" && type !== "journal") published = false;
     if (type === "project") {
+      const sections = collectSections(form);
       const payload = {
         title: formValue(form, "title"),
         slug: formValue(form, "slug"),
@@ -2220,10 +2451,10 @@
         cover: formValue(form, "cover"),
         github: formValue(form, "github"),
         live: formValue(form, "live"),
-        body: formValue(form, "body"),
+        body: serializeSectionsToMarkdown(sections),
         featured: formValue(form, "featured"),
         published,
-        sections: collectSections(form)
+        sections: sections
       };
       let res;
       if (isNew) res = await api("/api/projects", { method: "POST", body: payload });
@@ -2235,6 +2466,7 @@
       return res;
     }
     if (type === "blog") {
+      const sections = collectSections(form);
       const payload = {
         title: formValue(form, "title"),
         slug: formValue(form, "slug"),
@@ -2245,7 +2477,7 @@
         headline: formValue(form, "headline"),
         relatedProject: formValue(form, "relatedProject"),
         cover: formValue(form, "cover"),
-        body: formValue(form, "body"),
+        body: serializeSectionsToMarkdown(sections),
         featured: formValue(form, "featured"),
         published
       };
@@ -2259,14 +2491,24 @@
       return res;
     }
     if (type === "journal") {
+      const sections = collectSections(form);
+      let did = "";
+      let learned = "";
+      let next = "";
+      sections.forEach((sec, idx) => {
+        const label = (sec.label || "").toLowerCase();
+        if (label.includes("did") || idx === 0) did = sec.body;
+        else if (label.includes("learned") || idx === 1) learned = sec.body;
+        else if (label.includes("next") || idx === 2) next = sec.body;
+      });
       const payload = {
         date: formValue(form, "date"),
         title: formValue(form, "title"),
         headline: formValue(form, "headline"),
         project: formValue(form, "project"),
-        did: formValue(form, "did"),
-        learned: formValue(form, "learned"),
-        next: formValue(form, "next"),
+        did: did || formValue(form, "did"),
+        learned: learned || formValue(form, "learned"),
+        next: next || formValue(form, "next"),
         summary: formValue(form, "summary"),
         data: formValue(form, "data"),
         method: formValue(form, "method"),
@@ -2285,12 +2527,13 @@
       return res;
     }
     if (type === "note") {
+      const sections = collectSections(form);
       const payload = {
         title: formValue(form, "title"),
         slug: formValue(form, "slug"),
         date: formValue(form, "date"),
         tags: formValue(form, "tags"),
-        body: formValue(form, "body"),
+        body: serializeSectionsToMarkdown(sections),
         published
       };
       const oldSlug = form.getAttribute("data-slug");
@@ -2511,7 +2754,86 @@
         return;
       }
 
-      const directUploadBtn = event.target.closest("#portrait-direct-upload-btn");
+      const addSecBtn = event.target.closest("[data-act='add-section']");
+      if (addSecBtn) {
+        const workspace = addSecBtn.closest(".section-editor-workspace") || document.querySelector(".section-editor-workspace");
+        const listContainer = workspace ? workspace.querySelector("#sections-list-container") : null;
+        if (listContainer) {
+          const count = listContainer.querySelectorAll(".section-card").length;
+          const newCardHtml = renderSection({ label: `0${count + 1} / NEW SECTION`, heading: "", body: "" }, count);
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = newCardHtml;
+          const newCard = tempDiv.firstElementChild;
+          listContainer.appendChild(newCard);
+          reindexSections(listContainer);
+          newCard.querySelector(".section-heading-input")?.focus();
+        }
+        return;
+      }
+
+      const secMoveUp = event.target.closest("[data-act='section-move-up']");
+      if (secMoveUp) {
+        const card = secMoveUp.closest(".section-card");
+        const prev = card?.previousElementSibling;
+        if (card && prev) {
+          card.parentNode.insertBefore(card, prev);
+          reindexSections(card.parentNode);
+        }
+        return;
+      }
+
+      const secMoveDown = event.target.closest("[data-act='section-move-down']");
+      if (secMoveDown) {
+        const card = secMoveDown.closest(".section-card");
+        const next = card?.nextElementSibling;
+        if (card && next) {
+          card.parentNode.insertBefore(next, card);
+          reindexSections(card.parentNode);
+        }
+        return;
+      }
+
+      const secDuplicate = event.target.closest("[data-act='section-duplicate']");
+      if (secDuplicate) {
+        const card = secDuplicate.closest(".section-card");
+        if (card) {
+          const wrapper = card.querySelector(".wysiwyg-wrapper");
+          if (wrapper) syncWysiwyg(wrapper);
+
+          const labelVal = card.querySelector(".section-label-input")?.value || "";
+          const headingVal = card.querySelector(".section-heading-input")?.value || "";
+          const bodyVal = card.querySelector(".wysiwyg-source")?.value || "";
+
+          const dupHtml = renderSection({ label: labelVal + " (COPY)", heading: headingVal, body: bodyVal }, 0);
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = dupHtml;
+          const dupCard = tempDiv.firstElementChild;
+          card.parentNode.insertBefore(dupCard, card.nextSibling);
+          reindexSections(card.parentNode);
+        }
+        return;
+      }
+
+      const secDelete = event.target.closest("[data-act='section-delete']");
+      if (secDelete) {
+        const card = secDelete.closest(".section-card");
+        if (card && confirm("Are you sure you want to delete this section?")) {
+          const parent = card.parentNode;
+          card.remove();
+          reindexSections(parent);
+        }
+        return;
+      }
+
+      const secCollapse = event.target.closest("[data-act='section-collapse']");
+      if (secCollapse) {
+        const card = secCollapse.closest(".section-card");
+        if (card) {
+          card.classList.toggle("collapsed");
+          secCollapse.textContent = card.classList.contains("collapsed") ? "▶" : "▼";
+        }
+        return;
+      }
       const openStudioBtn = event.target.closest("#open-portrait-studio-btn");
       const pickLibraryBtn = event.target.closest("#pick-library-portrait-btn");
       const clearPortraitBtn = event.target.closest("#clear-portrait-btn");
