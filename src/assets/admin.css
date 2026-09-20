@@ -1591,26 +1591,84 @@ a.wikilink {
     padding: 24px 12px 60px;
   }
   .admin-sticky-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
     padding: 14px 16px;
     margin: -24px -12px 20px -12px;
+    background: var(--paper, #f2f0ea);
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .admin-sticky-title {
     justify-content: space-between;
     width: 100%;
+    transition: all 0.28s ease;
   }
   .admin-sticky-bar .admin-actions {
     width: 100%;
     justify-content: space-between;
+    gap: 8px;
+    transition: all 0.28s ease;
   }
   .admin-sticky-bar .admin-btn {
     flex: 1;
     min-width: 0;
     justify-content: center;
     padding: 10px 8px;
-    font-size: 10px;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 700;
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .admin-sticky-bar .admin-btn .btn-text {
+    transition: opacity 0.2s ease, max-width 0.25s ease;
+    display: inline-block;
+  }
+
+  /* Compact Animated Mobile Sticky Bar on Scroll */
+  .admin-sticky-bar.is-scrolled {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 12px !important;
+    gap: 10px !important;
+    background: rgba(242, 240, 234, 0.94) !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+  }
+  .admin-sticky-bar.is-scrolled .admin-sticky-title {
+    width: auto !important;
+    gap: 6px !important;
+  }
+  .admin-sticky-bar.is-scrolled .admin-sticky-title h2 {
+    display: none !important;
+  }
+  .admin-sticky-bar.is-scrolled .admin-status-badge {
+    padding: 2px 6px !important;
+    font-size: 9px !important;
+  }
+  .admin-sticky-bar.is-scrolled .admin-actions {
+    width: auto !important;
+    gap: 6px !important;
+  }
+  .admin-sticky-bar.is-scrolled .admin-btn {
+    flex: 0 0 auto !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    gap: 0 !important;
+    border-radius: 3px !important;
+  }
+  .admin-sticky-bar.is-scrolled .admin-btn .btn-text {
+    display: none !important;
+  }
+  .admin-sticky-bar.is-scrolled .admin-btn .btn-icon {
+    font-size: 14px !important;
+    line-height: 1 !important;
   }
   .collapsible-details-content {
     grid-template-columns: 1fr;

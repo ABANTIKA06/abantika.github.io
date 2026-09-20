@@ -811,14 +811,14 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/projects" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <a href="#/projects" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW CASE STUDY")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false">SAVE DRAFT <b>→</b></button>
-          <button class="admin-btn" type="button" data-act="preview-project">PREVIEW <b>→</b></button>
-          <button class="admin-btn primary" type="submit" form="project-editor-form" data-publish="true">PUBLISH <b>→</b></button>
+          <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE DRAFT</span></button>
+          <button class="admin-btn" type="button" data-act="preview-project"><span class="btn-icon">👁️</span> <span class="btn-text">PREVIEW</span></button>
+          <button class="admin-btn primary" type="submit" form="project-editor-form" data-publish="true"><span class="btn-icon">🚀</span> <span class="btn-text">PUBLISH</span></button>
         </div>
       </div>
 
@@ -893,14 +893,14 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/blog" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <a href="#/blog" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW ARTICLE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false">SAVE DRAFT <b>→</b></button>
-          <button class="admin-btn" type="button" data-act="preview-blog">PREVIEW <b>→</b></button>
-          <button class="admin-btn primary" type="submit" form="blog-editor-form" data-publish="true">PUBLISH <b>→</b></button>
+          <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE DRAFT</span></button>
+          <button class="admin-btn" type="button" data-act="preview-blog"><span class="btn-icon">👁️</span> <span class="btn-text">PREVIEW</span></button>
+          <button class="admin-btn primary" type="submit" form="blog-editor-form" data-publish="true"><span class="btn-icon">🚀</span> <span class="btn-text">PUBLISH</span></button>
         </div>
       </div>
 
@@ -947,12 +947,12 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/notes" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <a href="#/notes" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published !== false ? 'published' : 'draft'}">${item.published !== false ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW NOTE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false">SAVE NOTE <b>→</b></button>
+          <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE NOTE</span></button>
         </div>
       </div>
 
@@ -996,14 +996,14 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/journal" class="admin-btn" style="padding:4px 10px;font-size:10px">← BACK</a>
+          <a href="#/journal" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "DAILY JOURNAL")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false">SAVE ENTRY <b>→</b></button>
-          <button class="admin-btn" type="button" data-act="preview-journal">PREVIEW <b>→</b></button>
-          <button class="admin-btn primary" type="submit" form="journal-editor-form" data-publish="true">PUBLISH <b>→</b></button>
+          <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE ENTRY</span></button>
+          <button class="admin-btn" type="button" data-act="preview-journal"><span class="btn-icon">👁️</span> <span class="btn-text">PREVIEW</span></button>
+          <button class="admin-btn primary" type="submit" form="journal-editor-form" data-publish="true"><span class="btn-icon">🚀</span> <span class="btn-text">PUBLISH</span></button>
         </div>
       </div>
 
@@ -3398,25 +3398,33 @@
     }
   });
 
+  function updateStickyBarScroll() {
+    const stickyBar = document.querySelector(".admin-sticky-bar");
+    if (stickyBar) {
+      stickyBar.classList.toggle("is-scrolled", window.scrollY > 30);
+    }
+  }
+
+  window.addEventListener("scroll", updateStickyBarScroll, { passive: true });
   window.addEventListener("hashchange", () => {
     state.message = "";
     state.content = null;
-    render();
+    render().then(updateStickyBarScroll);
   });
   window.addEventListener("popstate", () => {
     state.message = "";
     state.content = null;
-    render();
+    render().then(updateStickyBarScroll);
   });
   window.addEventListener("pageshow", () => {
     state.content = null;
-    render();
+    render().then(updateStickyBarScroll);
   });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
       state.content = null;
-      render();
+      render().then(updateStickyBarScroll);
     }
   });
-  render();
+  render().then(updateStickyBarScroll);
 })();
