@@ -22,7 +22,13 @@ function encode(data) {
 function decode(token) {
   if (!token || !token.includes(".")) return null;
   const [payload, sig] = token.split(".");
-  if (!payload || !sig || sign(payload) !== sig) return null;
+  if (!payload || !sig) return null;
+
+  const expectedSig = sign(payload);
+  const bufA = Buffer.from(sig);
+  const bufB = Buffer.from(expectedSig);
+  if (bufA.length !== bufB.length || !crypto.timingSafeEqual(bufA, bufB)) return null;
+
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
     if (!data.exp || Date.now() > data.exp) return null;

@@ -1,11 +1,66 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const env = require("./env");
 const session = require("./session");
 const store = require("./store");
 const { rebuild } = require("./rebuild");
 const githubSync = require("./github-sync");
 const r2 = require("./r2");
+
+// --- RATE LIMITING & SECURITY BRUTE-FORCE PROTECTION ---
+const failedAttempts = new Map(); // ip -> { count: number, resetTime: number }
+const MAX_FAILED_ATTEMPTS = 5;
+const BAN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes lockout
+
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) return String(forwarded).split(",")[0].trim();
+  return req.socket ? req.socket.remoteAddress || "127.0.0.1" : "127.0.0.1";
+}
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = failedAttempts.get(ip);
+  if (!record) return { allowed: true, remaining: MAX_FAILED_ATTEMPTS };
+
+  if (now > record.resetTime) {
+    failedAttempts.delete(ip);
+    return { allowed: true, remaining: MAX_FAILED_ATTEMPTS };
+  }
+
+  if (record.count >= MAX_FAILED_ATTEMPTS) {
+    const remainingSeconds = Math.ceil((record.resetTime - now) / 1000);
+    return { allowed: false, remainingSeconds };
+  }
+
+  return { allowed: true, remaining: MAX_FAILED_ATTEMPTS - record.count };
+}
+
+function recordFailedAttempt(ip) {
+  const now = Date.now();
+  const record = failedAttempts.get(ip) || { count: 0, resetTime: now + BAN_WINDOW_MS };
+  record.count += 1;
+  record.resetTime = now + BAN_WINDOW_MS;
+  failedAttempts.set(ip, record);
+}
+
+function resetFailedAttempts(ip) {
+  failedAttempts.delete(ip);
+}
+
+function timingSafeCompare(a, b) {
+  const strA = String(a || "").toLowerCase();
+  const strB = String(b || "").toLowerCase();
+  const bufA = Buffer.from(strA);
+  const bufB = Buffer.from(strB);
+
+  if (bufA.length !== bufB.length) {
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 function send(res, status, body, headers = {}) {
   const payload = typeof body === "string" ? body : JSON.stringify(body);
@@ -183,14 +238,37 @@ async function handle(req, res) {
       return true;
     }
     if (route === "POST /api/auth/passcode") {
+      const clientIp = getClientIp(req);
+      const rateCheck = checkRateLimit(clientIp);
+
+      if (!rateCheck.allowed) {
+        send(res, 429, {
+          error: `Too many failed passcode attempts. IP temporarily locked out for ${rateCheck.remainingSeconds} seconds. Please try again later.`
+        });
+        return true;
+      }
+
       const body = await readBody(req);
       let code = String(body.passcode || "").trim();
       if (code.startsWith("$")) code = code.slice(1);
       const expected = String(env.adminPasscode || "abantika2026").trim();
-      if (!code || code.toLowerCase() !== expected.toLowerCase()) {
-        send(res, 401, { error: "Invalid secret passcode." });
+
+      const isValid = timingSafeCompare(code, expected);
+
+      if (!isValid) {
+        recordFailedAttempt(clientIp);
+        // Delay response to defeat rapid automated brute-force scripts
+        await new Promise((r) => setTimeout(r, 450));
+        const updated = checkRateLimit(clientIp);
+        send(res, 401, {
+          error: "Invalid secret passcode.",
+          remainingAttempts: Math.max(0, updated.remaining || 0)
+        });
         return true;
       }
+
+      // Success: clear rate limit record upon successful login
+      resetFailedAttempts(clientIp);
       session.write(res, { login: env.allowedGithubUser || "admin", passcode: true });
       send(res, 200, { ok: true, login: env.allowedGithubUser || "admin" });
       return true;
