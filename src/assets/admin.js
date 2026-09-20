@@ -148,9 +148,10 @@
 
   function commitPrompt(type, publishFlag, form) {
     const name = formValue(form, "title") || formValue(form, "name") || "this entry";
+    const formPublished = Boolean(formValue(form, "published"));
     const publishing =
       publishFlag === "true" ||
-      (type === "journal" && Boolean(formValue(form, "published"))) ||
+      (publishFlag !== "false" && formPublished) ||
       ["about", "settings", "skills", "media-upload"].includes(type);
     if (type === "media-upload") {
       return {
@@ -807,10 +808,10 @@
       </div>
 
       <form class="admin-form" id="project-editor-form" data-form="project" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel">
+        <details class="collapsible-details-panel" open>
           <summary class="collapsible-details-summary">
             <span>01 / CASE STUDY METADATA & MEDIA SETTINGS</span>
-            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
@@ -889,10 +890,10 @@
       </div>
 
       <form class="admin-form" id="blog-editor-form" data-form="blog" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel">
+        <details class="collapsible-details-panel" open>
           <summary class="collapsible-details-summary">
             <span>01 / ARTICLE METADATA & MEDIA SETTINGS</span>
-            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
@@ -941,10 +942,10 @@
       </div>
 
       <form class="admin-form" id="note-editor-form" data-form="note" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel">
+        <details class="collapsible-details-panel" open>
           <summary class="collapsible-details-summary">
             <span>01 / NOTE METADATA</span>
-            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
@@ -992,10 +993,10 @@
       </div>
 
       <form class="admin-form" id="journal-editor-form" data-form="journal" data-id="${esc(item.id || "")}" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel">
+        <details class="collapsible-details-panel" open>
           <summary class="collapsible-details-summary">
             <span>01 / JOURNAL METADATA & LINKS</span>
-            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("DATE", "date", item.date || today, 'type="date"', true)}
@@ -2434,9 +2435,12 @@
       state.content = null;
       return { path: uploadedPath };
     }
-    let published = formValue(form, "published");
-    if (publishFlag === "true") published = true;
-    if (publishFlag === "false" && type !== "journal") published = false;
+    let published = Boolean(formValue(form, "published"));
+    if (publishFlag === "true") {
+      published = true;
+    } else if (publishFlag === "false") {
+      published = false;
+    }
     if (type === "project") {
       const sections = collectSections(form);
       const payload = {
@@ -3109,7 +3113,9 @@
         }
       }
       if (publishBtn && publishBtn.tagName === "BUTTON" && publishBtn.type === "submit") {
-        publishBtn.form.dataset.nextPublish = publishBtn.getAttribute("data-publish");
+        if (publishBtn.form) {
+          publishBtn.form.dataset.nextPublish = publishBtn.getAttribute("data-publish") || "false";
+        }
       }
     } catch (err) {
       state.error = err.message;
@@ -3279,7 +3285,8 @@
     if (!form) return;
     event.preventDefault();
     syncAllWysiwyg(form);
-    const publishFlag = form.dataset.nextPublish || "false";
+    const submitter = event.submitter;
+    const publishFlag = (submitter && submitter.getAttribute("data-publish")) || form.dataset.nextPublish || null;
     const type = form.getAttribute("data-form");
     if (type === "passcode-login") {
       try {
