@@ -1025,9 +1025,14 @@
 
   function aboutForm(about) {
     const principles = (about.principles || []).concat([{ title: "", home: "", page: "" }, { title: "", home: "", page: "" }, { title: "", home: "", page: "" }, { title: "", home: "", page: "" }]).slice(0, 4).map((item, i) => `
-      ${input(`PRINCIPLE ${i + 1} TITLE`, `p-title-${i}`, item.title || "")}
-      ${input("HOME LINE", `p-home-${i}`, item.home || "")}
-      ${input("PAGE LINE", `p-page-${i}`, item.page || "")}
+      <div class="wide portrait-studio-container" style="margin-top:20px;padding:20px;background:#ffffff">
+        <h4 style="font:700 11px var(--mono);margin:0 0 14px;letter-spacing:0.14em;color:var(--accent-red,#e03c31)">PRINCIPLE 0${i + 1}</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px">
+          ${input(`PRINCIPLE ${i + 1} TITLE`, `p-title-${i}`, item.title || "")}
+          ${input("HOME LINE", `p-home-${i}`, item.home || "")}
+          ${input("PAGE LINE", `p-page-${i}`, item.page || "")}
+        </div>
+      </div>
     `).join("");
     const portraitPath = about.portrait || "";
     return chrome(
@@ -1045,7 +1050,7 @@
         ${area("MARGIN NOTE", "marginNote", (about.marginNote || []).join("\n"))}
 
         <!-- RECODED EDITORIAL PORTRAIT MANAGER -->
-        <div class="portrait-studio-container">
+        <div class="wide portrait-studio-container">
           <div class="portrait-studio-header">
             <h3>EDITORIAL PORTRAIT MANAGER</h3>
             <span class="studio-badge">CLOUDFLARE R2 & STUDIO FILTERS</span>
@@ -1059,37 +1064,37 @@
               <b></b>
             </div>
             <div class="portrait-studio-controls-area">
-              <div style="margin-bottom:12px">
-                <label class="admin-kicker" style="margin-bottom:4px;display:block">PORTRAIT PATH / IMAGE URL</label>
+              <div style="margin-bottom:14px">
+                <label class="admin-kicker" style="margin-bottom:6px;display:block">PORTRAIT PATH / IMAGE URL</label>
                 <input type="text" name="portrait" id="portrait-path-input" class="admin-input" value="${portraitPath}" placeholder="/assets/images/about/portrait.webp">
               </div>
-              <div class="portrait-studio-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="portrait-studio-actions">
                 <input type="file" id="portrait-direct-upload-input" accept="image/*" style="display:none">
-                <button type="button" class="admin-btn primary" id="portrait-direct-upload-btn" style="min-width:0;justify-content:center">
+                <button type="button" class="admin-btn primary" id="portrait-direct-upload-btn">
                   📤 UPLOAD NEW FILE <b>→</b>
                 </button>
-                <button type="button" class="admin-btn secondary" id="pick-library-portrait-btn" style="min-width:0;justify-content:center">
+                <button type="button" class="admin-btn secondary" id="pick-library-portrait-btn">
                   🖼️ CHOOSE FROM LIBRARY <b>→</b>
                 </button>
-                <button type="button" class="admin-btn" id="open-portrait-studio-btn" style="min-width:0;justify-content:center">
+                <button type="button" class="admin-btn" id="open-portrait-studio-btn">
                   🎨 CROP & FILTER STUDIO <b>→</b>
                 </button>
-                ${portraitPath ? `<button type="button" class="admin-btn danger" id="clear-portrait-btn" style="min-width:0;justify-content:center">❌ REMOVE</button>` : ''}
+                ${portraitPath ? `<button type="button" class="admin-btn danger" id="clear-portrait-btn">❌ REMOVE</button>` : ''}
               </div>
             </div>
           </div>
         </div>
 
         <!-- RESUME DOCUMENT UPLOADER -->
-        <div class="portrait-studio-container" style="margin-top:24px">
+        <div class="wide portrait-studio-container" style="margin-top:24px">
           <div class="portrait-studio-header">
             <h3>RESUME DOCUMENT (PDF)</h3>
             <span class="studio-badge">PUBLIC DOWNLOAD ASSET</span>
           </div>
-          <div style="padding:20px;font-family:var(--sans)">
+          <div style="padding:16px 0 0;font-family:var(--sans)">
             <p style="font-size:13px;line-height:1.5;color:#555;margin:0 0 16px">Upload your updated resume PDF file here. It will automatically replace <code>/assets/Abantika_Resume.pdf</code> and update all Download Resume buttons on the live site.</p>
-            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-              <input type="file" id="resume-pdf-input" accept="application/pdf" class="admin-input" style="max-width:320px;padding:8px" />
+            <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+              <input type="file" id="resume-pdf-input" accept="application/pdf" class="admin-input" style="max-width:360px;padding:8px;background:#fff;border:1px solid var(--line)" />
               <button type="button" class="admin-btn primary" id="upload-resume-btn">📄 UPLOAD NEW RESUME PDF <b>↗</b></button>
             </div>
             <div id="resume-upload-msg" style="margin-top:12px;font:11px var(--mono)"></div>
@@ -1097,7 +1102,7 @@
         </div>
 
         ${principles}
-        <div class="admin-actions"><button class="admin-btn primary" type="submit">SAVE ABOUT <b>→</b></button></div>
+        <div class="admin-actions" style="margin-top:28px"><button class="admin-btn primary" type="submit">SAVE ABOUT <b>→</b></button></div>
       </form>`
     );
   }

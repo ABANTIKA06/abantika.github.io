@@ -909,11 +909,15 @@ a.wikilink {
 
 /* Editorial Portrait Studio & Photo Editor */
 .portrait-studio-container {
-  margin: 28px 0;
+  margin: 24px 0;
   padding: 24px;
-  background: #f7f6f2;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-left: 3px solid var(--red);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  box-sizing: border-box;
 }
 
 .portrait-studio-header {
@@ -940,15 +944,16 @@ a.wikilink {
 }
 
 .portrait-studio-body {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 24px;
-  align-items: center;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .portrait-plate-preview {
   width: 140px;
   height: 185px;
+  flex-shrink: 0;
   background: linear-gradient(130deg, #cccac4, #777 55%, #252525);
   position: relative;
   overflow: hidden;
@@ -989,11 +994,22 @@ a.wikilink {
   z-index: 2;
 }
 
+.portrait-studio-controls-area {
+  flex: 1;
+  min-width: 280px;
+}
+
 .portrait-studio-actions {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.portrait-studio-actions .admin-btn {
+  min-width: 170px;
+  height: 42px;
+  justify-content: center;
 }
 
 /* Portrait Editor Modal Studio */
