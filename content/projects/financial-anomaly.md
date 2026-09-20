@@ -13,7 +13,7 @@ technologies:
   - MATPLOTLIB
   - PLOTLY
 featured: true
-published: true
+published: false
 art: radial
 artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
 customArt: ''
@@ -36,4 +36,10 @@ sections:
     heading: THE OUTCOME
     body: ''
 ---
+## THE QUESTION
 
+## THE EVIDENCE
+
+## THE METHOD
+
+## THE OUTCOME
