@@ -750,9 +750,9 @@
             <input type="text" class="section-heading-input" name="section-heading" value="${esc(headingVal)}" placeholder="Section Heading (e.g. THE QUESTION)" style="flex:1;font-weight:700">
           </div>
           <div class="section-card-actions">
-            <button type="button" class="wysiwyg-tab section-collapse-btn" data-act="section-collapse" title="Collapse/Expand">▼</button>
-            <button type="button" class="wysiwyg-tab" data-act="section-move-up" title="Move Up">▲</button>
-            <button type="button" class="wysiwyg-tab" data-act="section-move-down" title="Move Down">▼</button>
+            <button type="button" class="wysiwyg-tab section-collapse-btn" data-act="section-collapse" title="Collapse Section Content">—</button>
+            <button type="button" class="wysiwyg-tab" data-act="section-move-up" title="Move Section Up">▲</button>
+            <button type="button" class="wysiwyg-tab" data-act="section-move-down" title="Move Section Down">▼</button>
             <button type="button" class="wysiwyg-tab" data-act="section-duplicate" title="Duplicate Section">📋 DUPLICATE</button>
             <button type="button" class="wysiwyg-tab section-delete-btn" data-act="section-delete" title="Delete Section" style="color:var(--accent-red,#e03c31)">🗑️</button>
           </div>
@@ -2846,8 +2846,9 @@
       if (secCollapse) {
         const card = secCollapse.closest(".section-card");
         if (card) {
-          card.classList.toggle("collapsed");
-          secCollapse.textContent = card.classList.contains("collapsed") ? "▶" : "▼";
+          const isCollapsed = card.classList.toggle("collapsed");
+          secCollapse.textContent = isCollapsed ? "+" : "—";
+          secCollapse.setAttribute("title", isCollapsed ? "Expand Section Content" : "Collapse Section Content");
         }
         return;
       }

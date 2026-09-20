@@ -1394,7 +1394,29 @@ a.wikilink {
   border-color: var(--ink);
 }
 .section-card-body {
-  padding: 20px;
+  padding: 0;
+  background: #ffffff;
+}
+.section-card-body .wysiwyg-wrapper {
+  border: none;
+  margin-top: 0;
+  background: transparent;
+}
+.section-card-body .wysiwyg-mode-bar {
+  background: #faf9f5;
+  border-bottom: 1px solid var(--line);
+  padding: 8px 16px;
+}
+.section-card-body .wysiwyg-toolbar {
+  background: #f2f0ea;
+  border-bottom: 1px solid var(--line);
+  padding: 8px 12px;
+}
+.section-card-body .wysiwyg-editable,
+.section-card-body .wysiwyg-source,
+.section-card-body .wysiwyg-preview-pane {
+  background: #ffffff;
+  border: none;
 }
 .admin-sticky-bar {
   position: sticky;
