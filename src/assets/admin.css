@@ -1519,17 +1519,57 @@ a.wikilink {
   z-index: 100;
   background: var(--paper, #f2f0ea);
   border-bottom: 1px solid var(--line);
-  padding: 14px 28px;
+  padding: 12px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   margin: -36px -28px 24px -28px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+.admin-sticky-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.sticky-divider {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: var(--line, #d0ccc0);
+}
+.admin-sticky-kicker {
+  font: 700 10px var(--mono);
+  letter-spacing: 0.12em;
+  color: #777777;
+  text-transform: uppercase;
+}
+.admin-sticky-title-container {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+.admin-sticky-title-text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--mono);
+  color: var(--fg, #111111);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .admin-sticky-title {
   display: flex;
   align-items: center;
   gap: 14px;
+  flex: 1;
+  min-width: 0;
 }
 .admin-status-badge {
   font: 700 10px var(--mono);
@@ -1538,6 +1578,7 @@ a.wikilink {
   text-transform: uppercase;
   border: 1px solid var(--line);
   background: #ffffff;
+  white-space: nowrap;
 }
 .admin-status-badge.published {
   background: #2a7b4c;

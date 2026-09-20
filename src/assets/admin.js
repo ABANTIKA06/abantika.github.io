@@ -818,10 +818,15 @@
       isNew ? "03 / NEW PROJECT" : "03 / EDIT PROJECT",
       `
       <div class="admin-sticky-bar">
-        <div class="admin-sticky-title">
+        <div class="admin-sticky-left">
           <a href="#/projects" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW CASE STUDY")}</h2>
+          <span class="sticky-divider"></span>
+          <span class="admin-sticky-kicker">03 / PROJECT</span>
+        </div>
+        <div class="admin-sticky-title-container">
+          <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW CASE STUDY")}">${esc(item.title || "NEW CASE STUDY")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
@@ -900,10 +905,15 @@
       isNew ? "04 / NEW ARTICLE" : "04 / EDIT ARTICLE",
       `
       <div class="admin-sticky-bar">
-        <div class="admin-sticky-title">
+        <div class="admin-sticky-left">
           <a href="#/blog" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW ARTICLE")}</h2>
+          <span class="sticky-divider"></span>
+          <span class="admin-sticky-kicker">04 / BLOG</span>
+        </div>
+        <div class="admin-sticky-title-container">
+          <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW ARTICLE")}">${esc(item.title || "NEW ARTICLE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
@@ -954,10 +964,15 @@
       isNew ? "06 / NEW NOTE" : "06 / EDIT NOTE",
       `
       <div class="admin-sticky-bar">
-        <div class="admin-sticky-title">
+        <div class="admin-sticky-left">
           <a href="#/notes" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published !== false ? 'published' : 'draft'}">${item.published !== false ? 'PUBLISHED' : 'DRAFT'}</span>
-          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW NOTE")}</h2>
+          <span class="sticky-divider"></span>
+          <span class="admin-sticky-kicker">06 / NOTE</span>
+        </div>
+        <div class="admin-sticky-title-container">
+          <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW NOTE")}">${esc(item.title || "NEW NOTE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE NOTE</span></button>
@@ -1003,10 +1018,15 @@
       isNew ? "05 / NEW NOTE" : "05 / EDIT NOTE",
       `
       <div class="admin-sticky-bar">
-        <div class="admin-sticky-title">
+        <div class="admin-sticky-left">
           <a href="#/journal" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "DAILY JOURNAL")}</h2>
+          <span class="sticky-divider"></span>
+          <span class="admin-sticky-kicker">05 / JOURNAL</span>
+        </div>
+        <div class="admin-sticky-title-container">
+          <h2 class="admin-sticky-title-text" title="${esc(item.title || "DAILY JOURNAL")}">${esc(item.title || "DAILY JOURNAL")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE ENTRY</span></button>
