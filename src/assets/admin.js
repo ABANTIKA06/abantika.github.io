@@ -212,26 +212,34 @@
 
   function input(label, name, value, extra = "", isRequired = false) {
     const reqBadge = isRequired ? `<span class="req-star">*</span><span class="req-tag">REQUIRED</span>` : "";
-    return `<label>${esc(label)}${reqBadge}<input name="${esc(name)}" value="${esc(value || "")}" ${extra}></label>`;
+    return `
+      <label class="admin-field">
+        <span class="admin-label-text">${esc(label)}${reqBadge}</span>
+        <input name="${esc(name)}" value="${esc(value || "")}" ${extra}>
+      </label>`;
   }
   function area(label, name, value, cls = "", isRequired = false) {
     const reqBadge = isRequired ? `<span class="req-star">*</span><span class="req-tag">REQUIRED</span>` : "";
     return `
-      <div class="wide area-wrapper" style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <label style="margin:0">${esc(label)}${reqBadge}</label>
-          <button type="button" class="wysiwyg-btn math-btn" data-area-cmd="math" title="Insert LaTeX Math" style="font-size:10px;padding:2px 8px;font-weight:700;color:var(--accent-red,#e03c31)">∑ LATEX MATH</button>
+      <div class="wide area-wrapper" style="margin-bottom:16px">
+        <div class="area-header-bar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span class="admin-label-text">${esc(label)}${reqBadge}</span>
+          <button type="button" class="wysiwyg-btn math-btn" data-area-cmd="math" title="Insert LaTeX Math" style="font-size:10px;padding:3px 8px;font-weight:700;color:var(--accent-red,#e03c31)">∑ LATEX MATH</button>
         </div>
         <textarea class="${cls}" name="${esc(name)}">${esc(value || "")}</textarea>
       </div>`;
   }
   function check(label, name, on) {
-    return `<label class="admin-check"><input type="checkbox" name="${esc(name)}" ${on ? "checked" : ""}> ${esc(label)}</label>`;
+    return `<label class="admin-check"><input type="checkbox" name="${esc(name)}" ${on ? "checked" : ""}> <span>${esc(label)}</span></label>`;
   }
   function sel(label, name, value, options) {
-    return `<label>${esc(label)}<select name="${esc(name)}">${options
-      .map((opt) => `<option value="${esc(opt.value)}" ${opt.value === value ? "selected" : ""}>${esc(opt.label)}</option>`)
-      .join("")}</select></label>`;
+    return `
+      <label class="admin-field">
+        <span class="admin-label-text">${esc(label)}</span>
+        <select name="${esc(name)}">${options
+          .map((opt) => `<option value="${esc(opt.value)}" ${opt.value === value ? "selected" : ""}>${esc(opt.label)}</option>`)
+          .join("")}</select>
+      </label>`;
   }
 
   function htmlToMarkdown(node) {

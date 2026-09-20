@@ -122,18 +122,51 @@
   max-width: 1240px;
 }
 .admin-form .wide,
+.area-wrapper,
+.collapsible-details-content .wide,
+.collapsible-details-content .area-wrapper,
 .collapsible-details-panel,
 .section-editor-workspace,
 .admin-actions {
-  grid-column: 1 / -1;
+  grid-column: 1 / -1 !important;
   width: 100%;
+  box-sizing: border-box;
 }
-.admin-form label {
+.admin-form label,
+.admin-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   font: 10px var(--mono);
   letter-spacing: .14em;
+  width: 100%;
+  box-sizing: border-box;
+}
+.admin-label-text {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font: 700 10px/1.2 var(--mono);
+  letter-spacing: .14em;
+  color: var(--ink);
+}
+.area-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  width: 100%;
+}
+.area-wrapper {
+  margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.area-wrapper textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: 110px;
 }
 .admin-form input,
 .admin-form textarea,
@@ -146,6 +179,8 @@
   letter-spacing: 0;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 .admin-form input:focus,
 .admin-form textarea:focus,
