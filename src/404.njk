@@ -6,20 +6,24 @@ description: The requested page could not be found on Abantika's portfolio websi
 permalink: /404.html
 eleventyExcludeFromCollections: true
 ---
-<main class="page-container" id="main-content">
-  <header class="section-header" style="margin-top: 40px;">
-    <p class="admin-kicker" style="color:var(--accent-red,#e03c31)">ERROR 404 / NOT FOUND</p>
-    <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-family: var(--sans); font-weight: 700;">PAGE NOT FOUND<span class="red-stop">.</span></h1>
-  </header>
+<div class="page-shell">
+  {% include "components/header.njk" %}
+  <main class="page-container" id="main-content" style="padding: 40px clamp(22px,4vw,72px);">
+    <header class="section-header">
+      <p class="eyebrow" style="color:var(--red)">ERROR 404 / NOT FOUND</p>
+      <h1>PAGE NOT FOUND<span class="red-stop">.</span></h1>
+    </header>
 
-  <article class="case-body" style="max-width: 680px; margin: 24px 0 48px;">
-    <p style="font-size: 1.1rem; line-height: 1.7; color: #444;">
-      The page or resource you are looking for does not exist, has been moved, or is private.
-    </p>
-    <div style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
-      <a href="/" class="admin-btn primary" style="text-decoration:none">RETURN TO HOMEPAGE <b>→</b></a>
-      <a href="/projects/" class="admin-btn" style="text-decoration:none">EXPLORE PROJECTS <b>→</b></a>
-      <a href="/blog/" class="admin-btn" style="text-decoration:none">READ ARTICLES <b>→</b></a>
-    </div>
-  </article>
-</main>
+    <article class="case-body" style="max-width: 680px; margin: 24px 0 48px;">
+      <p style="font-size: 1.1rem; line-height: 1.7; color: var(--text-secondary);">
+        The page or resource you are looking for does not exist, has been moved, or is private.
+      </p>
+      <div style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="/" class="button button-primary" style="text-decoration:none">RETURN TO HOMEPAGE <b>→</b></a>
+        <a href="/projects/" class="button" style="text-decoration:none">EXPLORE PROJECTS <b>→</b></a>
+        <a href="/blog/" class="button" style="text-decoration:none">READ ARTICLES <b>→</b></a>
+      </div>
+    </article>
+  </main>
+  {% include "components/footer.njk" %}
+</div>

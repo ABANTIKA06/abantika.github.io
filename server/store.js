@@ -26,6 +26,14 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
+function safeSlug(input) {
+  const base = path.basename(String(input || "")).replace(/[^a-zA-Z0-9._-]/g, "");
+  if (!base || base === "." || base === "..") {
+    throw new Error("Invalid slug or filename parameter.");
+  }
+  return base;
+}
+
 function slugify(value) {
   return String(value || "")
     .toLowerCase()
@@ -213,33 +221,33 @@ function publicJournal(item) {
 }
 
 function projectFile(slug) {
-  return path.join(CONTENT, "projects", `${slug}.md`);
+  return path.join(CONTENT, "projects", `${safeSlug(slug)}.md`);
 }
 
 function blogFile(slug) {
-  return path.join(CONTENT, "blog", `${slug}.md`);
+  return path.join(CONTENT, "blog", `${safeSlug(slug)}.md`);
 }
 
 function journalFile(id) {
-  return path.join(CONTENT, "journal", `${id}.md`);
+  return path.join(CONTENT, "journal", `${safeSlug(id)}.md`);
 }
 
 function deleteProject(slug) {
   const file = projectFile(slug);
   safeUnlinkFile(file);
-  return { ok: true, slug };
+  return { ok: true, slug: safeSlug(slug) };
 }
 
 function deleteBlog(slug) {
   const file = blogFile(slug);
   safeUnlinkFile(file);
-  return { ok: true, slug };
+  return { ok: true, slug: safeSlug(slug) };
 }
 
 function deleteJournal(id) {
   const file = journalFile(id);
   safeUnlinkFile(file);
-  return { ok: true, id };
+  return { ok: true, id: safeSlug(id) };
 }
 
 function saveProject(input, { isNew = false } = {}) {
@@ -462,9 +470,32 @@ function findMediaReferences(imgPath, imgName) {
 }
 
 const mediaBufferCache = new Map();
+const mediaBufferTimestamps = new Map();
+const MEDIA_BUFFER_MAX_AGE = 10 * 60 * 1000; // 10 minutes max retention
 let mediaListCache = null;
 let mediaListCacheTime = 0;
 const MEDIA_CACHE_TTL = 15000;
+
+function cleanExpiredMediaBuffers() {
+  const now = Date.now();
+  for (const [key, ts] of mediaBufferTimestamps.entries()) {
+    if (now - ts > MEDIA_BUFFER_MAX_AGE) {
+      mediaBufferCache.delete(key);
+      mediaBufferTimestamps.delete(key);
+    }
+  }
+}
+
+function setMediaBuffer(relPath, buffer) {
+  cleanExpiredMediaBuffers();
+  if (mediaBufferCache.size > 20) {
+    const oldest = mediaBufferCache.keys().next().value;
+    mediaBufferCache.delete(oldest);
+    mediaBufferTimestamps.delete(oldest);
+  }
+  mediaBufferCache.set(relPath, buffer);
+  mediaBufferTimestamps.set(relPath, Date.now());
+}
 
 function invalidateStoreMediaCache() {
   mediaListCache = null;
@@ -473,6 +504,7 @@ function invalidateStoreMediaCache() {
 }
 
 function getMediaBuffer(relPath) {
+  cleanExpiredMediaBuffers();
   const norm = String(relPath || "").replace(/\\/g, "/");
   return mediaBufferCache.get(norm);
 }
@@ -559,6 +591,14 @@ function safeName(name) {
   return base;
 }
 
+function sanitizeSvgBuffer(buf) {
+  let str = buf.toString("utf8");
+  str = str.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "");
+  str = str.replace(/\s+on[a-z]+\s*=\s*(['"][\s\S]*?['"]|[^\s>]+)/gi, "");
+  str = str.replace(/href\s*=\s*(['"]\s*javascript:[\s\S]*?['"]|[^\s>]+javascript:[^\s>]+)/gi, 'href="#"');
+  return Buffer.from(str, "utf8");
+}
+
 async function saveMediaBuffer({ folder, filename, buffer }) {
   invalidateStoreMediaCache();
   if (!FOLDERS.includes(folder)) throw new Error("invalid media folder");
@@ -566,8 +606,13 @@ async function saveMediaBuffer({ folder, filename, buffer }) {
   if (!buffer || !buffer.length) throw new Error("empty file");
   if (buffer.length > 30 * 1024 * 1024) throw new Error("file exceeds 30MB limit.");
 
+  const ext = path.extname(name).toLowerCase();
+  if (ext === ".svg") {
+    buffer = sanitizeSvgBuffer(buffer);
+  }
+
   const relPath = `src/assets/images/${folder}/${name}`.replace(/\\/g, "/");
-  mediaBufferCache.set(relPath, buffer);
+  setMediaBuffer(relPath, buffer);
 
   if (r2.isConfigured()) {
     try {
@@ -645,7 +690,8 @@ function listNotes() {
 }
 
 function getNote(slugOrFilename) {
-  const name = slugOrFilename.endsWith(".md") ? slugOrFilename : `${slugOrFilename}.md`;
+  const clean = safeSlug(slugOrFilename);
+  const name = clean.endsWith(".md") ? clean : `${clean}.md`;
   const file = path.join(CONTENT, "notes", name);
   const virt = getVirtualFile(file);
   let parsed;
@@ -666,7 +712,7 @@ function getNote(slugOrFilename) {
 function saveNote(payload) {
   const title = String(payload.title || "").trim();
   if (!title) throw new Error("Note requires a title.");
-  const slug = slugify(payload.slug || title);
+  const slug = safeSlug(slugify(payload.slug || title));
   if (!slug) throw new Error("Note requires a valid slug.");
   const filename = `${slug}.md`;
   const file = path.join(CONTENT, "notes", filename);
@@ -683,7 +729,8 @@ function saveNote(payload) {
 }
 
 function deleteNote(slugOrFilename) {
-  const name = slugOrFilename.endsWith(".md") ? slugOrFilename : `${slugOrFilename}.md`;
+  const clean = safeSlug(slugOrFilename);
+  const name = clean.endsWith(".md") ? clean : `${clean}.md`;
   const file = path.join(CONTENT, "notes", name);
   safeUnlinkFile(file);
   return { ok: true, filename: name };

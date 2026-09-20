@@ -1,0 +1,28 @@
+---
+title: "Notes — Abantika"
+description: "Research notes, concepts, and working thoughts."
+layout: base.njk
+---
+<div class="page-shell">
+  {% include "components/header.njk" %}
+  <main class="projects-page">
+    <header class="page-header">
+      <p class="eyebrow">DIGITAL GARDEN</p>
+      <h1>Notes & Concepts<span class="red-stop">.</span></h1>
+    </header>
+    <section class="journal-list">
+      {% for note in publishedNotes %}
+      <article class="journal-item">
+        <div class="journal-date">{{ note.dateISO }}</div>
+        <div class="journal-content">
+          <h2><a href="{{ note.url }}" class="text-link">{{ note.title }}</a></h2>
+          {% if note.tags and note.tags.length > 0 %}
+          <p class="case-tech">{{ note.tags | join(" · ") }}</p>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+  {% include "components/footer.njk" %}
+</div>

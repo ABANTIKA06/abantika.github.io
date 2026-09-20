@@ -67,6 +67,8 @@ function send(res, status, body, headers = {}) {
   res.writeHead(status, {
     "content-type": typeof body === "string" ? "text/plain; charset=utf-8" : "application/json; charset=utf-8",
     "cache-control": "no-store",
+    "Access-Control-Allow-Origin": env.publicOrigin || "*",
+    "Access-Control-Allow-Credentials": "true",
     ...headers
   });
   res.end(payload);
@@ -202,6 +204,17 @@ function devLogin(req, res) {
 }
 
 async function handle(req, res) {
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": req.headers.origin || "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true"
+    });
+    res.end();
+    return true;
+  }
+
   const url = new URL(req.url, origin(req));
   const route = `${req.method} ${url.pathname}`;
 

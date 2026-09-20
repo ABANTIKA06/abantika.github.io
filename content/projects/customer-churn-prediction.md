@@ -5,12 +5,8 @@ number: '01'
 date: '2026-09-09'
 year: 2026
 category: Machine Learning
-description: >-
-  [PLACEHOLDER — A concise, verified prUHUHIUH890809808098  980808098 oject
-  summary will appear here.]
-summary: >-
-  [PLACEHOLDER — A concise, verified prUHUHIUH890809808098  980808098 oject
-  summary will appear here.]
+description: Predicting customer retention patterns using machine learning to identify key churn indicators.
+summary: Predicting customer retention patterns using machine learning to identify key churn indicators.
 technologies:
   - Python
   - Pandas

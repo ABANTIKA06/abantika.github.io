@@ -8,3 +8,6 @@ Thumbs.db
 -checks/
 .gemini/
 03. Page ISSUE.png
+.vercel/
+*.bak
+website_style.png

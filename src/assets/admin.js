@@ -230,7 +230,14 @@
       </div>`;
   }
   function check(label, name, on) {
-    return `<label class="admin-check"><input type="checkbox" name="${esc(name)}" ${on ? "checked" : ""}> <span>${esc(label)}</span></label>`;
+    return `
+      <label class="admin-field admin-check-field">
+        <span class="admin-label-text">${esc(label)}</span>
+        <div class="admin-check-input">
+          <input type="checkbox" name="${esc(name)}" ${on ? "checked" : ""}>
+          <span class="admin-check-text">${esc(label)}</span>
+        </div>
+      </label>`;
   }
   function sel(label, name, value, options) {
     return `
@@ -1916,7 +1923,11 @@
     document.getElementById("ps-file-input")?.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (file) {
+        if (portraitStudioState.lastObjectUrl) {
+          URL.revokeObjectURL(portraitStudioState.lastObjectUrl);
+        }
         const url = URL.createObjectURL(file);
+        portraitStudioState.lastObjectUrl = url;
         loadImgIntoStudio(url);
       }
     });
@@ -2001,7 +2012,14 @@
       canvas.style.cursor = "grabbing";
     });
 
-    window.addEventListener("mousemove", (e) => {
+    if (window._psMouseMoveHandler) {
+      window.removeEventListener("mousemove", window._psMouseMoveHandler);
+    }
+    if (window._psMouseUpHandler) {
+      window.removeEventListener("mouseup", window._psMouseUpHandler);
+    }
+
+    window._psMouseMoveHandler = (e) => {
       if (!portraitStudioState.isDragging) return;
       portraitStudioState.panX = Math.max(-250, Math.min(250, e.clientX - portraitStudioState.dragStartX));
       portraitStudioState.panY = Math.max(-250, Math.min(250, e.clientY - portraitStudioState.dragStartY));
@@ -2012,14 +2030,17 @@
       document.getElementById("ps-panx-val").textContent = portraitStudioState.panX + "px";
       document.getElementById("ps-pany-val").textContent = portraitStudioState.panY + "px";
       drawPortraitStudioCanvas();
-    });
+    };
 
-    window.addEventListener("mouseup", () => {
+    window._psMouseUpHandler = () => {
       if (portraitStudioState.isDragging) {
         portraitStudioState.isDragging = false;
         if (canvas) canvas.style.cursor = "grab";
       }
-    });
+    };
+
+    window.addEventListener("mousemove", window._psMouseMoveHandler);
+    window.addEventListener("mouseup", window._psMouseUpHandler);
 
     document.getElementById("ps-apply-save-btn")?.addEventListener("click", async () => {
       if (!portraitStudioState.activeImg) {
@@ -2270,7 +2291,7 @@
   function previewFrame(html) {
     const box = document.createElement("div");
     box.className = "admin-preview";
-    box.innerHTML = `<button class="admin-btn" type="button" data-act="close-preview">CLOSE PREVIEW</button><iframe title="Preview"></iframe>`;
+    box.innerHTML = `<button class="admin-btn" type="button" data-act="close-preview">CLOSE PREVIEW</button><iframe title="Preview" sandbox="allow-same-origin allow-scripts"></iframe>`;
     app.appendChild(box);
     const doc = box.querySelector("iframe").contentDocument;
     doc.open();
@@ -2438,6 +2459,9 @@
       }
 
       state.mediaPreviewCache = state.mediaPreviewCache || {};
+      if (state.mediaPreviewCache[uploadedPath] && state.mediaPreviewCache[uploadedPath].startsWith("blob:")) {
+        URL.revokeObjectURL(state.mediaPreviewCache[uploadedPath]);
+      }
       state.mediaPreviewCache[uploadedPath] = URL.createObjectURL(file);
       state.message = "Media uploaded successfully to Cloudflare R2.";
       state.content = null;

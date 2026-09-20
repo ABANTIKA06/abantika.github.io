@@ -1,0 +1,48 @@
+---
+pagination:
+  data: publishedNotes
+  size: 1
+  alias: note
+permalink: "/notes/{{ note.slug }}/"
+layout: base.njk
+pageType: article
+share: true
+ogType: article
+eleventyComputed:
+  title: "{{ note.title | safe }} — Abantika"
+  description: "{{ note.title }}"
+---
+<div class="page-shell">
+  {% include "components/header.njk" %}
+  <main class="article-page">
+    <header class="case-header">
+      <p class="eyebrow">NOTE &nbsp; · &nbsp; {{ note.dateISO }}</p>
+      <h1>{{ note.title }}<span class="red-stop">.</span></h1>
+    </header>
+    <div class="detail-with-share">
+      <article class="case-body">
+        {% if note.html %}
+        <div class="case-markdown">{{ note.html | safe }}</div>
+        {% else %}
+        <p>{{ note.body }}</p>
+        {% endif %}
+
+        {% if note.backlinks and note.backlinks.length > 0 %}
+        <aside class="backlinks-box" style="margin-top:40px;padding:20px;border:1px solid var(--ink);background:var(--surface);">
+          <h3 style="font-size:12px;letter-spacing:0.08em;margin-bottom:12px;color:var(--text-secondary);">REFERENCED BY</h3>
+          <ul style="list-style:none;padding:0;margin:0;">
+            {% for b in note.backlinks %}
+            <li style="margin-bottom:8px;">
+              <a href="{{ b.url }}" class="text-link">{{ b.title }}</a>
+              <span style="font-size:11px;color:var(--text-secondary);">({{ b.type }})</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </aside>
+        {% endif %}
+      </article>
+      {% include "components/share.njk" %}
+    </div>
+  </main>
+  {% include "components/footer.njk" %}
+</div>
