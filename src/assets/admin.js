@@ -215,7 +215,14 @@
   }
   function area(label, name, value, cls = "", isRequired = false) {
     const reqBadge = isRequired ? `<span class="req-star">*</span><span class="req-tag">REQUIRED</span>` : "";
-    return `<label class="wide">${esc(label)}${reqBadge}<textarea class="${cls}" name="${esc(name)}">${esc(value || "")}</textarea></label>`;
+    return `
+      <div class="wide area-wrapper" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <label style="margin:0">${esc(label)}${reqBadge}</label>
+          <button type="button" class="wysiwyg-btn math-btn" data-area-cmd="math" title="Insert LaTeX Math" style="font-size:10px;padding:2px 8px;font-weight:700;color:var(--accent-red,#e03c31)">∑ LATEX MATH</button>
+        </div>
+        <textarea class="${cls}" name="${esc(name)}">${esc(value || "")}</textarea>
+      </div>`;
   }
   function check(label, name, on) {
     return `<label class="admin-check"><input type="checkbox" name="${esc(name)}" ${on ? "checked" : ""}> ${esc(label)}</label>`;
@@ -819,9 +826,9 @@
         ${input("TITLE", "title", item.title || "", "", true)}
         ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
         ${sel("RELATED PROJECT", "project", item.project || "", [{ value: "", label: "NONE" }].concat((state.content.projects || []).map((p) => ({ value: p.slug, label: p.title }))))}
-        ${area("WHAT I DID", "did", item.did || "", "tall", true)}
-        ${area("WHAT I LEARNED", "learned", item.learned || "")}
-        ${area("NEXT", "next", item.next || "")}
+        ${wysiwygField("WHAT I DID", "did", item.did || "", true)}
+        ${wysiwygField("WHAT I LEARNED", "learned", item.learned || "")}
+        ${wysiwygField("NEXT", "next", item.next || "")}
         ${input("SUMMARY", "summary", item.summary || "")}
         ${input("DATA", "data", item.data || "")}
         ${input("METHOD", "method", item.method || "")}
@@ -1229,7 +1236,18 @@
     });
   }
 
-  function showMathPickerModal(wrapper) {
+  function insertIntoTextarea(textarea, prefix, suffix = "", defaultText = "") {
+    textarea.focus();
+    const start = textarea.selectionStart || 0;
+    const end = textarea.selectionEnd || 0;
+    const selText = textarea.value.substring(start, end) || defaultText;
+    const replacement = prefix + selText + suffix;
+    textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+    textarea.selectionStart = start + prefix.length;
+    textarea.selectionEnd = start + prefix.length + selText.length;
+  }
+
+  function showMathPickerModal(target) {
     document.querySelector(".admin-modal-root")?.remove();
 
     const presets = [
@@ -1321,22 +1339,23 @@
       const mathCode = input.value.trim();
       if (!mathCode) return;
 
-      const editable = wrapper.querySelector(".wysiwyg-editable");
-      const source = wrapper.querySelector(".wysiwyg-source");
-      const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
-      const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
+      if (target instanceof HTMLTextAreaElement) {
+        insertIntoTextarea(target, mathCode);
+      } else if (target && target.querySelector) {
+        const wrapper = target;
+        const editable = wrapper.querySelector(".wysiwyg-editable");
+        const source = wrapper.querySelector(".wysiwyg-source");
+        const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
+        const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
 
-      if (mode === "source") {
-        source.focus();
-        const start = source.selectionStart || 0;
-        const end = source.selectionEnd || 0;
-        source.value = source.value.substring(0, start) + "\n" + mathCode + "\n" + source.value.substring(end);
-      } else {
-        editable.focus();
-        document.execCommand("insertText", false, mathCode + " ");
+        if (mode === "source") {
+          insertIntoTextarea(source, mathCode);
+        } else {
+          editable.focus();
+          document.execCommand("insertText", false, mathCode + " ");
+        }
+        syncWysiwyg(wrapper);
       }
-
-      syncWysiwyg(wrapper);
       root.remove();
     });
   }
@@ -2433,33 +2452,62 @@
         const editable = wrapper.querySelector(".wysiwyg-editable");
         const source = wrapper.querySelector(".wysiwyg-source");
         const cmd = cmdBtn.getAttribute("data-wysiwyg-cmd");
+        const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
+        const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
 
-        editable.focus();
-        if (cmd === "bold") document.execCommand("bold", false, null);
-        else if (cmd === "italic") document.execCommand("italic", false, null);
-        else if (cmd === "h1") document.execCommand("formatBlock", false, "<h1>");
-        else if (cmd === "h2") document.execCommand("formatBlock", false, "<h2>");
-        else if (cmd === "h3") document.execCommand("formatBlock", false, "<h3>");
-        else if (cmd === "ul") document.execCommand("insertUnorderedList", false, null);
-        else if (cmd === "ol") document.execCommand("insertOrderedList", false, null);
-        else if (cmd === "code") document.execCommand("formatBlock", false, "<pre>");
-        else if (cmd === "quote") document.execCommand("formatBlock", false, "<blockquote>");
-        else if (cmd === "hr") document.execCommand("insertHorizontalRule", false, null);
-        else if (cmd === "wikilink") {
-          const title = prompt("Enter target document title for Wikilink [[ ... ]]:");
-          if (title) {
-            const alias = prompt("Optional alias (leave empty for none):");
-            const tag = alias ? `[[${title}|${alias}]]` : `[[${title}]]`;
-            document.execCommand("insertText", false, tag);
+        if (mode === "source") {
+          if (cmd === "bold") insertIntoTextarea(source, "**", "**", "bold text");
+          else if (cmd === "italic") insertIntoTextarea(source, "*", "*", "italic text");
+          else if (cmd === "h1") insertIntoTextarea(source, "# ", "", "Heading 1");
+          else if (cmd === "h2") insertIntoTextarea(source, "## ", "", "Heading 2");
+          else if (cmd === "h3") insertIntoTextarea(source, "### ", "", "Heading 3");
+          else if (cmd === "ul") insertIntoTextarea(source, "- ", "", "list item");
+          else if (cmd === "ol") insertIntoTextarea(source, "1. ", "", "list item");
+          else if (cmd === "code") insertIntoTextarea(source, "```\n", "\n```", "code block");
+          else if (cmd === "quote") insertIntoTextarea(source, "> ", "", "quote");
+          else if (cmd === "hr") insertIntoTextarea(source, "\n---\n", "", "");
+          else if (cmd === "wikilink") {
+            const title = prompt("Enter target document title for Wikilink [[ ... ]]:");
+            if (title) {
+              const alias = prompt("Optional alias (leave empty for none):");
+              const tag = alias ? `[[${title}|${alias}]]` : `[[${title}]]`;
+              insertIntoTextarea(source, tag);
+            }
           }
-        }
-        else if (cmd === "image") {
-          showImagePickerModal(wrapper);
-        }
-        else if (cmd === "math") {
-          showMathPickerModal(wrapper);
+          else if (cmd === "image") showImagePickerModal(wrapper);
+          else if (cmd === "math") showMathPickerModal(wrapper);
+        } else {
+          editable.focus();
+          if (cmd === "bold") document.execCommand("bold", false, null);
+          else if (cmd === "italic") document.execCommand("italic", false, null);
+          else if (cmd === "h1") document.execCommand("formatBlock", false, "<h1>");
+          else if (cmd === "h2") document.execCommand("formatBlock", false, "<h2>");
+          else if (cmd === "h3") document.execCommand("formatBlock", false, "<h3>");
+          else if (cmd === "ul") document.execCommand("insertUnorderedList", false, null);
+          else if (cmd === "ol") document.execCommand("insertOrderedList", false, null);
+          else if (cmd === "code") document.execCommand("formatBlock", false, "<pre>");
+          else if (cmd === "quote") document.execCommand("formatBlock", false, "<blockquote>");
+          else if (cmd === "hr") document.execCommand("insertHorizontalRule", false, null);
+          else if (cmd === "wikilink") {
+            const title = prompt("Enter target document title for Wikilink [[ ... ]]:");
+            if (title) {
+              const alias = prompt("Optional alias (leave empty for none):");
+              const tag = alias ? `[[${title}|${alias}]]` : `[[${title}]]`;
+              document.execCommand("insertText", false, tag);
+            }
+          }
+          else if (cmd === "image") showImagePickerModal(wrapper);
+          else if (cmd === "math") showMathPickerModal(wrapper);
         }
         syncWysiwyg(wrapper);
+        return;
+      }
+
+      const areaBtn = event.target.closest("[data-area-cmd]");
+      if (areaBtn) {
+        const wrapper = areaBtn.closest(".area-wrapper");
+        const textarea = wrapper ? wrapper.querySelector("textarea") : null;
+        if (textarea) showMathPickerModal(textarea);
         return;
       }
 
