@@ -116,11 +116,18 @@
 
 .admin-form {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px 24px;
-  max-width: 920px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px 24px;
+  width: 100%;
+  max-width: 1240px;
 }
-.admin-form .wide { grid-column: 1 / -1; }
+.admin-form .wide,
+.collapsible-details-panel,
+.section-editor-workspace,
+.admin-actions {
+  grid-column: 1 / -1;
+  width: 100%;
+}
 .admin-form label {
   display: flex;
   flex-direction: column;
@@ -1233,18 +1240,25 @@ a.wikilink {
   }
 }
 
-/* --- V4.0.2 SECTION-BASED EDITORIAL WORKSPACE STYLING --- */
+/* --- V4.0.2 SECTION-BASED EDITORIAL WORKSPACE STYLING & UNCONGESTED RESPONSIVE FLEXIBILITY --- */
 .section-editor-workspace {
-  margin: 24px 0 32px;
+  margin: 28px 0 36px;
+  width: 100%;
+  grid-column: 1 / -1;
 }
 .section-card {
   background: #ffffff;
   border: 1px solid var(--line);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
-.section-card:hover {
+.section-card:hover,
+.section-card:focus-within {
   border-color: var(--ink);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
 }
 .section-card.collapsed .section-card-body {
   display: none !important;
@@ -1253,9 +1267,9 @@ a.wikilink {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #faf8f2;
+  gap: 16px;
+  padding: 14px 20px;
+  background: #edeae2;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
@@ -1265,9 +1279,10 @@ a.wikilink {
 .section-card-title-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   min-width: 280px;
+  flex-wrap: wrap;
 }
 .section-drag-handle {
   cursor: grab;
@@ -1282,17 +1297,43 @@ a.wikilink {
   letter-spacing: 0.1em;
   white-space: nowrap;
 }
+.section-label-input {
+  width: min(220px, 100%) !important;
+  font: 700 12px var(--mono) !important;
+  padding: 8px 10px !important;
+  background: #ffffff !important;
+  border: 1px solid var(--line) !important;
+}
+.section-heading-input {
+  flex: 1;
+  min-width: 220px;
+  font: 700 14px var(--sans) !important;
+  padding: 8px 12px !important;
+  background: #ffffff !important;
+  border: 1px solid var(--line) !important;
+}
 .section-card-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 .section-card-actions .wysiwyg-tab {
-  padding: 4px 8px;
-  font-size: 10px;
+  padding: 6px 10px;
+  font: 700 10px var(--mono);
+  letter-spacing: .08em;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.section-card-actions .wysiwyg-tab:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
 .section-card-body {
-  padding: 16px;
+  padding: 20px;
 }
 .admin-sticky-bar {
   position: sticky;
@@ -1300,21 +1341,21 @@ a.wikilink {
   z-index: 100;
   background: var(--paper, #f2f0ea);
   border-bottom: 1px solid var(--line);
-  padding: 12px 28px;
+  padding: 14px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin: -36px -28px 24px -28px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
 }
 .admin-sticky-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 .admin-status-badge {
   font: 700 10px var(--mono);
-  padding: 3px 8px;
+  padding: 4px 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   border: 1px solid var(--line);
@@ -1331,21 +1372,125 @@ a.wikilink {
 }
 .collapsible-details-panel {
   border: 1px solid var(--line);
-  background: #faf8f2;
-  margin-bottom: 24px;
+  background: #faf8f3;
+  margin-bottom: 28px;
+  grid-column: 1 / -1;
+  width: 100%;
 }
 .collapsible-details-summary {
-  padding: 12px 16px;
+  padding: 14px 20px;
   font: 700 11px var(--mono);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   cursor: pointer;
   user-select: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #edeae2;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s ease;
+}
+.collapsible-details-summary:hover {
+  background: #e3dec6;
 }
 .collapsible-details-content {
-  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px 24px;
+  padding: 20px 24px;
+  background: #faf8f3;
+}
+
+/* Aspect Ratio Utilities & Mobile Reframe Flexibility */
+.aspect-16-9 { aspect-ratio: 16 / 9; object-fit: cover; width: 100%; }
+.aspect-4-3 { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+.aspect-1-1 { aspect-ratio: 1 / 1; object-fit: cover; width: 100%; }
+.aspect-auto { aspect-ratio: auto; max-width: 100%; height: auto; }
+
+@media (max-width: 900px) {
+  .admin-app {
+    padding: 0 12px;
+  }
+  .admin-main {
+    padding: 24px 12px 60px;
+  }
+  .admin-sticky-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+    margin: -24px -12px 20px -12px;
+  }
+  .admin-sticky-title {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .admin-sticky-bar .admin-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .admin-sticky-bar .admin-btn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 10px;
+  }
+  .collapsible-details-content {
+    grid-template-columns: 1fr;
+    padding: 16px 14px;
+  }
+  .section-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+  }
+  .section-card-title-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .section-label-input,
+  .section-heading-input {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  .section-card-actions {
+    justify-content: flex-start;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .wysiwyg-mode-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .wysiwyg-tabs {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .wysiwyg-toolbar {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .wysiwyg-editable,
+  .wysiwyg-source {
+    min-height: 180px;
+    padding: 14px;
+    font-size: 14px;
+  }
+  .admin-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .admin-actions .admin-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 

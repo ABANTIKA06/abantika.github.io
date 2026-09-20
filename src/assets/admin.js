@@ -807,7 +807,7 @@
       </div>
 
       <form class="admin-form" id="project-editor-form" data-form="project" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel" open>
+        <details class="collapsible-details-panel">
           <summary class="collapsible-details-summary">
             <span>01 / CASE STUDY METADATA & MEDIA SETTINGS</span>
             <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
