@@ -1516,23 +1516,42 @@ a.wikilink {
 .admin-sticky-bar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   background: var(--paper, #f2f0ea);
   border-bottom: 1px solid var(--line);
-  padding: 12px 28px;
+  padding: 16px 28px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: -36px -28px 24px -28px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+.admin-sticky-top-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: -36px -28px 24px -28px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-  box-sizing: border-box;
+  gap: 18px;
+  width: 100%;
 }
 .admin-sticky-left {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+}
+.admin-sticky-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.admin-sticky-controls-bar .admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
 }
 .sticky-divider {
   display: inline-block;
@@ -1589,13 +1608,13 @@ a.wikilink {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
-  min-height: 42px;
+  gap: 3px;
+  min-height: 48px;
   max-width: 100%;
 }
 .admin-sticky-editing-kicker {
-  font: 800 10px/1 var(--mono);
-  letter-spacing: 0.16em;
+  font: 800 11px/1 var(--mono);
+  letter-spacing: 0.18em;
   color: var(--accent-red, #e03c31);
   text-transform: uppercase;
   white-space: nowrap;
@@ -1605,14 +1624,14 @@ a.wikilink {
   min-width: 0;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 4px;
 }
 .admin-sticky-title-text {
   margin: 0;
-  font-size: 18px;
+  font-size: clamp(20px, 2.5vw, 28px);
   font-weight: 800;
   font-family: var(--sans);
-  line-height: 1.15;
+  line-height: 1.1;
   letter-spacing: -0.04em;
   color: var(--fg, #111111);
   white-space: nowrap;
@@ -1703,94 +1722,86 @@ a.wikilink {
     top: 0 !important;
     z-index: 1000 !important;
     display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    justify-content: space-between !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
     gap: 8px !important;
-    padding: 6px 10px !important;
+    padding: 10px 12px !important;
     margin: -24px -12px 18px -12px !important;
-    background: rgba(242, 240, 234, 0.96) !important;
+    background: rgba(242, 240, 234, 0.98) !important;
     backdrop-filter: blur(12px) !important;
     border-bottom: 1px solid var(--line) !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-    height: 52px !important;
-    min-height: 52px !important;
-    max-height: 52px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     box-sizing: border-box !important;
+  }
+  .admin-sticky-top-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100 !important;
   }
   .admin-sticky-left {
     display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 6px !important;
     flex-shrink: 0 !important;
   }
   .admin-sticky-left .sticky-divider {
     display: none !important;
   }
   .admin-btn-back-circle {
-    width: 34px !important;
-    height: 34px !important;
-    min-width: 34px !important;
-    min-height: 34px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
   }
   .admin-sticky-title-container {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 4px !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
     overflow: hidden !important;
-    padding: 0 4px !important;
+    padding: 0 !important;
   }
   .admin-sticky-editing-group {
-    min-height: 36px !important;
+    min-height: 0 !important;
     gap: 1px !important;
   }
   .admin-sticky-editing-kicker {
-    font-size: 8px !important;
-    letter-spacing: 0.12em !important;
+    font-size: 9px !important;
+    letter-spacing: 0.14em !important;
   }
   .admin-sticky-title-text {
-    font-size: 13px !important;
+    font-size: 15px !important;
     font-weight: 800 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     margin: 0 !important;
   }
-  .admin-sticky-bar .admin-status-badge {
-    padding: 2px 5px !important;
-    font-size: 8px !important;
-    flex-shrink: 0 !important;
-    margin: 0 !important;
+  .admin-sticky-controls-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    width: 100% !important;
+    padding-top: 6px !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
   }
-  .admin-sticky-bar .admin-actions {
+  .admin-sticky-controls-bar .admin-actions {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 4px !important;
-    flex: 0 0 auto !important;
-    width: auto !important;
+    gap: 6px !important;
     margin: 0 !important;
-    padding: 0 !important;
   }
-  .admin-sticky-bar .admin-actions .admin-btn {
-    display: inline-flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
+  .admin-sticky-controls-bar .admin-actions .admin-btn {
     height: 32px !important;
     min-height: 32px !important;
-    width: 32px !important;
-    min-width: 32px !important;
-    padding: 0 !important;
+    padding: 0 12px !important;
     font-size: 10px !important;
-    box-sizing: border-box !important;
-    flex: 0 0 auto !important;
-    border-radius: 3px !important;
+    min-width: auto !important;
   }
   .admin-sticky-bar .btn-text {
     display: none !important;
