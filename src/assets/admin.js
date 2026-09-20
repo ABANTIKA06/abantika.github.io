@@ -830,12 +830,12 @@
         </div>
       </div>
 
-      <form class="admin-form" id="project-editor-form" data-form="project" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel" open>
-          <summary class="collapsible-details-summary">
+      <form class="admin-form" id="project-editor-form" data-form="project" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
+        <div class="collapsible-details-panel open">
+          <div class="collapsible-details-summary" role="button" tabindex="0">
             <span>01 / CASE STUDY METADATA & MEDIA SETTINGS</span>
             <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
-          </summary>
+          </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
             ${input("SLUG", "slug", item.slug || "")}
@@ -875,7 +875,7 @@
             ${check("FEATURED", "featured", item.featured)}
             ${check("PUBLISHED", "published", item.published)}
           </div>
-        </details>
+        </div>
 
         ${renderSectionListContainer(sections)}
 
@@ -913,11 +913,11 @@
       </div>
 
       <form class="admin-form" id="blog-editor-form" data-form="blog" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel" open>
-          <summary class="collapsible-details-summary">
+        <div class="collapsible-details-panel open">
+          <div class="collapsible-details-summary" role="button" tabindex="0">
             <span>01 / ARTICLE METADATA & MEDIA SETTINGS</span>
             <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
-          </summary>
+          </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
             ${input("SLUG", "slug", item.slug || "")}
@@ -931,7 +931,7 @@
             ${check("FEATURED", "featured", item.featured)}
             ${check("PUBLISHED", "published", item.published)}
           </div>
-        </details>
+        </div>
 
         ${renderSectionListContainer(sections)}
 
@@ -965,11 +965,11 @@
       </div>
 
       <form class="admin-form" id="note-editor-form" data-form="note" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel" open>
-          <summary class="collapsible-details-summary">
+        <div class="collapsible-details-panel open">
+          <div class="collapsible-details-summary" role="button" tabindex="0">
             <span>01 / NOTE METADATA</span>
             <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
-          </summary>
+          </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
             ${input("SLUG", "slug", item.slug || "")}
@@ -977,7 +977,7 @@
             ${input("TAGS (COMMA SEPARATED)", "tags", (item.tags || []).join(", "))}
             ${check("PUBLISHED", "published", item.published !== false)}
           </div>
-        </details>
+        </div>
 
         ${renderSectionListContainer(sections)}
 
@@ -1016,11 +1016,11 @@
       </div>
 
       <form class="admin-form" id="journal-editor-form" data-form="journal" data-id="${esc(item.id || "")}" data-new="${isNew ? "1" : ""}">
-        <details class="collapsible-details-panel" open>
-          <summary class="collapsible-details-summary">
+        <div class="collapsible-details-panel open">
+          <div class="collapsible-details-summary" role="button" tabindex="0">
             <span>01 / JOURNAL METADATA & LINKS</span>
             <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
-          </summary>
+          </div>
           <div class="collapsible-details-content">
             ${input("DATE", "date", item.date || today, 'type="date"', true)}
             ${input("TITLE", "title", item.title || "", "", true)}
@@ -1033,7 +1033,7 @@
             ${input("TOOLS", "tools", item.tools || "")}
             ${check("PUBLISHED", "published", item.published)}
           </div>
-        </details>
+        </div>
 
         ${renderSectionListContainer(sections)}
 
@@ -2901,17 +2901,14 @@
       const summaryBtn = event.target.closest(".collapsible-details-summary");
       if (summaryBtn) {
         event.preventDefault();
-        const details = summaryBtn.closest("details");
-        if (details) {
-          const isOpen = details.hasAttribute("open");
-          if (isOpen) {
-            details.removeAttribute("open");
-          } else {
-            details.setAttribute("open", "");
-          }
+        const panel = summaryBtn.closest(".collapsible-details-panel");
+        if (panel) {
+          const isOpen = panel.classList.toggle("open");
+          const content = panel.querySelector(".collapsible-details-content");
+          if (content) content.style.display = isOpen ? "grid" : "none";
           const toggleHint = summaryBtn.querySelector(".toggle-hint");
           if (toggleHint) {
-            toggleHint.textContent = isOpen ? "▶ CLICK TO EXPAND METADATA" : "▼ CLICK TO COLLAPSE METADATA";
+            toggleHint.textContent = isOpen ? "▼ CLICK TO COLLAPSE METADATA" : "▶ CLICK TO EXPAND METADATA";
           }
         }
         return;
@@ -3462,13 +3459,21 @@
     );
   }
 
-  window.addEventListener("scroll", updateStickyBarScroll, { passive: true });
+  let lastRouteHash = hash();
   window.addEventListener("hashchange", () => {
+    const newRoute = hash();
+    if (newRoute === lastRouteHash) return;
+    if (isFormActive() && currentRenderPath === newRoute) return;
+    lastRouteHash = newRoute;
     state.message = "";
     state.content = null;
     render(true).then(updateStickyBarScroll);
   });
   window.addEventListener("popstate", () => {
+    const newRoute = hash();
+    if (newRoute === lastRouteHash) return;
+    if (isFormActive() && currentRenderPath === newRoute) return;
+    lastRouteHash = newRoute;
     state.message = "";
     state.content = null;
     render(true).then(updateStickyBarScroll);
