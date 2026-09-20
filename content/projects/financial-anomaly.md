@@ -25,7 +25,11 @@ headline:
 sections:
   - label: 01 / PROBLEM
     heading: THE QUESTION
-    body: 'kmklmlkmlkmlmlmmkm nnkm.m.,m'
+    body: |-
+      | Header 1 | Header 2 | Header 3 |
+      | :--- | :--- | :--- |
+      | Cell 1 | Cell 2 | Cell 3 |
+      | Cell 4 | Cell 5 | Cell 6 |
   - label: 02 / DATA
     heading: THE EVIDENCE
     body: ''
@@ -38,7 +42,10 @@ sections:
 ---
 ## THE QUESTION
 
-kmklmlkmlkmlmlmmkm nnkm.m.,m
+| Header 1 | Header 2 | Header 3 |
+| :--- | :--- | :--- |
+| Cell 1 | Cell 2 | Cell 3 |
+| Cell 4 | Cell 5 | Cell 6 |
 
 ## THE EVIDENCE
 
