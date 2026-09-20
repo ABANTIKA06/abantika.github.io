@@ -71,7 +71,7 @@ title: Abantika — Data Analyst & Data Scientist
         </div>
         <div class="project-card-body">
           <p class="project-number">{{ project.number }}</p>
-          <h3>{{ project.title | editorialBreak | safe }}</h3>
+          <h3><a href="{{ project.url }}" class="project-title-link">{{ project.title | editorialBreak | safe }}</a></h3>
           <p>{{ project.summary | publicText(project.description) }}</p>
           <small class="project-tech">{{ project.techLabel }}</small>
           <a class="text-link project-link" href="{{ project.url }}">VIEW PROJECT <b>→</b></a>

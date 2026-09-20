@@ -209,10 +209,10 @@
   background-image: none;
 }
 
-/* Selected Works Card Grid with Header Images & Alternating Dark/Light Background Cells */
+/* Selected Works 3-Column Card Grid with Light Header Plates & Soft Bauhaus Tone Alternating Cells */
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0;
   border-top: 1px solid var(--line);
   border-left: 1px solid var(--line);
@@ -232,75 +232,92 @@
   transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
 }
 
-/* Light Cell (Odd) */
+/* Light Cell (Odd) — Warm Surface Paper */
 .project:nth-child(odd) {
   background: var(--surface, #faf8f2);
   color: var(--ink, #111111);
 }
 
-.project:nth-child(odd) h3 {
-  color: var(--ink, #111111);
-}
-
-.project:nth-child(odd) p {
-  color: #4e4b46;
-}
-
-.project:nth-child(odd) .project-tech {
-  color: #66635c;
-}
-
-.project:nth-child(odd) .project-link {
-  color: var(--ink, #111111);
-  border-bottom-color: var(--ink, #111111);
-}
-
-/* Dark Cell (Even) */
+/* Subtle Alternating Cell (Even) — One Shade Darker Bauhaus Stone Tint */
 .project:nth-child(even) {
-  background: #161616;
-  color: #ffffff;
-  border-right-color: #2a2a2a;
-  border-bottom-color: #2a2a2a;
+  background: #e6e3da;
+  color: var(--ink, #111111);
 }
 
-.project:nth-child(even) h3 {
-  color: #ffffff;
+.project h3 {
+  font-size: clamp(18px, 1.6vw, 24px);
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+  font-weight: 800;
+  margin: 0 0 10px;
 }
 
-.project:nth-child(even) p {
-  color: #cccccc;
+.project-title-link {
+  color: var(--ink, #111111);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.project:nth-child(even) .project-number {
+.project-title-link:hover,
+.project-title-link:focus-visible {
   color: var(--red, #ef321f);
+  text-decoration: underline;
 }
 
-.project:nth-child(even) .project-tech {
-  color: #b0ad9e;
+.project p {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #4c4943;
+  margin: 0 0 16px;
+  flex: 1;
 }
 
-.project:nth-child(even) .project-link {
-  color: #ffffff;
-  border-bottom-color: #ffffff;
+.project-number {
+  font: 700 10px var(--mono);
+  letter-spacing: 0.16em;
+  color: var(--red, #ef321f);
+  margin: 0 0 8px;
 }
 
-.project:nth-child(even) .project-link:hover {
+.project-tech {
+  font: 9px var(--mono);
+  letter-spacing: 0.12em;
+  margin-bottom: 14px;
+  display: inline-block;
+  text-transform: uppercase;
+  color: #636059;
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 9px var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--ink, #111111);
+  border-bottom: 1.5px solid var(--ink, #111111);
+  padding-bottom: 3px;
+  text-transform: uppercase;
+  text-decoration: none;
+  align-self: flex-start;
+  margin-top: auto;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.project-link:hover,
+.project-link:focus-visible {
   color: var(--red, #ef321f);
   border-bottom-color: var(--red, #ef321f);
 }
 
-/* Header Image Plate inside Grid Cell */
+/* Light Background Header Image Plate inside Grid Cell */
 .project-art {
-  height: 220px;
+  height: 150px;
   width: 100%;
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid var(--line);
-  background: #181818;
-}
-
-.project:nth-child(even) .project-art {
-  border-bottom-color: #2a2a2a;
+  background: #dedbd2;
 }
 
 .project-cover-img {
@@ -316,72 +333,37 @@
 }
 
 .project-card-body {
-  padding: 24px 28px 28px;
+  padding: 18px 20px 22px;
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.project-number {
-  font: 700 11px var(--mono);
-  letter-spacing: 0.16em;
-  color: var(--red, #ef321f);
-  margin: 0 0 10px;
-}
-
-.project h3 {
-  font-size: clamp(22px, 2.4vw, 36px);
-  line-height: 0.95;
-  letter-spacing: -0.06em;
-  font-weight: 800;
-  margin: 0 0 14px;
-}
-
-.project p {
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 0 0 20px;
-  flex: 1;
-}
-
-.project-tech {
-  font: 9px var(--mono);
-  letter-spacing: 0.12em;
-  margin-bottom: 18px;
-  display: inline-block;
-  text-transform: uppercase;
-}
-
-.project-link {
-  align-self: flex-start;
-  margin-top: auto;
-}
-
-/* Fallback Art Header Plate */
+/* Fallback Art Header Plate in Lighter Bauhaus Shade */
 .project-fallback-header-art {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px;
+  padding: 14px 16px;
   box-sizing: border-box;
   position: relative;
+  background-color: #e4e1d7;
 }
 
 .project-fallback-header-art.art-dots {
-  background-image: radial-gradient(rgba(255,255,255,0.2) 1.5px, transparent 1.8px);
-  background-size: 12px 12px;
-  background-color: #1b1b1b;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.22) 1.5px, transparent 1.8px);
+  background-size: 11px 11px;
 }
 
 .project-fallback-header-art.art-architecture {
-  background: linear-gradient(135deg, #1c1c1c 0%, #333333 50%, #111111 100%);
+  background: linear-gradient(135deg, #ede9e0 0%, #dcd8cd 50%, #cecaa0 100%);
 }
 
 .project-fallback-header-art.art-chart,
 .project-fallback-header-art.art-radial {
-  background: repeating-linear-gradient(to bottom, transparent 0 20px, rgba(255,255,255,0.06) 21px), #181818;
+  background: repeating-linear-gradient(to bottom, transparent 0 18px, rgba(0,0,0,0.07) 19px), #dedbd2;
 }
 
 .art-kicker {
@@ -392,8 +374,8 @@
 }
 
 .art-badge {
-  font: 900 36px/1 var(--mono);
-  color: rgba(255, 255, 255, 0.15);
+  font: 900 32px/1 var(--mono);
+  color: rgba(0, 0, 0, 0.12);
   align-self: flex-end;
 }
 /* 01. Dots Grid / Constellation */
