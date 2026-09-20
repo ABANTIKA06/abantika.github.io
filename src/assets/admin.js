@@ -819,13 +819,15 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/projects" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/projects" class="admin-btn-back-circle" aria-label="Go Back to Projects" title="Go Back"><span class="back-chevron">&lt;</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
         </div>
         <div class="admin-sticky-title-container">
-          <span class="admin-sticky-editing-kicker">EDITING PROJECT:</span>
-          <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW CASE STUDY")}">${esc(item.title || "NEW CASE STUDY")}</h2>
+          <div class="admin-sticky-editing-group">
+            <span class="admin-sticky-editing-kicker">EDITING PROJECT</span>
+            <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW CASE STUDY")}">${esc(item.title || "NEW CASE STUDY")}</h2>
+          </div>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
@@ -887,7 +889,7 @@
           <button class="admin-btn" type="submit" data-publish="false">SAVE DRAFT <b>→</b></button>
           <button class="admin-btn" type="button" data-act="preview-project">PREVIEW <b>→</b></button>
           <button class="admin-btn primary" type="submit" data-publish="true">PUBLISH <b>→</b></button>
-          ${!isNew ? `<button class="admin-btn admin-btn-danger" type="button" data-act="delete-project" data-slug="${esc(item.slug)}" data-title="${esc(item.title)}">DELETE PROJECT</button>` : ""}
+          ${!isNew ? `<button class="admin-btn admin-btn-danger" type="button" data-act="delete-project" data-slug="${esc(item.slug)}" data-title="${esc(item.title)}">DELETE CASE STUDY</button>` : ""}
         </div>
       </form>`
     );
@@ -905,13 +907,15 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/blog" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/blog" class="admin-btn-back-circle" aria-label="Go Back to Articles" title="Go Back"><span class="back-chevron">&lt;</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
         </div>
         <div class="admin-sticky-title-container">
-          <span class="admin-sticky-editing-kicker">EDITING ARTICLE:</span>
-          <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW ARTICLE")}">${esc(item.title || "NEW ARTICLE")}</h2>
+          <div class="admin-sticky-editing-group">
+            <span class="admin-sticky-editing-kicker">EDITING ARTICLE</span>
+            <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW ARTICLE")}">${esc(item.title || "NEW ARTICLE")}</h2>
+          </div>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
@@ -963,13 +967,15 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/notes" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/notes" class="admin-btn-back-circle" aria-label="Go Back to Notes" title="Go Back"><span class="back-chevron">&lt;</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published !== false ? 'published' : 'draft'}">${item.published !== false ? 'PUBLISHED' : 'DRAFT'}</span>
         </div>
         <div class="admin-sticky-title-container">
-          <span class="admin-sticky-editing-kicker">EDITING NOTE:</span>
-          <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW NOTE")}">${esc(item.title || "NEW NOTE")}</h2>
+          <div class="admin-sticky-editing-group">
+            <span class="admin-sticky-editing-kicker">EDITING NOTE</span>
+            <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW NOTE")}">${esc(item.title || "NEW NOTE")}</h2>
+          </div>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE NOTE</span></button>
@@ -1016,13 +1022,15 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/journal" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/journal" class="admin-btn-back-circle" aria-label="Go Back to Journal" title="Go Back"><span class="back-chevron">&lt;</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
         </div>
         <div class="admin-sticky-title-container">
-          <span class="admin-sticky-editing-kicker">EDITING JOURNAL:</span>
-          <h2 class="admin-sticky-title-text" title="${esc(item.title || "DAILY JOURNAL")}">${esc(item.title || "DAILY JOURNAL")}</h2>
+          <div class="admin-sticky-editing-group">
+            <span class="admin-sticky-editing-kicker">EDITING JOURNAL</span>
+            <h2 class="admin-sticky-title-text" title="${esc(item.title || "DAILY JOURNAL")}">${esc(item.title || "DAILY JOURNAL")}</h2>
+          </div>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
           <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE ENTRY</span></button>
