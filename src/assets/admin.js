@@ -2386,26 +2386,32 @@
       } else if (path === "/projects/new") {
         app.innerHTML = projectForm({}, true);
       } else if (parts[0] === "projects" && parts[1]) {
-        const item = state.content.projects.find((p) => p.slug === parts[1]) || {};
+        const target = decodeURIComponent(parts[1]);
+        const item = state.content.projects.find((p) => p.slug === target || p.slug === parts[1]) || {};
         app.innerHTML = projectForm(item, false);
       } else if (path === "/blog") {
         app.innerHTML = chrome("04 / BLOG", `<div class="admin-toolbar"><h1>ARTICLES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/blog/new">NEW ARTICLE <b>→</b></a></div>${rows(state.content.blog, (item) => `#/blog/${item.slug}`, "blog")}`);
       } else if (path === "/blog/new") {
         app.innerHTML = blogForm({}, true);
       } else if (parts[0] === "blog" && parts[1]) {
-        app.innerHTML = blogForm(state.content.blog.find((p) => p.slug === parts[1]) || {}, false);
+        const target = decodeURIComponent(parts[1]);
+        const item = state.content.blog.find((p) => p.slug === target || p.slug === parts[1]) || {};
+        app.innerHTML = blogForm(item, false);
       } else if (path === "/journal") {
-        app.innerHTML = chrome("05 / JOURNAL", `<div class="admin-toolbar"><h1>FIELD NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/journal/new">NEW NOTE <b>→</b></a></div>${rows(state.content.journal, (item) => `#/journal/${item.id}`, "journal")}`);
+        app.innerHTML = chrome("05 / JOURNAL", `<div class="admin-toolbar"><h1>FIELD NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/journal/new">NEW NOTE <b>→</b></a></div>${rows(state.content.journal, (item) => `#/journal/${item.id || item.slug || item.date}`, "journal")}`);
       } else if (path === "/journal/new") {
         app.innerHTML = journalForm({}, true);
       } else if (parts[0] === "journal" && parts[1]) {
-        app.innerHTML = journalForm(state.content.journal.find((p) => p.id === parts[1]) || {}, false);
+        const target = decodeURIComponent(parts[1]);
+        const item = state.content.journal.find((p) => p.id === target || p.slug === target || p.date === target || p.dateISO === target) || {};
+        app.innerHTML = journalForm(item, false);
       } else if (path === "/notes") {
         app.innerHTML = chrome("06 / NOTES", `<div class="admin-toolbar"><h1>RESEARCH NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/notes/new">NEW NOTE <b>→</b></a></div>${rows(state.content.notes || [], (item) => `#/notes/${item.slug}`, "note")}`);
       } else if (path === "/notes/new") {
         app.innerHTML = noteForm({}, true);
       } else if (parts[0] === "notes" && parts[1]) {
-        const item = (state.content.notes || []).find((n) => n.slug === parts[1]) || {};
+        const target = decodeURIComponent(parts[1]);
+        const item = (state.content.notes || []).find((n) => n.slug === target || n.slug === parts[1] || n.filename === target) || {};
         app.innerHTML = noteForm(item, false);
       } else if (path === "/about") {
         app.innerHTML = aboutForm(state.content.about || {});
@@ -2541,7 +2547,8 @@
         cover: formValue(form, "cover"),
         body: serializeSectionsToMarkdown(sections),
         featured: formValue(form, "featured"),
-        published
+        published,
+        sections: sections
       };
       let res;
       if (isNew) res = await api("/api/blog", { method: "POST", body: payload });
@@ -2576,7 +2583,8 @@
         method: formValue(form, "method"),
         result: formValue(form, "result"),
         tools: formValue(form, "tools"),
-        published
+        published,
+        sections: sections
       };
       const id = form.getAttribute("data-id");
       let res;
@@ -2596,7 +2604,8 @@
         date: formValue(form, "date"),
         tags: formValue(form, "tags"),
         body: serializeSectionsToMarkdown(sections),
-        published
+        published,
+        sections: sections
       };
       const oldSlug = form.getAttribute("data-slug");
       let res;
