@@ -3357,5 +3357,13 @@
     state.message = "";
     render();
   });
+  window.addEventListener("popstate", () => {
+    state.message = "";
+    render();
+  });
+  window.addEventListener("pageshow", () => {
+    state.content = null;
+    render();
+  });
   render();
 })();

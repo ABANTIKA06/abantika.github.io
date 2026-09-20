@@ -140,10 +140,20 @@
 .admin-form select {
   font: 14px/1.45 var(--sans);
   padding: 10px 12px;
-  border: 1px solid var(--ink);
-  background: #f7f5ef;
-  color: var(--ink);
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: #111111;
   letter-spacing: 0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.admin-form input:focus,
+.admin-form textarea:focus,
+.admin-form select:focus {
+  border-color: var(--accent-red, #e03c31);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(224, 60, 49, 0.15);
+  background: #ffffff;
 }
 .admin-form textarea { min-height: 120px; resize: vertical; }
 .admin-form textarea.tall { min-height: 220px; }
@@ -1372,7 +1382,7 @@ a.wikilink {
 }
 .collapsible-details-panel {
   border: 1px solid var(--line);
-  background: #faf8f3;
+  background: #ffffff;
   margin-bottom: 28px;
   grid-column: 1 / -1;
   width: 100%;
@@ -1407,7 +1417,7 @@ a.wikilink {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px 24px;
   padding: 20px 24px;
-  background: #faf8f3;
+  background: #ffffff;
 }
 
 /* Aspect Ratio Utilities & Mobile Reframe Flexibility */
