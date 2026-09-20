@@ -3376,15 +3376,23 @@
 
   window.addEventListener("hashchange", () => {
     state.message = "";
+    state.content = null;
     render();
   });
   window.addEventListener("popstate", () => {
     state.message = "";
+    state.content = null;
     render();
   });
   window.addEventListener("pageshow", () => {
     state.content = null;
     render();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      state.content = null;
+      render();
+    }
   });
   render();
 })();
