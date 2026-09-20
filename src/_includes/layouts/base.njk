@@ -22,6 +22,38 @@
     <link rel="stylesheet" href="/assets/styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <title>{{ title or site.name }}</title>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "{{ site.shortName or 'Abantika' }}",
+      "url": "{{ site.url }}",
+      "jobTitle": "{{ site.role or 'Data Analyst & Data Scientist' }}",
+      "sameAs": [
+        "{{ site.github }}",
+        "{{ site.linkedin }}"
+      ]
+    }
+    </script>
+    {% if pageType == 'blog' or pageType == 'project' %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "{{ title }}",
+      "description": "{{ description or site.description }}",
+      "datePublished": "{{ dateISO }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ site.shortName or 'Abantika' }}"
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ site.url }}{{ page.url }}"
+      }
+    }
+    </script>
+    {% endif %}
   </head>
   <body>
     {{ content | safe }}
