@@ -13,4 +13,4 @@ relatedProject: ''
 headline:
   - SQL GOT A NEW COMPETITIOR
 ---
-$ E = mc^2 $ interesting
+interesting $ E = mc^2 $
