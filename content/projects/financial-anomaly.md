@@ -1,7 +1,7 @@
 ---
 title: FINANCIAL ANOMALY
 slug: financial-anomaly
-number: '02'
+number: '00'
 date: '2026-09-19'
 year: 2026
 category: FINANCE ANALYSIS
