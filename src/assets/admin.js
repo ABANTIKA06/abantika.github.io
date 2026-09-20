@@ -4,6 +4,13 @@
 
   const state = { user: null, config: {}, content: null, message: "", error: "" };
 
+  const ICONS = {
+    back: `<svg class="btn-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
+    save: `<svg class="btn-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`,
+    preview: `<svg class="btn-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+    publish: `<svg class="btn-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`
+  };
+
   const esc = (value) =>
     String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -811,14 +818,14 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/projects" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
+          <a href="#/projects" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW CASE STUDY")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE DRAFT</span></button>
-          <button class="admin-btn" type="button" data-act="preview-project"><span class="btn-icon">👁️</span> <span class="btn-text">PREVIEW</span></button>
-          <button class="admin-btn primary" type="submit" form="project-editor-form" data-publish="true"><span class="btn-icon">🚀</span> <span class="btn-text">PUBLISH</span></button>
+          <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
+          <button class="admin-btn" type="button" data-act="preview-project"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
+          <button class="admin-btn primary" type="submit" form="project-editor-form" data-publish="true"><span class="btn-icon">${ICONS.publish}</span> <span class="btn-text">PUBLISH</span></button>
         </div>
       </div>
 
@@ -893,14 +900,14 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/blog" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
+          <a href="#/blog" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW ARTICLE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE DRAFT</span></button>
-          <button class="admin-btn" type="button" data-act="preview-blog"><span class="btn-icon">👁️</span> <span class="btn-text">PREVIEW</span></button>
-          <button class="admin-btn primary" type="submit" form="blog-editor-form" data-publish="true"><span class="btn-icon">🚀</span> <span class="btn-text">PUBLISH</span></button>
+          <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
+          <button class="admin-btn" type="button" data-act="preview-blog"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
+          <button class="admin-btn primary" type="submit" form="blog-editor-form" data-publish="true"><span class="btn-icon">${ICONS.publish}</span> <span class="btn-text">PUBLISH</span></button>
         </div>
       </div>
 
@@ -947,12 +954,12 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/notes" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
+          <a href="#/notes" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published !== false ? 'published' : 'draft'}">${item.published !== false ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "NEW NOTE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE NOTE</span></button>
+          <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE NOTE</span></button>
         </div>
       </div>
 
@@ -996,14 +1003,14 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-title">
-          <a href="#/journal" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">←</span> <span class="btn-text">BACK</span></a>
+          <a href="#/journal" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
           <h2 style="margin:0;font-size:16px;font-weight:800;font-family:var(--mono)">${esc(item.title || "DAILY JOURNAL")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
-          <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">💾</span> <span class="btn-text">SAVE ENTRY</span></button>
-          <button class="admin-btn" type="button" data-act="preview-journal"><span class="btn-icon">👁️</span> <span class="btn-text">PREVIEW</span></button>
-          <button class="admin-btn primary" type="submit" form="journal-editor-form" data-publish="true"><span class="btn-icon">🚀</span> <span class="btn-text">PUBLISH</span></button>
+          <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE ENTRY</span></button>
+          <button class="admin-btn" type="button" data-act="preview-journal"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
+          <button class="admin-btn primary" type="submit" form="journal-editor-form" data-publish="true"><span class="btn-icon">${ICONS.publish}</span> <span class="btn-text">PUBLISH</span></button>
         </div>
       </div>
 

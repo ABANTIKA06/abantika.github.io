@@ -262,12 +262,23 @@
   gap: 12px;
   margin-top: 8px;
 }
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-icon-svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  display: block;
+}
 .admin-btn {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  min-width: 170px;
+  gap: 10px;
+  min-width: 140px;
   padding: 14px 16px;
   font: 10px var(--mono);
   letter-spacing: .12em;
