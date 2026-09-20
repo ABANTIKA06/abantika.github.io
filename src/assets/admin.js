@@ -3179,6 +3179,16 @@
       const wrapper = editable.closest(".wysiwyg-wrapper");
       syncWysiwyg(wrapper);
     }
+    const source = event.target.closest(".wysiwyg-source");
+    if (source) {
+      const wrapper = source.closest(".wysiwyg-wrapper");
+      if (wrapper) {
+        const editableEl = wrapper.querySelector(".wysiwyg-editable");
+        if (editableEl) {
+          editableEl.innerHTML = markdownToHtml(source.value);
+        }
+      }
+    }
   });
 
   app.addEventListener("change", async (event) => {
@@ -3412,6 +3422,10 @@
     }
   }
 
+  function isFormActive() {
+    return !!document.querySelector("form.admin-form, .wysiwyg-wrapper");
+  }
+
   window.addEventListener("scroll", updateStickyBarScroll, { passive: true });
   window.addEventListener("hashchange", () => {
     state.message = "";
@@ -3424,11 +3438,13 @@
     render().then(updateStickyBarScroll);
   });
   window.addEventListener("pageshow", () => {
-    state.content = null;
-    render().then(updateStickyBarScroll);
+    if (!isFormActive()) {
+      state.content = null;
+      render().then(updateStickyBarScroll);
+    }
   });
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
+    if (document.visibilityState === "visible" && !isFormActive()) {
       state.content = null;
       render().then(updateStickyBarScroll);
     }
