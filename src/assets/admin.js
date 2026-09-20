@@ -334,6 +334,7 @@
           <button type="button" class="wysiwyg-btn" data-wysiwyg-cmd="hr">HR</button>
           <span class="wysiwyg-sep"></span>
           <button type="button" class="wysiwyg-btn wikilink-btn" data-wysiwyg-cmd="wikilink">[[ WIKILINK ]]</button>
+          <button type="button" class="wysiwyg-btn math-btn" data-wysiwyg-cmd="math" title="Insert LaTeX Math Formula" style="font-weight:700;color:var(--accent-red,#e03c31)">∑ LATEX MATH</button>
           <button type="button" class="wysiwyg-btn" data-wysiwyg-cmd="image">🖼️ IMAGE</button>
         </div>
         <div class="wysiwyg-editor-area">
@@ -1225,6 +1226,118 @@
 
     root.addEventListener("click", (e) => {
       if (e.target.closest("[data-dismiss]")) root.remove();
+    });
+  }
+
+  function showMathPickerModal(wrapper) {
+    document.querySelector(".admin-modal-root")?.remove();
+
+    const presets = [
+      { label: "Inline E = mc²", code: "$ E = mc^2 $", isBlock: false },
+      { label: "Quadratic Formula", code: "$$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} $$", isBlock: true },
+      { label: "Summation Series", code: "$$ \\sum_{i=1}^{n} i = \\frac{n(n+1)}{2} $$", isBlock: true },
+      { label: "Definite Integral", code: "$$ \\int_{a}^{b} f(x) \\, dx $$", isBlock: true },
+      { label: "2x2 Matrix", code: "$$ \\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix} $$", isBlock: true },
+      { label: "Limit", code: "$$ \\lim_{x \\to \\infty} \\frac{1}{x} = 0 $$", isBlock: true },
+      { label: "Euler's Identity", code: "$$ e^{i\\pi} + 1 = 0 $$", isBlock: true }
+    ];
+
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal math-picker-modal" role="dialog" aria-modal="true" style="width:min(620px, 100%)">
+        <p class="admin-kicker">08 / LATEX MATHEMATICS</p>
+        <h2 style="margin-bottom:12px">INSERT LATEX MATH<span class="red-stop">.</span></h2>
+
+        <div style="margin-bottom:12px">
+          <label style="display:block;font:11px var(--mono);margin-bottom:6px;font-weight:700">CHOOSE PRESET TEMPLATE</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+            ${presets.map((p, idx) => `
+              <button type="button" class="wysiwyg-tab math-preset-btn" data-preset-idx="${idx}" style="font-size:11px">${esc(p.label)}</button>
+            `).join("")}
+          </div>
+        </div>
+
+        <label style="display:block;margin-bottom:12px;font:11px var(--mono);font-weight:700">EDIT LATEX EQUATION
+          <textarea id="math-modal-input" style="width:100%;height:80px;font-family:var(--mono);font-size:13px;padding:8px;margin-top:4px;border:1px solid var(--line);background:#faf9f5">${esc(presets[0].code)}</textarea>
+        </label>
+
+        <div style="margin-bottom:16px">
+          <label style="display:block;font:11px var(--mono);margin-bottom:4px;font-weight:700">LIVE MATHEMATICAL PREVIEW</label>
+          <div id="math-modal-preview" style="min-height:55px;padding:12px;background:#ffffff;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;overflow-x:auto"></div>
+        </div>
+
+        <div class="image-picker-actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+          <button type="button" class="admin-btn secondary" data-dismiss="true">CANCEL</button>
+          <button type="button" class="admin-btn" id="math-modal-insert-btn">INSERT FORMULA <b>→</b></button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(root);
+
+    const input = root.querySelector("#math-modal-input");
+    const preview = root.querySelector("#math-modal-preview");
+    const insertBtn = root.querySelector("#math-modal-insert-btn");
+
+    function updatePreview() {
+      const val = input.value.trim();
+      preview.innerHTML = val ? esc(val) : '<span style="color:#888;font-size:12px">Type equation above...</span>';
+      if (window.renderMathInElement) {
+        window.renderMathInElement(preview, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\[', right: '\\]', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    input.addEventListener("input", updatePreview);
+    updatePreview();
+
+    root.addEventListener("click", (e) => {
+      const presetBtn = e.target.closest(".math-preset-btn");
+      if (presetBtn) {
+        const idx = parseInt(presetBtn.getAttribute("data-preset-idx"), 10);
+        if (presets[idx]) {
+          input.value = presets[idx].code;
+          updatePreview();
+        }
+        return;
+      }
+
+      if (e.target.getAttribute("data-dismiss") === "true") {
+        root.remove();
+        return;
+      }
+    });
+
+    insertBtn.addEventListener("click", () => {
+      const mathCode = input.value.trim();
+      if (!mathCode) return;
+
+      const editable = wrapper.querySelector(".wysiwyg-editable");
+      const source = wrapper.querySelector(".wysiwyg-source");
+      const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
+      const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
+
+      if (mode === "source") {
+        source.focus();
+        const start = source.selectionStart || 0;
+        const end = source.selectionEnd || 0;
+        source.value = source.value.substring(0, start) + "\n" + mathCode + "\n" + source.value.substring(end);
+      } else {
+        editable.focus();
+        document.execCommand("insertText", false, mathCode + " ");
+      }
+
+      syncWysiwyg(wrapper);
+      root.remove();
     });
   }
 
@@ -2298,7 +2411,19 @@
           source.style.display = "none";
           previewPane.style.display = "block";
           syncWysiwyg(wrapper);
-          previewPane.innerHTML = `<div class="case-body" style="font-family:var(--sans);line-height:1.6"><pre style="white-space:pre-wrap;font:14px/1.6 Inter,sans-serif">${esc(source.value)}</pre></div>`;
+          const renderedHtml = markdownToHtml(source.value);
+          previewPane.innerHTML = `<div class="case-body content-body" style="font-family:var(--sans);line-height:1.6;padding:16px;background:#ffffff;border:1px solid var(--line);min-height:160px">${renderedHtml}</div>`;
+          if (window.renderMathInElement) {
+            window.renderMathInElement(previewPane, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '\\[', right: '\\]', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false}
+              ],
+              throwOnError: false
+            });
+          }
         }
         return;
       }
@@ -2330,6 +2455,9 @@
         }
         else if (cmd === "image") {
           showImagePickerModal(wrapper);
+        }
+        else if (cmd === "math") {
+          showMathPickerModal(wrapper);
         }
         syncWysiwyg(wrapper);
         return;

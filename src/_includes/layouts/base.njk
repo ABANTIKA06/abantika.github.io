@@ -20,6 +20,7 @@
     <meta name="twitter:image" content="{{ image | absoluteUrl(site.url) }}">
     <link rel="canonical" href="{{ site.url }}{{ page.url }}">
     <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <title>{{ title or site.name }}</title>
   </head>
   <body>
@@ -403,7 +404,22 @@
             }
           });
         }
+
+        if (window.renderMathInElement) {
+          window.renderMathInElement(document.body, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '\\[', right: '\\]', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+          });
+        }
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
   </body>
 </html>
+

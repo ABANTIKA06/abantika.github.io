@@ -14,8 +14,10 @@ const REQUIRED = {
   note: ["title", "date"]
 };
 
+const katex = require("katex");
+
 const md = new MarkdownIt({
-  html: false,
+  html: true,
   linkify: true,
   typographer: true
 });
@@ -57,9 +59,49 @@ md.renderer.rules.image = function (tokens, idx, options, env, self) {
   return defaultImage(tokens, idx, options, env, self);
 };
 
+function renderLatexMath(text) {
+  if (!text || typeof text !== "string") return "";
+
+  // 1. Process block math $$ ... $$ or \[ ... \]
+  let processed = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
+    try {
+      return `<div class="katex-block-container">${katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false })}</div>`;
+    } catch (e) {
+      return match;
+    }
+  }).replace(/\\\[([\s\S]+?)\\\]/g, (match, expr) => {
+    try {
+      return `<div class="katex-block-container">${katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false })}</div>`;
+    } catch (e) {
+      return match;
+    }
+  });
+
+  // 2. Process inline math $ ... $ or \( ... \)
+  processed = processed.replace(/(^|[^\\$])\$([^\$\n]+?)\$/g, (match, prefix, expr) => {
+    if (/^\d+(\.\d+)?$/.test(expr.trim())) return match;
+    try {
+      const html = katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false });
+      return `${prefix}<span class="katex-inline-container">${html}</span>`;
+    } catch (e) {
+      return match;
+    }
+  }).replace(/\\\(([\s\S]+?)\\\)/g, (match, expr) => {
+    try {
+      const html = katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false });
+      return `<span class="katex-inline-container">${html}</span>`;
+    } catch (e) {
+      return match;
+    }
+  });
+
+  return processed;
+}
+
 function renderMarkdown(value) {
   if (!value) return "";
-  return md.render(String(value));
+  const mathProcessed = renderLatexMath(String(value));
+  return md.render(mathProcessed);
 }
 
 function renderWikilinks(htmlOrMd, contentMap = new Map()) {

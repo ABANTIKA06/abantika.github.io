@@ -742,3 +742,26 @@ figure.image-plate figcaption {
   text-transform: uppercase;
 }
 
+/* LaTeX Mathematics Styling (Editorial Bauhaus) */
+.katex-block-container {
+  display: block;
+  width: 100%;
+  margin: 1.5em 0;
+  padding: 16px 20px;
+  background: #faf8f2;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  text-align: center;
+  -webkit-overflow-scrolling: touch;
+}
+.katex-inline-container {
+  display: inline-block;
+  padding: 0 4px;
+  vertical-align: middle;
+}
+.katex-display {
+  margin: 0 !important;
+}
+
+
