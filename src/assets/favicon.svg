@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <style>
+    .bg { fill: #111111; }
+    .fg { fill: #ffffff; }
+    .red { fill: #e03c31; }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #fbf9f5; }
+      .fg { fill: #111111; }
+    }
+  </style>
+  <rect width="512" height="512" rx="96" class="bg"/>
+  <rect x="4" y="4" width="504" height="504" rx="92" fill="none" stroke="currentColor" stroke-width="2" opacity="0.1" class="fg"/>
+  <!-- Geometric Bauhaus "A" Path -->
+  <path fill-rule="evenodd" d="M 256 86 L 382 384 H 322 L 288 306 H 224 L 190 384 H 130 L 256 86 Z M 256 182 L 238 254 H 274 L 256 182 Z" class="fg"/>
+  <!-- Signature Bauhaus Red Accent Dot -->
+  <circle cx="410" cy="370" r="28" class="red"/>
+</svg>
