@@ -151,9 +151,6 @@
   .hero-plate { min-height:390px; margin:0 -20px; border-left:0; border-right:0; }
   .about { grid-template-columns:160px 1fr; gap:24px; }
   .principles { grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; padding-top:22px; }
-  .project-grid { grid-template-columns:1fr; }
-  .project { min-height:320px; }
-  .project-art { height:180px; }
   .journal { grid-template-columns:110px 1fr; }
   .journal-plot { grid-column:1/-1; min-height:220px; }
   .skills { grid-template-columns:1fr; }
@@ -377,6 +374,67 @@
   font: 900 32px/1 var(--mono);
   color: rgba(0, 0, 0, 0.12);
   align-self: flex-end;
+}
+
+/* Fluid Responsive Breakpoints for Selected Works Grid */
+@media (max-width: 1080px) {
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .project-grid {
+    grid-template-columns: 1fr;
+    border-left: none;
+    margin-top: 18px;
+  }
+  .project {
+    border-left: none;
+    border-right: none;
+    min-height: auto !important;
+  }
+  .project-art {
+    height: 190px !important;
+  }
+  .project-card-body {
+    padding: 22px 20px 24px !important;
+  }
+  .project h3 {
+    font-size: 22px !important;
+    line-height: 1.15 !important;
+    margin-bottom: 10px !important;
+  }
+  .project p {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    color: #44413c !important;
+    margin-bottom: 18px !important;
+  }
+  .project-number {
+    font-size: 11px !important;
+    margin-bottom: 6px !important;
+  }
+  .project-tech {
+    font-size: 10px !important;
+    margin-bottom: 16px !important;
+  }
+  .project-link {
+    font-size: 10px !important;
+    padding-bottom: 4px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .project-art {
+    height: 160px !important;
+  }
+  .project-card-body {
+    padding: 18px 16px 20px !important;
+  }
+  .project h3 {
+    font-size: 20px !important;
+  }
 }
 /* 01. Dots Grid / Constellation */
 .dots, .case-art.dots, .row-art-dots {
