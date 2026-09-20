@@ -35,8 +35,14 @@ module.exports = function (eleventyConfig) {
     return `${cleanBase}${cleanPath}`;
   }
 
+  function dateToRfc822(date) {
+    const d = date instanceof Date ? date : new Date(date);
+    return isNaN(d.getTime()) ? new Date().toUTCString() : d.toUTCString();
+  }
+
   eleventyConfig.addFilter("urlFix", urlFix);
   eleventyConfig.addFilter("absoluteUrl", absoluteUrl);
+  eleventyConfig.addFilter("dateToRfc822", dateToRfc822);
   eleventyConfig.addFilter("markdown", renderMarkdown);
   eleventyConfig.addFilter("published", (items) => (items || []).filter((item) => item.published));
   eleventyConfig.addFilter("featured", (items) =>
