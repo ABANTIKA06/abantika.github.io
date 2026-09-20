@@ -8,9 +8,9 @@ tags: []
 description: are we allowed for the new rdbms and how many know about sqllite
 cover: ''
 published: true
-featured: true
+featured: false
 relatedProject: ''
 headline:
   - SQL GOT A NEW COMPETITIOR
 ---
-interesting
+$ E = mc^2 $ interesting
