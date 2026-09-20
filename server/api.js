@@ -501,6 +501,19 @@ async function handle(req, res) {
       });
       return true;
     }
+    if (route === "POST /api/resume") {
+      if (!body.data) {
+        send(res, 400, { error: "Missing PDF file data." });
+        return true;
+      }
+      const buf = Buffer.from(String(body.data || "").replace(/^data:[^;]+;base64,/, ""), "base64");
+      const resData = await store.saveResumeBuffer(buf);
+      await saved(resData, {
+        commitMessage: "content: update resume PDF (Abantika_Resume.pdf)",
+        filePaths: [path.join("src", "assets", "Abantika_Resume.pdf")]
+      });
+      return true;
+    }
     if (route === "DELETE /api/media") {
       const resData = await store.removeMedia(body);
       await saved(resData, {

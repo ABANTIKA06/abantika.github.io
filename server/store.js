@@ -599,6 +599,19 @@ async function saveMedia({ folder, filename, data }) {
   return saveMediaBuffer({ folder, filename, buffer: buf });
 }
 
+async function saveResumeBuffer(buffer) {
+  if (!buffer || !buffer.length) throw new Error("Empty PDF file.");
+  if (buffer.length > 25 * 1024 * 1024) throw new Error("Resume PDF exceeds 25MB limit.");
+
+  const relPath = "src/assets/Abantika_Resume.pdf";
+  mediaBufferCache.set(relPath, buffer);
+
+  const fullPath = path.join(ROOT, "src", "assets", "Abantika_Resume.pdf");
+  safeWriteFile(fullPath, buffer, null);
+
+  return { name: "Abantika_Resume.pdf", path: "/assets/Abantika_Resume.pdf" };
+}
+
 async function removeMedia({ folder, filename, force }) {
   invalidateStoreMediaCache();
   if (!FOLDERS.includes(folder)) throw new Error("invalid media folder");
@@ -742,6 +755,7 @@ module.exports = {
   getMediaBuffer,
   saveMedia,
   saveMediaBuffer,
+  saveResumeBuffer,
   removeMedia,
   loadProjects,
   loadBlog,

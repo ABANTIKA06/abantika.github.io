@@ -894,6 +894,22 @@
           </div>
         </div>
 
+        <!-- RESUME DOCUMENT UPLOADER -->
+        <div class="portrait-studio-container" style="margin-top:24px">
+          <div class="portrait-studio-header">
+            <h3>RESUME DOCUMENT (PDF)</h3>
+            <span class="studio-badge">PUBLIC DOWNLOAD ASSET</span>
+          </div>
+          <div style="padding:20px;font-family:var(--sans)">
+            <p style="font-size:13px;line-height:1.5;color:#555;margin:0 0 16px">Upload your updated resume PDF file here. It will automatically replace <code>/assets/Abantika_Resume.pdf</code> and update all Download Resume buttons on the live site.</p>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <input type="file" id="resume-pdf-input" accept="application/pdf" class="admin-input" style="max-width:320px;padding:8px" />
+              <button type="button" class="admin-btn primary" id="upload-resume-btn">📄 UPLOAD NEW RESUME PDF <b>↗</b></button>
+            </div>
+            <div id="resume-upload-msg" style="margin-top:12px;font:11px var(--mono)"></div>
+          </div>
+        </div>
+
         ${principles}
         <div class="admin-actions"><button class="admin-btn primary" type="submit">SAVE ABOUT <b>→</b></button></div>
       </form>`
@@ -2323,6 +2339,41 @@
       const openStudioBtn = event.target.closest("#open-portrait-studio-btn");
       const pickLibraryBtn = event.target.closest("#pick-library-portrait-btn");
       const clearPortraitBtn = event.target.closest("#clear-portrait-btn");
+      const uploadResumeBtn = event.target.closest("#upload-resume-btn");
+
+      if (uploadResumeBtn) {
+        const fileInput = document.getElementById("resume-pdf-input");
+        const file = fileInput ? fileInput.files[0] : null;
+        if (!file) {
+          alert("Please select a .pdf file first.");
+          return;
+        }
+        if (file.type !== "application/pdf" && !file.name.endsWith(".pdf")) {
+          alert("File must be a .pdf document.");
+          return;
+        }
+        if (file.size > 25 * 1024 * 1024) {
+          alert("Resume PDF exceeds 25MB limit.");
+          return;
+        }
+        const prog = showProgressModal({ kicker: "02 / ABOUT", title: "UPLOADING RESUME PDF...", copy: "Processing resume file and updating site." });
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            await api("/api/resume", {
+              method: "POST",
+              body: { filename: file.name, data: reader.result }
+            });
+            prog.finish("RESUME UPDATED", "Your resume PDF has been updated and published to the website.");
+            const msg = document.getElementById("resume-upload-msg");
+            if (msg) msg.innerHTML = '<span style="color:#2a7b4c;font-weight:700">✓ Resume PDF updated successfully! View or download on site.</span>';
+          } catch (err) {
+            prog.fail(err.message);
+          }
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
 
       if (directUploadBtn) {
         document.getElementById("portrait-direct-upload-input")?.click();
