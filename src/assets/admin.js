@@ -3422,6 +3422,15 @@
     }
   }
 
+  app.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      const target = event.target;
+      if (target && target.tagName === "INPUT" && target.type !== "submit" && target.type !== "button") {
+        event.preventDefault();
+      }
+    }
+  });
+
   function isFormActive() {
     return !!document.querySelector("form.admin-form, .wysiwyg-wrapper");
   }
