@@ -1605,81 +1605,77 @@ a.wikilink {
     position: sticky;
     top: 0;
     z-index: 100;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 14px 16px;
-    margin: -24px -12px 20px -12px;
-    background: var(--paper, #f2f0ea);
-    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .admin-sticky-title {
-    justify-content: space-between;
-    width: 100%;
-    transition: all 0.28s ease;
-  }
-  .admin-sticky-bar .admin-actions {
-    width: 100%;
-    justify-content: space-between;
-    gap: 8px;
-    transition: all 0.28s ease;
-  }
-  .admin-sticky-bar .admin-btn {
-    flex: 1;
-    min-width: 0;
-    justify-content: center;
-    padding: 10px 8px;
-    font-size: 11px;
-    font-family: var(--mono);
-    font-weight: 700;
-    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .admin-sticky-bar .admin-btn .btn-text {
-    transition: opacity 0.2s ease, max-width 0.25s ease;
-    display: inline-block;
-  }
-
-  /* Compact Animated Mobile Sticky Bar on Scroll */
-  .admin-sticky-bar.is-scrolled {
+    display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
+    gap: 8px !important;
     padding: 8px 12px !important;
-    gap: 10px !important;
-    background: rgba(242, 240, 234, 0.94) !important;
+    margin: -24px -12px 18px -12px !important;
+    background: rgba(242, 240, 234, 0.96) !important;
     backdrop-filter: blur(12px) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+    border-bottom: 1px solid var(--line) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    height: 48px !important;
+    box-sizing: border-box !important;
   }
-  .admin-sticky-bar.is-scrolled .admin-sticky-title {
-    width: auto !important;
-    gap: 6px !important;
+  .admin-sticky-title {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
   }
-  .admin-sticky-bar.is-scrolled .admin-sticky-title h2 {
-    display: none !important;
+  .admin-sticky-title h2 {
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
   }
-  .admin-sticky-bar.is-scrolled .admin-status-badge {
+  .admin-sticky-title .admin-status-badge {
     padding: 2px 6px !important;
     font-size: 9px !important;
+    flex-shrink: 0 !important;
   }
-  .admin-sticky-bar.is-scrolled .admin-actions {
-    width: auto !important;
+  .admin-sticky-bar .admin-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
     gap: 6px !important;
-  }
-  .admin-sticky-bar.is-scrolled .admin-btn {
     flex: 0 0 auto !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    padding: 0 10px !important;
-    font-size: 13px !important;
-    gap: 0 !important;
+    width: auto !important;
+    margin: 0 !important;
+  }
+  .admin-sticky-bar .admin-btn {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    min-width: 32px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+    box-sizing: border-box !important;
+    flex: 0 0 auto !important;
     border-radius: 3px !important;
   }
-  .admin-sticky-bar.is-scrolled .admin-btn .btn-text {
+  .admin-sticky-bar .admin-btn .btn-text {
     display: none !important;
   }
-  .admin-sticky-bar.is-scrolled .admin-btn .btn-icon {
-    font-size: 14px !important;
-    line-height: 1 !important;
+  .admin-sticky-bar .admin-btn .btn-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .admin-sticky-bar .admin-btn .btn-icon-svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.4px !important;
   }
   .collapsible-details-content {
     grid-template-columns: 1fr;
