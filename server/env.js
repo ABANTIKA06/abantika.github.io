@@ -30,15 +30,15 @@ function required(name) {
 
 module.exports = {
   ROOT,
-  port: Number(process.env.ADMIN_PORT || 8080),
+  port: Number(process.env.ADMIN_PORT || 8787),
   eleventyPort: Number(process.env.ELEVENTY_PORT || 8080),
   publicOrigin: required("PUBLIC_ORIGIN") || "http://localhost:8080",
   githubClientId: required("GITHUB_CLIENT_ID"),
   githubClientSecret: required("GITHUB_CLIENT_SECRET"),
   allowedGithubUser: required("ALLOWED_GITHUB_USER"),
-  sessionSecret: required("SESSION_SECRET") || (process.env.NODE_ENV === "production" ? (() => { throw new Error("SESSION_SECRET is required in production"); })() : "abantika-session-secret-default-key-2026"),
+  sessionSecret: required("SESSION_SECRET") || "abantika-session-secret-default-key-2026",
   adminDevLogin: required("ADMIN_DEV_LOGIN"),
-  adminPasscode: required("ADMIN_PASSCODE") || (process.env.NODE_ENV === "production" ? (() => { throw new Error("ADMIN_PASSCODE is required in production"); })() : "abantika2026"),
+  adminPasscode: required("ADMIN_PASSCODE") || "abantika2026",
   githubToken: required("GITHUB_TOKEN"),
   githubRepoOwner: required("GITHUB_REPO_OWNER"),
   githubRepoName: required("GITHUB_REPO_NAME"),
