@@ -819,13 +819,12 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/projects" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/projects" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          <span class="sticky-divider"></span>
-          <span class="admin-sticky-kicker">03 / PROJECT</span>
         </div>
         <div class="admin-sticky-title-container">
+          <span class="admin-sticky-editing-kicker">EDITING PROJECT:</span>
           <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW CASE STUDY")}">${esc(item.title || "NEW CASE STUDY")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
@@ -906,13 +905,12 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/blog" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/blog" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          <span class="sticky-divider"></span>
-          <span class="admin-sticky-kicker">04 / BLOG</span>
         </div>
         <div class="admin-sticky-title-container">
+          <span class="admin-sticky-editing-kicker">EDITING ARTICLE:</span>
           <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW ARTICLE")}">${esc(item.title || "NEW ARTICLE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
@@ -965,13 +963,12 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/notes" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/notes" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published !== false ? 'published' : 'draft'}">${item.published !== false ? 'PUBLISHED' : 'DRAFT'}</span>
-          <span class="sticky-divider"></span>
-          <span class="admin-sticky-kicker">06 / NOTE</span>
         </div>
         <div class="admin-sticky-title-container">
+          <span class="admin-sticky-editing-kicker">EDITING NOTE:</span>
           <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW NOTE")}">${esc(item.title || "NEW NOTE")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
@@ -1019,13 +1016,12 @@
       `
       <div class="admin-sticky-bar">
         <div class="admin-sticky-left">
-          <a href="#/journal" class="admin-btn" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
+          <a href="#/journal" class="admin-btn admin-btn-back" style="padding:4px 10px;font-size:10px"><span class="btn-icon">${ICONS.back}</span> <span class="btn-text">BACK</span></a>
           <span class="sticky-divider"></span>
           <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          <span class="sticky-divider"></span>
-          <span class="admin-sticky-kicker">05 / JOURNAL</span>
         </div>
         <div class="admin-sticky-title-container">
+          <span class="admin-sticky-editing-kicker">EDITING JOURNAL:</span>
           <h2 class="admin-sticky-title-text" title="${esc(item.title || "DAILY JOURNAL")}">${esc(item.title || "DAILY JOURNAL")}</h2>
         </div>
         <div class="admin-actions" style="margin:0;gap:8px">
@@ -3473,6 +3469,17 @@
       const target = event.target;
       if (target && (target.tagName === "INPUT" || target.tagName === "SELECT") && target.type !== "submit" && target.type !== "button") {
         event.preventDefault();
+      }
+    }
+  });
+
+  app.addEventListener("input", (event) => {
+    if (event.target && event.target.name === "title") {
+      const titleText = document.querySelector(".admin-sticky-title-text");
+      if (titleText) {
+        const val = event.target.value.trim();
+        titleText.textContent = val || "UNTITLED";
+        titleText.title = val || "UNTITLED";
       }
     }
   });

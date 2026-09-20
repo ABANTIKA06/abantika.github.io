@@ -14,19 +14,29 @@ image: /assets/og-image.png
       <p>Case studies and works in progress. Project descriptions and results are placeholders until verified source material is supplied.</p>
     </section>
     <section class="project-index" aria-label="Selected projects">
-      {% for project in listed %}
-      <a class="project-row" href="{{ project.url }}">
-        <span>{{ project.number }}</span>
-        <div class="row-art {{ project.rowArtClass }}" aria-hidden="true">
-          {% if project.customArt or project.art == "custom" %}
-          <img src="{{ (project.customArt or project.cover) | urlFix }}" alt="" class="row-custom-art-img" />
-          {% endif %}
-        </div>
-        <h2>{{ project.title | editorialBreak | safe }}</h2>
-        <p>{{ project.techLabel }}</p>
-        <b aria-hidden="true">→</b>
-      </a>
-      {% endfor %}
+      <div class="project-grid">
+        {% for project in listed %}
+        <article class="project">
+          <div class="project-art {{ project.artClass or 'custom-art' }}">
+            {% if project.cover or project.customArt %}
+              <img src="{{ (project.cover or project.customArt) | urlFix }}" alt="{{ project.title }}" class="project-cover-img" />
+            {% else %}
+              <div class="project-fallback-header-art art-{{ project.art or 'dots' }}">
+                <span class="art-kicker">{{ project.artLabel or 'ANALYTICAL ARTIFACT' }}</span>
+                <div class="art-badge">{{ project.number }}</div>
+              </div>
+            {% endif %}
+          </div>
+          <div class="project-card-body">
+            <p class="project-number">{{ project.number }}</p>
+            <h3>{{ project.title | editorialBreak | safe }}</h3>
+            <p>{{ project.summary | publicText(project.description) }}</p>
+            <small class="project-tech">{{ project.techLabel }}</small>
+            <a class="text-link project-link" href="{{ project.url }}">VIEW PROJECT <b>→</b></a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
     </section>
   </main>
   {% include "components/footer.njk" %}

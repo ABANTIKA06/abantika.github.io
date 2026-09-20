@@ -59,12 +59,23 @@ title: Abantika — Data Analyst & Data Scientist
     <div class="project-grid">
       {% for project in featuredProjects %}
       <article class="project">
-        <div class="project-art {{ project.artClass }}">{% if project.art != "dots" %}<span></span>{% endif %}</div>
-        <p class="project-number">{{ project.number }}</p>
-        <h3>{{ project.title | editorialBreak | safe }}</h3>
-        <p>{{ project.summary | publicText(project.description) }}</p>
-        <small>{{ project.techLabel }}</small>
-        <a class="text-link" href="{{ project.url }}">VIEW PROJECT <b>→</b></a>
+        <div class="project-art {{ project.artClass or 'custom-art' }}">
+          {% if project.cover or project.customArt %}
+            <img src="{{ (project.cover or project.customArt) | urlFix }}" alt="{{ project.title }}" class="project-cover-img" />
+          {% else %}
+            <div class="project-fallback-header-art art-{{ project.art or 'dots' }}">
+              <span class="art-kicker">{{ project.artLabel or 'ANALYTICAL ARTIFACT' }}</span>
+              <div class="art-badge">{{ project.number }}</div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="project-card-body">
+          <p class="project-number">{{ project.number }}</p>
+          <h3>{{ project.title | editorialBreak | safe }}</h3>
+          <p>{{ project.summary | publicText(project.description) }}</p>
+          <small class="project-tech">{{ project.techLabel }}</small>
+          <a class="text-link project-link" href="{{ project.url }}">VIEW PROJECT <b>→</b></a>
+        </div>
       </article>
       {% endfor %}
     </div>

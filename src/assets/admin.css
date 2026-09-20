@@ -1540,18 +1540,22 @@ a.wikilink {
   height: 16px;
   background: var(--line, #d0ccc0);
 }
-.admin-sticky-kicker {
-  font: 700 10px var(--mono);
-  letter-spacing: 0.12em;
-  color: #777777;
+.admin-sticky-kicker,
+.admin-sticky-editing-kicker {
+  font: 800 11px var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--accent-red, #e03c31);
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-right: 6px;
 }
 .admin-sticky-title-container {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 12px;
 }
 .admin-sticky-title-text {
   margin: 0;
@@ -1651,50 +1655,63 @@ a.wikilink {
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 8px !important;
-    padding: 6px 10px !important;
+    gap: 6px !important;
+    padding: 6px 8px !important;
     margin: -24px -12px 18px -12px !important;
     background: rgba(242, 240, 234, 0.96) !important;
     backdrop-filter: blur(12px) !important;
     border-bottom: 1px solid var(--line) !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-    height: 48px !important;
-    min-height: 48px !important;
-    max-height: 48px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
     box-sizing: border-box !important;
   }
-  .admin-sticky-title {
+  .admin-sticky-left {
     display: flex !important;
-    flex-direction: row !important;
     align-items: center !important;
     gap: 6px !important;
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    overflow: hidden !important;
+    flex-shrink: 0 !important;
   }
-  .admin-sticky-title .admin-btn {
-    flex: 0 0 auto !important;
-    width: 34px !important;
-    min-width: 34px !important;
-    height: 34px !important;
-    min-height: 34px !important;
+  .admin-sticky-left .sticky-divider {
+    display: none !important;
+  }
+  .admin-sticky-left .admin-btn-back {
     padding: 0 !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 11px !important;
   }
-  .admin-sticky-title h2 {
-    font-size: 11px !important;
+  .admin-sticky-title-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    padding: 0 4px !important;
+  }
+  .admin-sticky-editing-kicker {
+    font-size: 10px !important;
+    letter-spacing: 0.1em !important;
+    margin-right: 2px !important;
+    flex-shrink: 0 !important;
+  }
+  .admin-sticky-title-text {
+    font-size: 12px !important;
     font-weight: 800 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     margin: 0 !important;
   }
-  .admin-sticky-title .admin-status-badge {
-    padding: 2px 6px !important;
-    font-size: 9px !important;
+  .admin-sticky-bar .admin-status-badge {
+    padding: 2px 5px !important;
+    font-size: 8px !important;
     flex-shrink: 0 !important;
     margin: 0 !important;
   }
@@ -1703,7 +1720,7 @@ a.wikilink {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 4px !important;
     flex: 0 0 auto !important;
     width: auto !important;
     margin: 0 !important;
@@ -1714,12 +1731,12 @@ a.wikilink {
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    width: 34px !important;
-    min-width: 34px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    width: 32px !important;
+    min-width: 32px !important;
     padding: 0 !important;
-    font-size: 11px !important;
+    font-size: 10px !important;
     box-sizing: border-box !important;
     flex: 0 0 auto !important;
     border-radius: 3px !important;
