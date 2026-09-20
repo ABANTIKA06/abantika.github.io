@@ -13,7 +13,7 @@ technologies:
   - MATPLOTLIB
   - PLOTLY
 featured: true
-published: false
+published: true
 art: radial
 artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
 customArt: ''
