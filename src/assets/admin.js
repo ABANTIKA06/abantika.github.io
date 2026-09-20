@@ -297,6 +297,32 @@
         } else if (tag === "a") {
           const href = child.getAttribute("href") || "#";
           md += `[${inner.trim()}](${href})`;
+        } else if (tag === "table") {
+          let tableMd = "\n\n";
+          const trs = child.querySelectorAll("tr");
+          let hasHeader = false;
+          trs.forEach((tr, rIdx) => {
+            const ths = tr.querySelectorAll("th");
+            const tds = tr.querySelectorAll("td");
+            if (ths.length > 0) {
+              hasHeader = true;
+              tableMd += "| " + Array.from(ths).map(th => htmlToMarkdown(th).trim()).join(" | ") + " |\n";
+              tableMd += "| " + Array.from(ths).map(th => {
+                const align = th.style.textAlign || "left";
+                if (align === "center") return ":---:";
+                if (align === "right") return "---:";
+                return ":---";
+              }).join(" | ") + " |\n";
+            } else if (tds.length > 0) {
+              if (rIdx === 0 && !hasHeader) {
+                tableMd += "| " + Array.from(tds).map((_, i) => `Header ${i+1}`).join(" | ") + " |\n";
+                tableMd += "| " + Array.from(tds).map(() => ":---").join(" | ") + " |\n";
+                hasHeader = true;
+              }
+              tableMd += "| " + Array.from(tds).map(td => htmlToMarkdown(td).trim()).join(" | ") + " |\n";
+            }
+          });
+          md += tableMd + "\n";
         } else {
           md += inner;
         }
@@ -305,9 +331,57 @@
     return md.replace(/\n{3,}/g, "\n\n");
   }
 
+  function convertMarkdownTablesToHtml(text) {
+    const tableRegex = /(?:(?:^|\n)\|[^\n]+\|(?:$|\n))+/g;
+    return text.replace(tableRegex, (block) => {
+      const lines = block.trim().split("\n").map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) return block;
+      
+      if (!lines[1].includes("-")) {
+        return block;
+      }
+      
+      const parseRow = (rowStr) => {
+        let parts = rowStr.split("|");
+        if (parts.length > 1 && parts[0].trim() === "") parts.shift();
+        if (parts.length > 0 && parts[parts.length - 1].trim() === "") parts.pop();
+        return parts.map(p => p.trim());
+      };
+
+      const headers = parseRow(lines[0]);
+      const alignments = parseRow(lines[1]).map(col => {
+        if (col.startsWith(":") && col.endsWith(":")) return "center";
+        if (col.endsWith(":")) return "right";
+        if (col.startsWith(":")) return "left";
+        return "left";
+      });
+
+      let tableHtml = '<div class="table-responsive"><table class="bauhaus-table"><thead><tr>';
+      headers.forEach((h, i) => {
+        const align = alignments[i] || "left";
+        tableHtml += `<th style="text-align:${align}">${h}</th>`;
+      });
+      tableHtml += '</tr></thead><tbody>';
+
+      for (let r = 2; r < lines.length; r++) {
+        const rowCells = parseRow(lines[r]);
+        if (rowCells.length === 0) continue;
+        tableHtml += '<tr>';
+        rowCells.forEach((c, i) => {
+          const align = alignments[i] || "left";
+          tableHtml += `<td style="text-align:${align}">${c}</td>`;
+        });
+        tableHtml += '</tr>';
+      }
+      tableHtml += '</tbody></table></div>';
+      return "\n" + tableHtml + "\n";
+    });
+  }
+
   function markdownToHtml(mdText) {
     if (!mdText) return "";
     let html = esc(String(mdText));
+    html = convertMarkdownTablesToHtml(html);
     html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
     html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
     html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
@@ -319,7 +393,19 @@
     html = html.replace(/^- (.*$)/gim, "<li>$1</li>");
     html = html.replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>");
     html = html.replace(/(<\/ul>\s*<ul>)/g, "");
+
+    const tableBlocks = [];
+    html = html.replace(/<div class="table-responsive">[\s\S]*?<\/div>/g, (m) => {
+      tableBlocks.push(m);
+      return `___TABLE_BLOCK_${tableBlocks.length - 1}___`;
+    });
+
     html = html.replace(/\n/g, "<br>");
+
+    tableBlocks.forEach((tbl, idx) => {
+      html = html.replace(`___TABLE_BLOCK_${idx}___`, tbl);
+    });
+
     return html;
   }
 
@@ -363,6 +449,7 @@
           <button type="button" class="wysiwyg-btn" data-wysiwyg-cmd="code">CODE</button>
           <button type="button" class="wysiwyg-btn" data-wysiwyg-cmd="quote">QUOTE</button>
           <button type="button" class="wysiwyg-btn" data-wysiwyg-cmd="hr">HR</button>
+          <button type="button" class="wysiwyg-btn table-btn" data-wysiwyg-cmd="table" title="Generate & Format Table" style="font-weight:700">⊞ TABLE</button>
           <span class="wysiwyg-sep"></span>
           <button type="button" class="wysiwyg-btn wikilink-btn" data-wysiwyg-cmd="wikilink">[[ WIKILINK ]]</button>
           <button type="button" class="wysiwyg-btn math-btn" data-wysiwyg-cmd="math" title="Insert LaTeX Math Formula" style="font-weight:700;color:var(--accent-red,#e03c31)">∑ LATEX MATH</button>
@@ -1607,6 +1694,362 @@
     });
   }
 
+  function showTablePickerModal(target) {
+    document.querySelector(".admin-modal-root")?.remove();
+
+    let headers = ["Header 1", "Header 2", "Header 3"];
+    let rows = [
+      ["Cell 1", "Cell 2", "Cell 3"],
+      ["Cell 4", "Cell 5", "Cell 6"]
+    ];
+    let aligns = ["left", "left", "left"];
+
+    const presets = [
+      {
+        label: "📊 3x3 Standard Table",
+        headers: ["Feature / Item", "Description", "Status"],
+        rows: [
+          ["Data Pipeline", "Automated ETL flow", "Active"],
+          ["Model Accuracy", "94.2% ROC-AUC", "Verified"]
+        ],
+        aligns: ["left", "left", "center"]
+      },
+      {
+        label: "📈 Comparison Matrix",
+        headers: ["Criteria", "Option A (Legacy)", "Option B (Proposed)"],
+        rows: [
+          ["Latency", "250ms", "45ms"],
+          ["Cost / mo", "$1,200", "$450"],
+          ["Scalability", "Manual", "Auto-scaled"]
+        ],
+        aligns: ["left", "center", "center"]
+      },
+      {
+        label: "📝 Key-Value Spec Sheet",
+        headers: ["Specification", "Details"],
+        rows: [
+          ["Framework", "Eleventy v2.0"],
+          ["Hosting", "Vercel Edge Network"],
+          ["Deployment", "GitHub Actions CI/CD"]
+        ],
+        aligns: ["left", "left"]
+      }
+    ];
+
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal table-picker-modal" role="dialog" aria-modal="true" style="width:min(760px, 96vw);max-height:90vh;display:flex;flex-direction:column;background:var(--paper,#fbf9f5)">
+        <div style="flex:0 0 auto;padding-bottom:10px;border-bottom:1px solid var(--line)">
+          <p class="admin-kicker">TABLE FORMATTER & GENERATOR</p>
+          <h2 style="margin-bottom:8px">GENERATE & FORMAT TABLE<span class="red-stop">.</span></h2>
+          <p style="font-size:12px;color:#555;margin-bottom:10px">
+            Build table grids, choose column alignments, load presets, or paste CSV/TSV text. Formats automatically for Edit, Source, and Preview modes.
+          </p>
+          <div class="wysiwyg-tabs">
+            <button type="button" class="wysiwyg-tab active" id="table-tab-builder">GRID BUILDER</button>
+            <button type="button" class="wysiwyg-tab" id="table-tab-presets">PRESETS</button>
+            <button type="button" class="wysiwyg-tab" id="table-tab-csv">PASTE CSV / TSV</button>
+          </div>
+        </div>
+
+        <div style="flex:1 1 auto;overflow-y:auto;padding:12px 0">
+          <!-- GRID BUILDER VIEW -->
+          <div id="table-view-builder">
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px;background:#f2efe6;padding:10px;border:1px solid var(--line)">
+              <label style="font:11px var(--mono);font-weight:700">ROWS: 
+                <input type="number" id="table-rows-count" min="1" max="20" value="${rows.length}" style="width:50px;padding:3px;margin-left:4px;border:1px solid var(--line);background:#fff">
+              </label>
+              <label style="font:11px var(--mono);font-weight:700">COLS: 
+                <input type="number" id="table-cols-count" min="1" max="10" value="${headers.length}" style="width:50px;padding:3px;margin-left:4px;border:1px solid var(--line);background:#fff">
+              </label>
+              <button type="button" class="admin-btn secondary" id="table-add-row-btn" style="padding:4px 8px;font-size:10px">+ ADD ROW</button>
+              <button type="button" class="admin-btn secondary" id="table-add-col-btn" style="padding:4px 8px;font-size:10px">+ ADD COL</button>
+              <button type="button" class="admin-btn secondary danger" id="table-clear-btn" style="padding:4px 8px;font-size:10px">RESET</button>
+            </div>
+
+            <div style="overflow-x:auto;margin-bottom:12px">
+              <label style="display:block;font:11px var(--mono);margin-bottom:6px;font-weight:700">INTERACTIVE TABLE CELL EDITOR</label>
+              <div id="table-grid-container"></div>
+            </div>
+          </div>
+
+          <!-- PRESETS VIEW -->
+          <div id="table-view-presets" style="display:none">
+            <label style="display:block;font:11px var(--mono);margin-bottom:8px;font-weight:700">SELECT PRESET TEMPLATE</label>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${presets.map((p, idx) => `
+                <button type="button" class="admin-btn secondary table-preset-card" data-preset-idx="${idx}" style="text-align:left;justify-content:flex-start;padding:12px;height:auto">
+                  <div>
+                    <strong style="font-size:13px;display:block;margin-bottom:4px">${esc(p.label)}</strong>
+                    <span style="font-size:11px;font-family:var(--mono);color:#666">${p.headers.join(" | ")}</span>
+                  </div>
+                </button>
+              `).join("")}
+            </div>
+          </div>
+
+          <!-- CSV / TSV VIEW -->
+          <div id="table-view-csv" style="display:none">
+            <label style="display:block;font:11px var(--mono);margin-bottom:6px;font-weight:700">PASTE CSV OR TSV (TAB-SEPARATED) DATA</label>
+            <textarea id="table-csv-input" style="width:100%;height:130px;font-family:var(--mono);font-size:12px;padding:8px;border:1px solid var(--line);background:#ffffff" placeholder="Header 1, Header 2, Header 3&#10;Value 1, Value 2, Value 3&#10;Value 4, Value 5, Value 6"></textarea>
+            <button type="button" class="admin-btn secondary" id="table-convert-csv-btn" style="margin-top:6px;font-size:11px">CONVERT CSV TO GRID BUILDER</button>
+          </div>
+
+          <!-- LIVE RENDERED PREVIEW -->
+          <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px">
+            <label style="display:block;font:11px var(--mono);margin-bottom:6px;font-weight:700">LIVE RENDERED TABLE PREVIEW</label>
+            <div id="table-modal-rendered-preview" style="padding:12px;background:#ffffff;border:1px dashed var(--line);min-height:70px;overflow-x:auto"></div>
+          </div>
+
+          <details style="margin-top:8px">
+            <summary style="font:11px var(--mono);cursor:pointer;color:#666">VIEW FORMATTED MARKDOWN CODE</summary>
+            <pre id="table-modal-md-code" style="margin-top:6px;padding:8px;background:#111;color:#00ff66;font-family:var(--mono);font-size:11px;overflow-x:auto;white-space:pre"></pre>
+          </details>
+        </div>
+
+        <div class="image-picker-actions" style="flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--line)">
+          <button type="button" class="admin-btn secondary" data-dismiss="true">CANCEL</button>
+          <button type="button" class="admin-btn" id="table-modal-insert-btn" style="font-weight:700">INSERT TABLE INTO EDITOR <b>→</b></button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(root);
+
+    const rowsInput = root.querySelector("#table-rows-count");
+    const colsInput = root.querySelector("#table-cols-count");
+    const gridContainer = root.querySelector("#table-grid-container");
+    const mdCodeEl = root.querySelector("#table-modal-md-code");
+    const renderedPreviewEl = root.querySelector("#table-modal-rendered-preview");
+    const insertBtn = root.querySelector("#table-modal-insert-btn");
+
+    function generateMarkdown() {
+      let md = "| " + headers.map(h => (h || "").trim() || "Header").join(" | ") + " |\n";
+      md += "| " + aligns.map(a => {
+        if (a === "center") return ":---:";
+        if (a === "right") return "---:";
+        return ":---";
+      }).join(" | ") + " |\n";
+
+      rows.forEach(r => {
+        md += "| " + headers.map((_, cIdx) => (r[cIdx] || "").trim()).join(" | ") + " |\n";
+      });
+      return md;
+    }
+
+    function updatePreviews() {
+      const mdStr = generateMarkdown();
+      if (mdCodeEl) mdCodeEl.textContent = mdStr;
+      if (renderedPreviewEl) renderedPreviewEl.innerHTML = markdownToHtml(mdStr);
+    }
+
+    function renderGrid() {
+      let html = '<table style="width:100%;border-collapse:collapse;border:1px solid var(--line);background:#fff"><thead><tr style="background:#eae7df">';
+      headers.forEach((h, cIdx) => {
+        html += `
+          <th style="padding:6px;border:1px solid var(--line);min-width:110px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <input type="text" class="table-hdr-input" data-col="${cIdx}" value="${esc(h)}" placeholder="Header ${cIdx + 1}" style="width:100%;font-weight:700;font-size:11px;padding:4px;border:1px solid var(--line)">
+              <select class="table-align-sel" data-col="${cIdx}" style="font-size:10px;padding:2px">
+                <option value="left" ${aligns[cIdx] === "left" ? "selected" : ""}>Left</option>
+                <option value="center" ${aligns[cIdx] === "center" ? "selected" : ""}>Center</option>
+                <option value="right" ${aligns[cIdx] === "right" ? "selected" : ""}>Right</option>
+              </select>
+            </div>
+          </th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      rows.forEach((r, rIdx) => {
+        html += '<tr>';
+        headers.forEach((_, cIdx) => {
+          const val = r[cIdx] || "";
+          html += `
+            <td style="padding:4px;border:1px solid var(--line)">
+              <input type="text" class="table-cell-input" data-row="${rIdx}" data-col="${cIdx}" value="${esc(val)}" placeholder="Data" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd">
+            </td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      gridContainer.innerHTML = html;
+      updatePreviews();
+    }
+
+    renderGrid();
+
+    // Event Listeners inside Modal
+    root.addEventListener("input", (e) => {
+      if (e.target.classList.contains("table-hdr-input")) {
+        const col = parseInt(e.target.getAttribute("data-col"), 10);
+        headers[col] = e.target.value;
+        updatePreviews();
+      } else if (e.target.classList.contains("table-cell-input")) {
+        const r = parseInt(e.target.getAttribute("data-row"), 10);
+        const c = parseInt(e.target.getAttribute("data-col"), 10);
+        if (rows[r]) rows[r][c] = e.target.value;
+        updatePreviews();
+      }
+    });
+
+    root.addEventListener("change", (e) => {
+      if (e.target.classList.contains("table-align-sel")) {
+        const col = parseInt(e.target.getAttribute("data-col"), 10);
+        aligns[col] = e.target.value;
+        updatePreviews();
+      } else if (e.target.id === "table-rows-count") {
+        const newCount = Math.max(1, parseInt(e.target.value, 10) || 1);
+        while (rows.length < newCount) {
+          rows.push(new Array(headers.length).fill(""));
+        }
+        while (rows.length > newCount) {
+          rows.pop();
+        }
+        renderGrid();
+      } else if (e.target.id === "table-cols-count") {
+        const newCount = Math.max(1, parseInt(e.target.value, 10) || 1);
+        while (headers.length < newCount) {
+          headers.push(`Header ${headers.length + 1}`);
+          aligns.push("left");
+          rows.forEach(r => r.push(""));
+        }
+        while (headers.length > newCount) {
+          headers.pop();
+          aligns.pop();
+          rows.forEach(r => r.pop());
+        }
+        renderGrid();
+      }
+    });
+
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-dismiss]")) {
+        root.remove();
+        return;
+      }
+
+      // Tab switching
+      if (e.target.id === "table-tab-builder") {
+        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
+        e.target.classList.add("active");
+        root.querySelector("#table-view-builder").style.display = "block";
+        root.querySelector("#table-view-presets").style.display = "none";
+        root.querySelector("#table-view-csv").style.display = "none";
+      } else if (e.target.id === "table-tab-presets") {
+        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
+        e.target.classList.add("active");
+        root.querySelector("#table-view-builder").style.display = "none";
+        root.querySelector("#table-view-presets").style.display = "block";
+        root.querySelector("#table-view-csv").style.display = "none";
+      } else if (e.target.id === "table-tab-csv") {
+        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
+        e.target.classList.add("active");
+        root.querySelector("#table-view-builder").style.display = "none";
+        root.querySelector("#table-view-presets").style.display = "none";
+        root.querySelector("#table-view-csv").style.display = "block";
+      }
+
+      // Preset selection
+      const presetCard = e.target.closest(".table-preset-card");
+      if (presetCard) {
+        const pIdx = parseInt(presetCard.getAttribute("data-preset-idx"), 10);
+        const p = presets[pIdx];
+        if (p) {
+          headers = [...p.headers];
+          rows = p.rows.map(r => [...r]);
+          aligns = [...(p.aligns || p.headers.map(() => "left"))];
+          rowsInput.value = rows.length;
+          colsInput.value = headers.length;
+          root.querySelector("#table-tab-builder").click();
+          renderGrid();
+        }
+      }
+
+      // Buttons
+      if (e.target.id === "table-add-row-btn") {
+        rows.push(new Array(headers.length).fill(""));
+        rowsInput.value = rows.length;
+        renderGrid();
+      } else if (e.target.id === "table-add-col-btn") {
+        headers.push(`Header ${headers.length + 1}`);
+        aligns.push("left");
+        rows.forEach(r => r.push(""));
+        colsInput.value = headers.length;
+        renderGrid();
+      } else if (e.target.id === "table-clear-btn") {
+        headers = ["Header 1", "Header 2"];
+        rows = [["", ""], ["", ""]];
+        aligns = ["left", "left"];
+        rowsInput.value = 2;
+        colsInput.value = 2;
+        renderGrid();
+      } else if (e.target.id === "table-convert-csv-btn") {
+        const csvRaw = root.querySelector("#table-csv-input").value.trim();
+        if (csvRaw) {
+          const lines = csvRaw.split("\n").map(l => l.trim()).filter(Boolean);
+          if (lines.length > 0) {
+            const sep = lines[0].includes("\t") ? "\t" : ",";
+            headers = lines[0].split(sep).map(c => c.trim().replace(/^"|"$/g, ''));
+            aligns = headers.map(() => "left");
+            rows = [];
+            for (let i = 1; i < lines.length; i++) {
+              rows.push(lines[i].split(sep).map(c => c.trim().replace(/^"|"$/g, '')));
+            }
+            rowsInput.value = rows.length;
+            colsInput.value = headers.length;
+            root.querySelector("#table-tab-builder").click();
+            renderGrid();
+          }
+        }
+      }
+    });
+
+    // Insert Handler
+    insertBtn.onclick = () => {
+      const mdStr = generateMarkdown();
+      const htmlStr = markdownToHtml(mdStr);
+
+      if (target instanceof HTMLTextAreaElement) {
+        insertIntoTextarea(target, "\n\n" + mdStr + "\n\n");
+      } else if (target && target.querySelector) {
+        const wrapper = target;
+        const editable = wrapper.querySelector(".wysiwyg-editable");
+        const source = wrapper.querySelector(".wysiwyg-source");
+        const previewPane = wrapper.querySelector(".wysiwyg-preview-pane");
+        const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
+        const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
+
+        if (mode === "source") {
+          insertIntoTextarea(source, "\n\n" + mdStr + "\n\n");
+          if (editable) editable.innerHTML = markdownToHtml(source.value);
+        } else if (mode === "edit") {
+          editable.focus();
+          try {
+            document.execCommand("insertHTML", false, htmlStr);
+          } catch(e) {
+            editable.innerHTML += htmlStr;
+          }
+          if (source) source.value = htmlToMarkdown(editable).trim();
+        } else if (mode === "preview") {
+          if (source) {
+            source.value = (source.value.trim() + "\n\n" + mdStr + "\n\n").trim();
+          }
+          if (editable) {
+            editable.innerHTML = markdownToHtml(source.value);
+          }
+          if (previewPane) {
+            previewPane.innerHTML = `<div class="case-body content-body" style="font-family:var(--sans);line-height:1.6;padding:16px;background:#ffffff;border:1px solid var(--line);min-height:160px">${markdownToHtml(source.value)}</div>`;
+          }
+        }
+        syncWysiwyg(wrapper);
+      }
+      root.remove();
+    };
+  }
+
   // --- EDITORIAL PORTRAIT PHOTO STUDIO ENGINE ---
   let portraitStudioState = {
     activeImg: null,
@@ -2806,11 +3249,17 @@
 
       if (cmdBtn) {
         const wrapper = cmdBtn.closest(".wysiwyg-wrapper");
-        const editable = wrapper.querySelector(".wysiwyg-editable");
-        const source = wrapper.querySelector(".wysiwyg-source");
+        const editable = wrapper ? wrapper.querySelector(".wysiwyg-editable") : null;
+        const source = wrapper ? wrapper.querySelector(".wysiwyg-source") : null;
+        const previewPane = wrapper ? wrapper.querySelector(".wysiwyg-preview-pane") : null;
         const cmd = cmdBtn.getAttribute("data-wysiwyg-cmd");
-        const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
+        const activeTab = wrapper ? wrapper.querySelector(".wysiwyg-tab.active") : null;
         const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
+
+        if (cmd === "table") {
+          showTablePickerModal(wrapper);
+          return;
+        }
 
         if (mode === "source") {
           if (cmd === "bold") insertIntoTextarea(source, "**", "**", "bold text");
@@ -2833,6 +3282,17 @@
           }
           else if (cmd === "image") showImagePickerModal(wrapper);
           else if (cmd === "math") showMathPickerModal(wrapper);
+        } else if (mode === "preview") {
+          if (cmd === "image") showImagePickerModal(wrapper);
+          else if (cmd === "math") showMathPickerModal(wrapper);
+          else if (cmd === "wikilink") {
+            const title = prompt("Enter target document title for Wikilink [[ ... ]]:");
+            if (title) {
+              const alias = prompt("Optional alias (leave empty for none):");
+              const tag = alias ? `[[${title}|${alias}]]` : `[[${title}]]`;
+              insertIntoTextarea(source, tag);
+            }
+          }
         } else {
           editable.focus();
           if (cmd === "bold") document.execCommand("bold", false, null);
