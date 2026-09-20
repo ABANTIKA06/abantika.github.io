@@ -108,6 +108,7 @@
 
   function go(path) {
     location.hash = path;
+    render(true);
   }
 
   function askCommit({ kicker, title, copy, confirmLabel, primary }) {
@@ -2350,60 +2351,73 @@
     state.content = await api("/api/content");
   }
 
-  async function render() {
+  let isRendering = false;
+  let currentRenderPath = null;
+
+  async function render(force = false) {
+    const path = hash();
+    if (!force && isFormActive() && currentRenderPath === path) {
+      return;
+    }
+    if (isRendering) return;
+    isRendering = true;
     state.error = "";
     try {
-      state.config = await api("/api/auth/config");
-      const session = await api("/api/session");
-      state.user = session.login ? session : null;
-    } catch (err) {
-      app.innerHTML = `<div class="admin-gate"><h1>ADMIN SERVER REQUIRED<span class="red-stop">.</span></h1><p>Open the admin origin instead of the public Eleventy port. From the project folder run <code>npm.cmd run admin</code> and go to <a href="http://localhost:8787/admin/">http://localhost:8787/admin/</a>.</p><p class="admin-msg error">${esc(err.message)}</p></div>`;
-      return;
-    }
-    if (!state.user) {
-      app.innerHTML = gate();
-      return;
-    }
-    if (!state.content) await loadContent();
-    const path = hash();
-    const parts = path.split("/").filter(Boolean);
-    if (path === "/") {
-      const overview = await api("/api/overview");
-      app.innerHTML = dashboard(overview);
-    } else if (path === "/projects") {
-      app.innerHTML = chrome("03 / PROJECTS", `<div class="admin-toolbar"><h1>CASE STUDIES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/projects/new">NEW PROJECT <b>→</b></a></div>${rows(state.content.projects, (item) => `#/projects/${item.slug}`, "project")}`);
-    } else if (path === "/projects/new") {
-      app.innerHTML = projectForm({}, true);
-    } else if (parts[0] === "projects" && parts[1]) {
-      const item = state.content.projects.find((p) => p.slug === parts[1]) || {};
-      app.innerHTML = projectForm(item, false);
-    } else if (path === "/blog") {
-      app.innerHTML = chrome("04 / BLOG", `<div class="admin-toolbar"><h1>ARTICLES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/blog/new">NEW ARTICLE <b>→</b></a></div>${rows(state.content.blog, (item) => `#/blog/${item.slug}`, "blog")}`);
-    } else if (path === "/blog/new") {
-      app.innerHTML = blogForm({}, true);
-    } else if (parts[0] === "blog" && parts[1]) {
-      app.innerHTML = blogForm(state.content.blog.find((p) => p.slug === parts[1]) || {}, false);
-    } else if (path === "/journal") {
-      app.innerHTML = chrome("05 / JOURNAL", `<div class="admin-toolbar"><h1>FIELD NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/journal/new">NEW NOTE <b>→</b></a></div>${rows(state.content.journal, (item) => `#/journal/${item.id}`, "journal")}`);
-    } else if (path === "/journal/new") {
-      app.innerHTML = journalForm({}, true);
-    } else if (parts[0] === "journal" && parts[1]) {
-      app.innerHTML = journalForm(state.content.journal.find((p) => p.id === parts[1]) || {}, false);
-    } else if (path === "/notes") {
-      app.innerHTML = chrome("06 / NOTES", `<div class="admin-toolbar"><h1>RESEARCH NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/notes/new">NEW NOTE <b>→</b></a></div>${rows(state.content.notes || [], (item) => `#/notes/${item.slug}`, "note")}`);
-    } else if (path === "/notes/new") {
-      app.innerHTML = noteForm({}, true);
-    } else if (parts[0] === "notes" && parts[1]) {
-      const item = (state.content.notes || []).find((n) => n.slug === parts[1]) || {};
-      app.innerHTML = noteForm(item, false);
-    } else if (path === "/about") {
-      app.innerHTML = aboutForm(state.content.about || {});
-    } else if (path === "/settings") {
-      app.innerHTML = settingsForm();
-    } else if (path === "/media") {
-      app.innerHTML = mediaView();
-    } else {
-      app.innerHTML = chrome("MISSING", "<h1>NOT FOUND<span class='red-stop'>.</span></h1>");
+      try {
+        state.config = await api("/api/auth/config");
+        const session = await api("/api/session");
+        state.user = session.login ? session : null;
+      } catch (err) {
+        app.innerHTML = `<div class="admin-gate"><h1>ADMIN SERVER REQUIRED<span class="red-stop">.</span></h1><p>Open the admin origin instead of the public Eleventy port. From the project folder run <code>npm.cmd run admin</code> and go to <a href="http://localhost:8787/admin/">http://localhost:8787/admin/</a>.</p><p class="admin-msg error">${esc(err.message)}</p></div>`;
+        return;
+      }
+      if (!state.user) {
+        app.innerHTML = gate();
+        return;
+      }
+      if (!state.content) await loadContent();
+      currentRenderPath = path;
+      const parts = path.split("/").filter(Boolean);
+      if (path === "/") {
+        const overview = await api("/api/overview");
+        app.innerHTML = dashboard(overview);
+      } else if (path === "/projects") {
+        app.innerHTML = chrome("03 / PROJECTS", `<div class="admin-toolbar"><h1>CASE STUDIES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/projects/new">NEW PROJECT <b>→</b></a></div>${rows(state.content.projects, (item) => `#/projects/${item.slug}`, "project")}`);
+      } else if (path === "/projects/new") {
+        app.innerHTML = projectForm({}, true);
+      } else if (parts[0] === "projects" && parts[1]) {
+        const item = state.content.projects.find((p) => p.slug === parts[1]) || {};
+        app.innerHTML = projectForm(item, false);
+      } else if (path === "/blog") {
+        app.innerHTML = chrome("04 / BLOG", `<div class="admin-toolbar"><h1>ARTICLES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/blog/new">NEW ARTICLE <b>→</b></a></div>${rows(state.content.blog, (item) => `#/blog/${item.slug}`, "blog")}`);
+      } else if (path === "/blog/new") {
+        app.innerHTML = blogForm({}, true);
+      } else if (parts[0] === "blog" && parts[1]) {
+        app.innerHTML = blogForm(state.content.blog.find((p) => p.slug === parts[1]) || {}, false);
+      } else if (path === "/journal") {
+        app.innerHTML = chrome("05 / JOURNAL", `<div class="admin-toolbar"><h1>FIELD NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/journal/new">NEW NOTE <b>→</b></a></div>${rows(state.content.journal, (item) => `#/journal/${item.id}`, "journal")}`);
+      } else if (path === "/journal/new") {
+        app.innerHTML = journalForm({}, true);
+      } else if (parts[0] === "journal" && parts[1]) {
+        app.innerHTML = journalForm(state.content.journal.find((p) => p.id === parts[1]) || {}, false);
+      } else if (path === "/notes") {
+        app.innerHTML = chrome("06 / NOTES", `<div class="admin-toolbar"><h1>RESEARCH NOTES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/notes/new">NEW NOTE <b>→</b></a></div>${rows(state.content.notes || [], (item) => `#/notes/${item.slug}`, "note")}`);
+      } else if (path === "/notes/new") {
+        app.innerHTML = noteForm({}, true);
+      } else if (parts[0] === "notes" && parts[1]) {
+        const item = (state.content.notes || []).find((n) => n.slug === parts[1]) || {};
+        app.innerHTML = noteForm(item, false);
+      } else if (path === "/about") {
+        app.innerHTML = aboutForm(state.content.about || {});
+      } else if (path === "/settings") {
+        app.innerHTML = settingsForm();
+      } else if (path === "/media") {
+        app.innerHTML = mediaView();
+      } else {
+        app.innerHTML = chrome("MISSING", "<h1>NOT FOUND<span class='red-stop'>.</span></h1>");
+      }
+    } finally {
+      isRendering = false;
     }
   }
 
@@ -3158,8 +3172,10 @@
         }
       }
     } catch (err) {
+      console.error("Click handler error:", err);
       state.error = err.message;
-      await render();
+      const msgEl = document.querySelector(".admin-main .admin-msg.error");
+      if (msgEl) msgEl.textContent = err.message;
     }
   });
 
@@ -3432,30 +3448,40 @@
   });
 
   function isFormActive() {
-    return !!document.querySelector("form.admin-form, .wysiwyg-wrapper");
+    if (document.querySelector("form.admin-form, .wysiwyg-wrapper")) return true;
+    const active = document.activeElement;
+    if (!active) return false;
+    return !!(
+      active.closest(".admin-form") ||
+      active.closest(".wysiwyg-wrapper") ||
+      active.tagName === "INPUT" ||
+      active.tagName === "TEXTAREA" ||
+      active.isContentEditable ||
+      active.contentEditable === "true"
+    );
   }
 
   window.addEventListener("scroll", updateStickyBarScroll, { passive: true });
   window.addEventListener("hashchange", () => {
     state.message = "";
     state.content = null;
-    render().then(updateStickyBarScroll);
+    render(true).then(updateStickyBarScroll);
   });
   window.addEventListener("popstate", () => {
     state.message = "";
     state.content = null;
-    render().then(updateStickyBarScroll);
+    render(true).then(updateStickyBarScroll);
   });
   window.addEventListener("pageshow", () => {
     if (!isFormActive()) {
       state.content = null;
-      render().then(updateStickyBarScroll);
+      render(false).then(updateStickyBarScroll);
     }
   });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && !isFormActive()) {
       state.content = null;
-      render().then(updateStickyBarScroll);
+      render(false).then(updateStickyBarScroll);
     }
   });
   render().then(updateStickyBarScroll);
