@@ -912,7 +912,7 @@
         </div>
       </div>
 
-      <form class="admin-form" id="blog-editor-form" data-form="blog" data-new="${isNew ? "1" : ""}">
+      <form class="admin-form" id="blog-editor-form" data-form="blog" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
         <details class="collapsible-details-panel" open>
           <summary class="collapsible-details-summary">
             <span>01 / ARTICLE METADATA & MEDIA SETTINGS</span>
@@ -1062,7 +1062,7 @@
     return chrome(
       "02 / ABOUT",
       `<h1>ABOUT COPY<span class="red-stop">.</span></h1>
-      <form class="admin-form" data-form="about">
+      <form class="admin-form" id="about-editor-form" data-form="about">
         ${input("TITLE", "title", about.title || "", "", true)}
         ${area("HEADLINE", "headline", (about.headline || []).join("\n"))}
         ${area("HOME HEADLINE", "homeHeadline", (about.homeHeadline || []).join("\n"))}
@@ -1140,7 +1140,7 @@
     return chrome(
       "07 / SETTINGS",
       `<h1>SITE SETTINGS<span class="red-stop">.</span></h1>
-      <form class="admin-form" data-form="settings">
+      <form class="admin-form" id="settings-editor-form" data-form="settings">
         ${input("NAME", "name", settings.name || "", "", true)}
         ${input("ROLE", "role", settings.role || "")}
         ${input("SITE TITLE", "siteTitle", settings.siteTitle || "", "", true)}
@@ -1157,7 +1157,7 @@
         <div class="admin-actions"><button class="admin-btn primary" type="submit">SAVE SETTINGS <b>→</b></button></div>
       </form>
       <p class="admin-kicker" style="margin-top:48px">SKILLS</p>
-      <form class="admin-form" data-form="skills">
+      <form class="admin-form" id="skills-editor-form" data-form="skills">
         ${area("DATA ANALYSIS", "dataAnalysis", skills.dataAnalysis || "")}
         ${area("STATISTICS", "statistics", skills.statistics || "")}
         ${area("MACHINE LEARNING", "machineLearning", skills.machineLearning || "")}
@@ -3439,9 +3439,9 @@
   }
 
   app.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" || event.keyCode === 13) {
       const target = event.target;
-      if (target && target.tagName === "INPUT" && target.type !== "submit" && target.type !== "button") {
+      if (target && (target.tagName === "INPUT" || target.tagName === "SELECT") && target.type !== "submit" && target.type !== "button") {
         event.preventDefault();
       }
     }
@@ -3456,6 +3456,7 @@
       active.closest(".wysiwyg-wrapper") ||
       active.tagName === "INPUT" ||
       active.tagName === "TEXTAREA" ||
+      active.tagName === "SELECT" ||
       active.isContentEditable ||
       active.contentEditable === "true"
     );
