@@ -2376,6 +2376,9 @@
         return;
       }
       if (!state.content) await loadContent();
+      if (currentRenderPath === path && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement) {
+        return;
+      }
       currentRenderPath = path;
       const parts = path.split("/").filter(Boolean);
       if (path === "/") {
@@ -2922,6 +2925,7 @@
         }
         return;
       }
+      const directUploadBtn = event.target.closest("#portrait-direct-upload-btn");
       const openStudioBtn = event.target.closest("#open-portrait-studio-btn");
       const pickLibraryBtn = event.target.closest("#pick-library-portrait-btn");
       const clearPortraitBtn = event.target.closest("#clear-portrait-btn");
