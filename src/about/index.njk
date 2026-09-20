@@ -15,7 +15,20 @@ title: About — Abantika
       {% endif %}
       <b></b>
     </div>
-    <div><p class="eyebrow">{{ about.approachEyebrow }}</p><h2>{{ about.approachHeadline | joinLines | safe }}</h2><p class="body-copy">{{ about.approach }}</p></div>
+    <div>
+      <p class="eyebrow">{{ about.approachEyebrow }}</p>
+      <h2>{{ about.approachHeadline | joinLines | safe }}</h2>
+      <p class="body-copy">{{ about.approach }}</p>
+      <div style="margin-top:24px;">
+        <a class="button button-resume" href="/assets/Abantika_Resume.pdf" download="Abantika_Resume.pdf" target="_blank" rel="noopener noreferrer">
+          <span class="resume-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </span>
+          DOWNLOAD THE RESUME
+          <b class="resume-arrow" aria-hidden="true">↓</b>
+        </a>
+      </div>
+    </div>
     <aside class="margin-note">{{ about.marginNote | join("<br>") | safe }}<br><b>—</b></aside>
   </section>
   <section class="principle-sheet"><div class="section-heading"><span>01</span><i></i><h2>PRINCIPLES</h2></div>
