@@ -1387,11 +1387,20 @@ a.wikilink {
   justify-content: space-between;
   align-items: center;
   background: #edeae2;
-  border-bottom: 1px solid var(--line);
-  transition: background 0.15s ease;
+  border-bottom: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  list-style: none;
+}
+.collapsible-details-summary::-webkit-details-marker,
+.collapsible-details-summary::marker {
+  display: none;
+}
+.collapsible-details-panel[open] .collapsible-details-summary {
+  background: #e3dec6;
+  border-bottom-color: var(--line);
 }
 .collapsible-details-summary:hover {
-  background: #e3dec6;
+  background: #dfd8be;
 }
 .collapsible-details-content {
   display: grid;

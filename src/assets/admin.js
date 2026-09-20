@@ -810,7 +810,7 @@
         <details class="collapsible-details-panel">
           <summary class="collapsible-details-summary">
             <span>01 / CASE STUDY METADATA & MEDIA SETTINGS</span>
-            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
@@ -892,7 +892,7 @@
         <details class="collapsible-details-panel">
           <summary class="collapsible-details-summary">
             <span>01 / ARTICLE METADATA & MEDIA SETTINGS</span>
-            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
@@ -944,7 +944,7 @@
         <details class="collapsible-details-panel">
           <summary class="collapsible-details-summary">
             <span>01 / NOTE METADATA</span>
-            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
@@ -995,7 +995,7 @@
         <details class="collapsible-details-panel">
           <summary class="collapsible-details-summary">
             <span>01 / JOURNAL METADATA & LINKS</span>
-            <span style="font-size:10px;color:#777">CLICK TO TOGGLE</span>
+            <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▶ CLICK TO EXPAND METADATA</span>
           </summary>
           <div class="collapsible-details-content">
             ${input("DATE", "date", item.date || today, 'type="date"', true)}
@@ -2831,6 +2831,25 @@
         if (card) {
           card.classList.toggle("collapsed");
           secCollapse.textContent = card.classList.contains("collapsed") ? "▶" : "▼";
+        }
+        return;
+      }
+
+      const summaryBtn = event.target.closest(".collapsible-details-summary");
+      if (summaryBtn) {
+        event.preventDefault();
+        const details = summaryBtn.closest("details");
+        if (details) {
+          const isOpen = details.hasAttribute("open");
+          if (isOpen) {
+            details.removeAttribute("open");
+          } else {
+            details.setAttribute("open", "");
+          }
+          const toggleHint = summaryBtn.querySelector(".toggle-hint");
+          if (toggleHint) {
+            toggleHint.textContent = isOpen ? "▶ CLICK TO EXPAND METADATA" : "▼ CLICK TO COLLAPSE METADATA";
+          }
         }
         return;
       }
