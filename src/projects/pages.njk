@@ -42,15 +42,22 @@ eleventyComputed:
     </div>
     <div class="detail-with-share">
       <article class="case-body">
-        {% for section in project.sections %}
-        <section>
-          <p class="case-num">{{ section.label }}</p>
-          <h2>{{ section.heading }}</h2>
-          <p>{{ section.body }}</p>
-        </section>
-        {% endfor %}
-        {% if project.html %}
-        <div class="case-markdown">{{ project.html | safe }}</div>
+        {% if project.sections and project.sections.length > 0 %}
+          {% for section in project.sections %}
+          <section>
+            <p class="case-num">{{ section.label }}</p>
+            {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+            {% if section.html %}
+            <div>{{ section.html | safe }}</div>
+            {% elseif section.body %}
+            <p>{{ section.body }}</p>
+            {% endif %}
+          </section>
+          {% endfor %}
+        {% else %}
+          {% if project.html %}
+          <div class="case-markdown">{{ project.html | safe }}</div>
+          {% endif %}
         {% endif %}
         {% if project.backlinks and project.backlinks.length %}
         <aside class="related-block backlinks-block">

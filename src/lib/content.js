@@ -345,7 +345,11 @@ function computeBacklinksAndWikilinks(projects, blog, journal, notes = []) {
   // Process Wikilinks in HTML outputs
   allContent.forEach((item) => {
     if (item.html) item.html = renderWikilinks(item.html, lookupMap);
-    if (item.sections) {
+    if (Array.isArray(item.sections)) {
+      item.sections.forEach((sec) => {
+        if (sec.html) sec.html = renderWikilinks(sec.html, lookupMap);
+      });
+    } else if (item.sections && typeof item.sections === "object") {
       if (item.sections.didHtml) item.sections.didHtml = renderWikilinks(item.sections.didHtml, lookupMap);
       if (item.sections.learnedHtml) item.sections.learnedHtml = renderWikilinks(item.sections.learnedHtml, lookupMap);
       if (item.sections.nextHtml) item.sections.nextHtml = renderWikilinks(item.sections.nextHtml, lookupMap);
@@ -391,6 +395,13 @@ function loadProjects() {
       };
       const artClass = artClassMap[art] || (customArt ? "custom-art" : "dots");
       const rowArtClass = rowArtClassMap[art] || (customArt ? "row-art-custom" : "row-art-dots");
+      const rawSections = Array.isArray(item.sections) ? item.sections : [];
+      const sections = rawSections.map((sec, idx) => ({
+        label: sec.label || `0${idx + 1} / SECTION`,
+        heading: sec.heading || "",
+        body: sec.body || "",
+        html: renderMarkdown(sec.body || "")
+      }));
       return {
         ...item,
         art,
@@ -400,7 +411,7 @@ function loadProjects() {
         url: `/projects/${item.slug}/`,
         techLabel: (item.technologies || []).map((tech) => String(tech).toUpperCase()).join(" / "),
         headline: item.headline && item.headline.length ? item.headline : [item.title.toUpperCase()],
-        sections: item.sections || []
+        sections
       };
     })
     .sort((a, b) => String(a.number).localeCompare(String(b.number)) || a.date - b.date);

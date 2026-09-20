@@ -36,10 +36,3 @@ sections:
     heading: THE OUTCOME
     body: ''
 ---
-## THE QUESTION
-
-## THE EVIDENCE
-
-## THE METHOD
-
-## THE OUTCOME
