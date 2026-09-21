@@ -324,7 +324,7 @@
 .admin-modal-root {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 99999 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -333,15 +333,18 @@
 .admin-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(17, 17, 17, .42);
+  background: rgba(17, 17, 17, .65);
+  z-index: 1;
 }
 .admin-modal {
   position: relative;
+  z-index: 2;
   width: min(520px, 100%);
   background: var(--paper);
   color: var(--ink);
   border: 1px solid var(--ink);
   padding: 36px 32px 28px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
 }
 .admin-modal h2 {
   font-size: clamp(32px, 5vw, 48px);
@@ -1146,13 +1149,26 @@ a.wikilink {
 .portrait-editor-modal {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 99999 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(17, 17, 17, 0.75);
   backdrop-filter: blur(4px);
   padding: 20px;
+}
+
+.section-card-body .wysiwyg-editable,
+.section-card-body .wysiwyg-source,
+.section-card-body .wysiwyg-preview-pane {
+  background: #ffffff;
+  border: none;
+}
+
+.admin-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
 
 .portrait-editor-dialog {
@@ -1516,7 +1532,7 @@ a.wikilink {
 .admin-sticky-bar {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 900;
   background: var(--paper, #f2f0ea);
   border-bottom: 1px solid var(--line);
   padding: 16px 28px 14px;
@@ -1720,7 +1736,7 @@ a.wikilink {
   .admin-sticky-bar {
     position: sticky !important;
     top: 0 !important;
-    z-index: 1000 !important;
+    z-index: 900 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
