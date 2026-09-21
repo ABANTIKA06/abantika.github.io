@@ -2951,6 +2951,123 @@
     });
   }
 
+  function formatBytes(bytes) {
+    if (!bytes || bytes <= 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i >= 2 ? 2 : 1) + " " + units[i];
+  }
+
+  function renderR2StorageCard(files) {
+    const R2_FREE_CAPACITY_BYTES = 10 * 1024 * 1024 * 1024; // 10 GB Free Storage Limit
+    let totalBytes = 0;
+    let r2FileCount = 0;
+    let largestFile = null;
+
+    files.forEach((file) => {
+      const size = Number(file.size) || 0;
+      totalBytes += size;
+      if (file.r2) r2FileCount++;
+      if (!largestFile || size > (largestFile.size || 0)) {
+        largestFile = file;
+      }
+    });
+
+    const usedFormatted = formatBytes(totalBytes);
+    const maxFormatted = formatBytes(R2_FREE_CAPACITY_BYTES);
+    const percentNum = (totalBytes / R2_FREE_CAPACITY_BYTES) * 100;
+    const percentFormatted = percentNum < 0.01 && totalBytes > 0 ? "<0.01" : percentNum.toFixed(2);
+    const cappedPercent = Math.min(Math.max(percentNum, totalBytes > 0 ? 0.5 : 0), 100);
+
+    let statusText = `NORMAL (${percentFormatted}% USED)`;
+    let statusClass = "status-normal";
+    let barColorClass = "bar-normal";
+    let alertBannerHtml = "";
+
+    if (percentNum >= 90) {
+      statusText = "🚨 CRITICAL HIGH USAGE";
+      statusClass = "status-critical";
+      barColorClass = "bar-critical";
+      alertBannerHtml = `
+        <div class="r2-alert-banner critical">
+          <span style="font-size:16px">🚨</span>
+          <div>
+            <b>CRITICAL HIGH STORAGE WARNING (${percentFormatted}% USED):</b> 
+            Your Cloudflare R2 bucket is approaching its 10 GB free tier limit. Delete unused media or upgrade R2 capacity.
+          </div>
+        </div>
+      `;
+    } else if (percentNum >= 75) {
+      statusText = "⚠️ HIGH USAGE CAUTION";
+      statusClass = "status-caution";
+      barColorClass = "bar-caution";
+      alertBannerHtml = `
+        <div class="r2-alert-banner caution">
+          <span style="font-size:16px">⚠️</span>
+          <div>
+            <b>HIGH USAGE CAUTION (${percentFormatted}% USED):</b> 
+            Cloudflare R2 storage usage has crossed 75% of the 10 GB capacity.
+          </div>
+        </div>
+      `;
+    }
+
+    const largestFileName = largestFile ? largestFile.name : "None";
+    const largestFileFormatted = largestFile ? formatBytes(largestFile.size || 0) : "0 B";
+
+    return `
+      <div class="r2-storage-card">
+        <div class="r2-storage-header">
+          <div class="r2-storage-title">
+            <span class="r2-badge">CLOUDFLARE R2 BUCKET</span>
+            <h3 style="margin-top:4px">STORAGE CAPACITY & USAGE<span class="red-stop">.</span></h3>
+          </div>
+          <div class="r2-storage-actions">
+            <button type="button" class="admin-btn secondary" data-act="sync-r2-metrics">🔄 SYNC R2 METRICS</button>
+          </div>
+        </div>
+
+        <div class="r2-storage-metrics-grid">
+          <div class="r2-metric-box">
+            <span class="r2-metric-label">SPACE USED</span>
+            <strong class="r2-metric-value ${statusClass}">${usedFormatted}</strong>
+            <small class="r2-metric-sub">OF ${maxFormatted} FREE TIER</small>
+          </div>
+          <div class="r2-metric-box">
+            <span class="r2-metric-label">USAGE PERCENTAGE</span>
+            <strong class="r2-metric-value ${statusClass}">${percentFormatted}%</strong>
+            <small class="r2-metric-sub">${statusText}</small>
+          </div>
+          <div class="r2-metric-box">
+            <span class="r2-metric-label">TOTAL ASSETS</span>
+            <strong class="r2-metric-value">${files.length}</strong>
+            <small class="r2-metric-sub">${r2FileCount} IN R2 STORAGE</small>
+          </div>
+          <div class="r2-metric-box">
+            <span class="r2-metric-label">LARGEST FILE</span>
+            <strong class="r2-metric-value">${largestFileFormatted}</strong>
+            <small class="r2-metric-sub" style="word-break:break-all">${esc(largestFileName)}</small>
+          </div>
+        </div>
+
+        <div class="r2-progress-container">
+          <div class="r2-progress-bar-wrap">
+            <div class="r2-progress-bar-fill ${barColorClass}" style="width: ${cappedPercent}%"></div>
+          </div>
+          <div class="r2-progress-labels">
+            <span>0 GB</span>
+            <span>2.5 GB (25%)</span>
+            <span>5.0 GB (50%)</span>
+            <span>7.5 GB (75% CAUTION)</span>
+            <span>10.0 GB MAX</span>
+          </div>
+        </div>
+
+        ${alertBannerHtml}
+      </div>
+    `;
+  }
+
   function mediaView() {
     const files = Array.isArray(state.content?.media) ? state.content.media : [];
     state.mediaPreviewCache = state.mediaPreviewCache || {};
@@ -2965,6 +3082,7 @@
           <button class="admin-btn primary" type="submit">UPLOAD <b>→</b></button>
         </form>
       </div>
+      ${renderR2StorageCard(files)}
       <div class="admin-media">${files.length ? files.map((file) => {
         const refs = file.references || [];
         const refCount = refs.length;
@@ -3896,6 +4014,17 @@
             state.content = null;
             prog.finish("NOTE PROMOTED", `Note promoted to ${targetType} draft.`);
             go(`/${targetType === "blog" ? "blog" : "projects"}`);
+          } catch (e) {
+            prog.fail(e.message);
+          }
+        }
+        if (name === "sync-r2-metrics") {
+          const prog = showProgressModal({ kicker: "07 / MEDIA", title: "SYNCING R2 METRICS...", copy: "Fetching latest storage stats from Cloudflare R2 bucket." });
+          try {
+            const res = await api("/api/media");
+            if (state.content) state.content.media = Array.isArray(res) ? res : [];
+            prog.finish("METRICS SYNCED", "Cloudflare R2 storage usage stats updated.");
+            await render();
           } catch (e) {
             prog.fail(e.message);
           }
