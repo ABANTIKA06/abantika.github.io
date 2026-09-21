@@ -2123,13 +2123,26 @@
 
           <!-- UPLOAD SVG / PLOTLY CONTROLS -->
           <div id="chart-view-svg" style="display:none;margin-top:10px">
-            <div style="border:2px dashed var(--line);padding:16px;text-align:center;background:#f4f2ea;margin-bottom:12px">
-              <span style="font-size:24px;display:block;margin-bottom:6px">📁</span>
-              <p style="font:11px var(--mono);font-weight:700;margin:0 0 6px">UPLOAD SVG OR PLOTLY HTML FILE</p>
-              <p style="font-size:11px;color:#666;margin:0 0 10px">Upload Python figures saved via <code>plt.savefig("chart.svg")</code> or Plotly <code>fig.write_html("plot.html")</code>.</p>
+            <div style="border:2px dashed var(--line);padding:14px;text-align:center;background:#f4f2ea;margin-bottom:12px">
+              <span style="font-size:20px;display:block;margin-bottom:4px">📁 / 🖼️</span>
+              <p style="font:11px var(--mono);font-weight:700;margin:0 0 6px">ADD SVG OR PLOTLY GRAPH FROM FILE OR MEDIA LIBRARY</p>
+              <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+                <button type="button" class="admin-btn primary" onclick="document.getElementById('chart-file-upload-input').click()">SELECT FROM COMPUTER <b>→</b></button>
+                <button type="button" class="admin-btn secondary" id="chart-open-media-drawer-btn">🖼️ PICK FROM MEDIA LIBRARY <b>→</b></button>
+              </div>
               <input type="file" id="chart-file-upload-input" accept=".svg,.html,.htm" style="display:none">
-              <button type="button" class="admin-btn primary" onclick="document.getElementById('chart-file-upload-input').click()">SELECT FILE FROM COMPUTER <b>→</b></button>
               <span id="chart-upload-file-name" style="display:block;font:10px var(--mono);color:var(--red);margin-top:8px"></span>
+            </div>
+
+            <!-- MEDIA LIBRARY DRAWER -->
+            <div id="chart-media-library-drawer" style="display:none;margin-bottom:12px;border:1px solid var(--line);padding:10px;background:#f7f5ef">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font:700 10px var(--mono);color:#5e5b55">MEDIA LIBRARY ASSETS (CLICK TO SELECT):</span>
+                <button type="button" class="admin-btn secondary danger" id="chart-close-media-drawer-btn" style="padding:2px 6px;font-size:9px">CLOSE ✕</button>
+              </div>
+              <div id="chart-media-grid-container" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:8px;max-height:180px;overflow-y:auto">
+                <p style="font:10px var(--mono);color:#666">Loading assets from Media storage...</p>
+              </div>
             </div>
 
             <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">OR ENTER DIRECT FILE PATH / URL:
@@ -2191,10 +2204,77 @@
     const fileInput = root.querySelector("#chart-file-upload-input");
     const uploadNameSpan = root.querySelector("#chart-upload-file-name");
 
+    const openMediaDrawerBtn = root.querySelector("#chart-open-media-drawer-btn");
+    const closeMediaDrawerBtn = root.querySelector("#chart-close-media-drawer-btn");
+    const mediaDrawer = root.querySelector("#chart-media-library-drawer");
+    const mediaGridContainer = root.querySelector("#chart-media-grid-container");
+
     const primaryColorInput = root.querySelector("#chart-picker-primary");
     const accentColorInput = root.querySelector("#chart-picker-accent");
     const bgColorInput = root.querySelector("#chart-picker-bg");
     const textColorInput = root.querySelector("#chart-picker-text");
+
+    // Handle Media Library Picker Drawer
+    openMediaDrawerBtn?.addEventListener("click", async () => {
+      mediaDrawer.style.display = "block";
+      mediaGridContainer.innerHTML = `<p style="font:10px var(--mono);color:#666">Loading assets from Media storage...</p>`;
+      try {
+        const res = await api("/api/media");
+        const mediaFiles = Array.isArray(res) ? res : (Array.isArray(state.content?.media) ? state.content.media : []);
+        if (!mediaFiles.length) {
+          mediaGridContainer.innerHTML = `<p style="font:10px var(--mono);color:#666">No media assets found in library.</p>`;
+          return;
+        }
+        mediaGridContainer.innerHTML = mediaFiles.map((f) => {
+          const ext = String(f.name || "").split(".").pop().toLowerCase();
+          let iconOrImg = `<img src="${esc(f.path)}" alt="${esc(f.name)}" style="width:100%;height:54px;object-fit:cover" onerror="this.outerHTML='<div style=\\'height:54px;background:#171717;color:#fff;display:flex;align-items:center;justify-content:center;font:10px monospace\\'>🎨 ASSET</div>'">`;
+          if (ext === "html" || ext === "htm") {
+            iconOrImg = `<div style="height:54px;background:#171717;color:#fff;display:flex;align-items:center;justify-content:center;font:10px var(--mono)">📊 PLOTLY HTML</div>`;
+          } else if (ext === "svg") {
+            iconOrImg = `<div style="height:54px;background:#eae7df;display:flex;align-items:center;justify-content:center;font:10px var(--mono)">🎨 SVG</div>`;
+          }
+          return `
+            <div class="chart-media-picker-item" data-path="${esc(f.path)}" data-ext="${ext}" style="border:1px solid var(--line);padding:4px;cursor:pointer;background:#ffffff">
+              ${iconOrImg}
+              <span style="font:9px var(--mono);display:block;margin-top:4px;word-break:break-all;line-height:1.2">${esc(f.name)}</span>
+            </div>
+          `;
+        }).join("");
+
+        mediaGridContainer.querySelectorAll(".chart-media-picker-item").forEach((item) => {
+          item.addEventListener("click", async () => {
+            const path = item.getAttribute("data-path");
+            const ext = item.getAttribute("data-ext");
+            customSvgUrl = path;
+            const urlInput = root.querySelector("#chart-svg-url");
+            if (urlInput) urlInput.value = path;
+            uploadNameSpan.textContent = `✓ SELECTED FROM MEDIA: ${path}`;
+
+            try {
+              const r = await fetch(path);
+              if (r.ok) {
+                const txt = await r.text();
+                uploadedFileText = txt;
+                uploadedFileType = (ext === "html" || ext === "htm") ? "html" : "svg";
+                if (uploadedFileType === "html") {
+                  const blob = new Blob([txt], { type: "text/html" });
+                  if (uploadedBlobUrl) URL.revokeObjectURL(uploadedBlobUrl);
+                  uploadedBlobUrl = URL.createObjectURL(blob);
+                }
+              }
+            } catch(e) {}
+
+            updatePreview();
+          });
+        });
+      } catch(e) {
+        mediaGridContainer.innerHTML = `<p style="font:10px var(--mono);color:var(--red)">Failed to load media: ${esc(e.message)}</p>`;
+      }
+    });
+
+    closeMediaDrawerBtn?.addEventListener("click", () => {
+      mediaDrawer.style.display = "none";
+    });
 
     function renderItemsList() {
       itemsList.innerHTML = items.map((item, idx) => `
