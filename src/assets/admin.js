@@ -3484,7 +3484,7 @@
         return;
       }
       if (!state.content) await loadContent();
-      if (currentRenderPath === path && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement) {
+      if (!force && currentRenderPath === path && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement) {
         return;
       }
       currentRenderPath = path;
@@ -4283,9 +4283,9 @@
           const prog = showProgressModal({ kicker: "07 / MEDIA", title: "SYNCING R2 METRICS...", copy: "Fetching latest storage stats from Cloudflare R2 bucket." });
           try {
             const res = await api("/api/media");
-            if (state.content) state.content.media = Array.isArray(res) ? res : [];
+            state.content = null;
             prog.finish("METRICS SYNCED", "Cloudflare R2 storage usage stats updated.");
-            await render();
+            await render(true);
           } catch (e) {
             prog.fail(e.message);
           }
@@ -4321,6 +4321,7 @@
           await api("/api/media", { method: "DELETE", body: { folder, filename, force: true } });
           state.content = null;
           prog.finish("IMAGE REMOVED", "File has been deleted and site rebuilt.");
+          await render(true);
         } catch(e) {
           prog.fail(e.message);
         }
@@ -4577,6 +4578,10 @@
       if (type === "project") go("/projects");
       if (type === "blog") go("/blog");
       if (type === "journal") go("/journal");
+      if (type === "media-upload") {
+        state.content = null;
+        await render(true);
+      }
     } catch (err) {
       state.error = err.message;
       let msgEl = document.querySelector(".admin-main .admin-msg.error");
