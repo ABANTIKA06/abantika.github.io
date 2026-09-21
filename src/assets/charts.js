@@ -120,6 +120,63 @@
     });
   }
 
+  // --- CUSTOM INTERACTIVE SVG & PLOTLY RECOLORING ENGINE ---
+  function recolorSvgElement(svgEl, customColors) {
+    if (!svgEl || !customColors) return;
+    const { primary, accent, bg, text } = customColors;
+
+    if (bg) {
+      svgEl.style.backgroundColor = bg;
+      svgEl.querySelectorAll("rect:first-child, [fill='#ffffff'], [fill='#fff'], [fill='white'], [style*='fill: #ffffff']").forEach(el => {
+        el.setAttribute("fill", bg);
+      });
+    }
+
+    if (text) {
+      svgEl.querySelectorAll("text, tspan").forEach(el => {
+        el.setAttribute("fill", text);
+        el.setAttribute("font-family", "Courier New, monospace");
+      });
+    }
+
+    if (primary || accent) {
+      let idx = 0;
+      svgEl.querySelectorAll("path, circle, polygon, rect:not(:first-child)").forEach((el) => {
+        const fill = el.getAttribute("fill");
+        if (fill && fill !== "none" && fill !== "transparent") {
+          el.setAttribute("fill", idx % 2 === 0 ? (primary || "#111111") : (accent || "#E03C31"));
+          idx++;
+        }
+        const stroke = el.getAttribute("stroke");
+        if (stroke && stroke !== "none" && stroke !== "transparent") {
+          el.setAttribute("stroke", primary || "#111111");
+        }
+      });
+    }
+  }
+
+  function adaptPlotlyIframe(iframeEl, customColors) {
+    if (!iframeEl) return;
+    const { primary, accent, bg, text } = customColors || {};
+    try {
+      const doc = iframeEl.contentDocument || iframeEl.contentWindow.document;
+      if (!doc) return;
+      let styleEl = doc.getElementById("bauhaus-plotly-override");
+      if (!styleEl) {
+        styleEl = doc.createElement("style");
+        styleEl.id = "bauhaus-plotly-override";
+        doc.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `
+        body, .plotly, .main-svg { background-color: ${bg || '#FBF9F5'} !important; }
+        .plotly text { fill: ${text || '#111111'} !important; font-family: Courier New, monospace !important; }
+        .plotly .gridlayer path { stroke: ${bg ? '#d0ccc0' : '#e0e0e0'} !important; }
+        .plotly .js-line { stroke: ${accent || '#E03C31'} !important; }
+        .plotly .point path { fill: ${primary || '#2457A6'} !important; }
+      `;
+    } catch(e) {}
+  }
+
   // --- SNAPSHOT & DATA EXPORT ENGINE ---
   function exportChartSnapshot(wrapperEl) {
     const svgEl = wrapperEl.querySelector("svg");
@@ -477,6 +534,9 @@
 
   window.initBauhausCharts = initBauhausCharts;
   window.adaptSvgElement = adaptSvgElement;
+  window.recolorSvgElement = recolorSvgElement;
+  window.adaptPlotlyIframe = adaptPlotlyIframe;
+  window.BAUHAUS_SWISS_PALETTE = BAUHAUS_SWISS_PALETTE;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initBauhausCharts);

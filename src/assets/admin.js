@@ -2064,22 +2064,30 @@
     ];
     let matrix = { tp: 412, fp: 18, fn: 24, tn: 546 };
     let customSvgUrl = "";
+    let uploadedFileText = "";
+    let uploadedFileType = ""; // "svg" or "html"
+    let uploadedBlobUrl = "";
+    let customColors = {
+      primary: "#111111",
+      accent: "#E03C31",
+      bg: "#FBF9F5",
+      text: "#111111"
+    };
 
     const root = document.createElement("div");
     root.className = "admin-modal-root";
     root.innerHTML = `
-      <div class="admin-modal-backdrop" data-dismiss="true"></div>
-      <div class="admin-modal chart-picker-modal" role="dialog" aria-modal="true" style="width:min(760px, 96vw);max-height:90vh;display:flex;flex-direction:column;background:var(--paper,#fbf9f5)">
+      <div class="admin-modal chart-picker-modal" role="dialog" aria-modal="true" style="width:min(820px, 96vw);max-height:92vh;display:flex;flex-direction:column;background:var(--paper,#fbf9f5)">
         <div style="flex:0 0 auto;padding-bottom:10px;border-bottom:1px solid var(--line)">
           <p class="admin-kicker">09 / DATA VISUALIZATION ENGINE</p>
           <h2 style="margin-bottom:8px">GENERATE & INSERT DATA CHART<span class="red-stop">.</span></h2>
           <p style="font-size:12px;color:#555;margin-bottom:10px">
-            Choose a chart type, configure parameters, or link a Python Matplotlib/Seaborn SVG. Renders with full interactivity, snapshots, and color customizer.
+            Configure interactive Bar & Matrix charts, or upload Python Matplotlib/Seaborn SVG and Plotly HTML files. Renders with live color selection and snapshot export.
           </p>
           <div class="wysiwyg-tabs">
             <button type="button" class="wysiwyg-tab active" id="chart-tab-bar">BAR / FEATURE IMPORTANCE</button>
             <button type="button" class="wysiwyg-tab" id="chart-tab-matrix">CONFUSION MATRIX</button>
-            <button type="button" class="wysiwyg-tab" id="chart-tab-svg">PYTHON SVG / PLOTLY EMBED</button>
+            <button type="button" class="wysiwyg-tab" id="chart-tab-svg">UPLOAD SVG / PLOTLY HTML</button>
           </div>
         </div>
 
@@ -2113,20 +2121,57 @@
             </div>
           </div>
 
-          <!-- PYTHON SVG CONTROLS -->
+          <!-- UPLOAD SVG / PLOTLY CONTROLS -->
           <div id="chart-view-svg" style="display:none;margin-top:10px">
-            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">PYTHON GRAPH URL / SVG FILE PATH (e.g. /assets/images/charts/my_plot.svg):
-              <input type="text" id="chart-svg-url" placeholder="/assets/images/charts/feature_importance.svg" style="width:100%;padding:6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);margin-top:4px">
+            <div style="border:2px dashed var(--line);padding:16px;text-align:center;background:#f4f2ea;margin-bottom:12px">
+              <span style="font-size:24px;display:block;margin-bottom:6px">📁</span>
+              <p style="font:11px var(--mono);font-weight:700;margin:0 0 6px">UPLOAD SVG OR PLOTLY HTML FILE</p>
+              <p style="font-size:11px;color:#666;margin:0 0 10px">Upload Python figures saved via <code>plt.savefig("chart.svg")</code> or Plotly <code>fig.write_html("plot.html")</code>.</p>
+              <input type="file" id="chart-file-upload-input" accept=".svg,.html,.htm" style="display:none">
+              <button type="button" class="admin-btn primary" onclick="document.getElementById('chart-file-upload-input').click()">SELECT FILE FROM COMPUTER <b>→</b></button>
+              <span id="chart-upload-file-name" style="display:block;font:10px var(--mono);color:var(--red);margin-top:8px"></span>
+            </div>
+
+            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">OR ENTER DIRECT FILE PATH / URL:
+              <input type="text" id="chart-svg-url" placeholder="/assets/images/projects/feature_importance.svg" style="width:100%;padding:6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);margin-top:4px">
             </label>
-            <p style="font-size:11px;color:#666;margin-top:4px">
-              💡 Tip: Save Python figures in Jupyter/Colab using <code>plt.savefig("my_chart.svg")</code> and upload via Media tab!
-            </p>
           </div>
 
-          <!-- PREVIEW AREA -->
+          <!-- RECOLORING & PALETTE SELECTOR CONTROLS -->
           <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <label style="font:11px var(--mono);font-weight:700">🎨 LIVE COLOR CUSTOMIZER & BAUHAUS PALETTE</label>
+              <span style="font:9px var(--mono);color:#666">SELECT COLORS TO RECOLOR CHART</span>
+            </div>
+            
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#f4f2ea;padding:10px;border:1px solid var(--line);margin-bottom:12px">
+              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">PRIMARY:
+                <input type="color" id="chart-picker-primary" value="#111111" style="border:none;width:24px;height:24px;cursor:pointer">
+              </label>
+              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">ACCENT:
+                <input type="color" id="chart-picker-accent" value="#E03C31" style="border:none;width:24px;height:24px;cursor:pointer">
+              </label>
+              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">BACKGROUND:
+                <input type="color" id="chart-picker-bg" value="#FBF9F5" style="border:none;width:24px;height:24px;cursor:pointer">
+              </label>
+              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">TEXT/LINE:
+                <input type="color" id="chart-picker-text" value="#111111" style="border:none;width:24px;height:24px;cursor:pointer">
+              </label>
+              
+              <div style="margin-left:auto;display:flex;gap:4px" id="chart-swatch-bar">
+                <button type="button" class="admin-btn secondary" data-swatch="#111111" style="background:#111111;width:18px;height:18px;padding:0;min-width:0;border:none" title="Ink"></button>
+                <button type="button" class="admin-btn secondary" data-swatch="#E03C31" style="background:#E03C31;width:18px;height:18px;padding:0;min-width:0;border:none" title="Bauhaus Red"></button>
+                <button type="button" class="admin-btn secondary" data-swatch="#F2C230" style="background:#F2C230;width:18px;height:18px;padding:0;min-width:0;border:none" title="Bauhaus Yellow"></button>
+                <button type="button" class="admin-btn secondary" data-swatch="#2457A6" style="background:#2457A6;width:18px;height:18px;padding:0;min-width:0;border:none" title="Swiss Blue"></button>
+                <button type="button" class="admin-btn secondary" data-swatch="#2F7D5A" style="background:#2F7D5A;width:18px;height:18px;padding:0;min-width:0;border:none" title="Primary Green"></button>
+                <button type="button" class="admin-btn secondary" data-swatch="#E87524" style="background:#E87524;width:18px;height:18px;padding:0;min-width:0;border:none" title="Bauhaus Orange"></button>
+                <button type="button" class="admin-btn secondary" data-swatch="#23827F" style="background:#23827F;width:18px;height:18px;padding:0;min-width:0;border:none" title="Teal"></button>
+                <button type="button" class="admin-btn secondary" data-swatch="#8064A8" style="background:#8064A8;width:18px;height:18px;padding:0;min-width:0;border:none" title="Violet"></button>
+              </div>
+            </div>
+
             <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">LIVE RENDERED CHART PREVIEW</label>
-            <div id="chart-modal-preview-box" class="bauhaus-chart" style="min-height:120px"></div>
+            <div id="chart-modal-preview-box" class="bauhaus-chart" style="min-height:160px;border:1px solid var(--line);background:#FBF9F5"></div>
           </div>
         </div>
 
@@ -2143,6 +2188,13 @@
     const itemsList = root.querySelector("#chart-bar-items-list");
     const titleInput = root.querySelector("#chart-modal-title");
     const insertBtn = root.querySelector("#chart-modal-insert-btn");
+    const fileInput = root.querySelector("#chart-file-upload-input");
+    const uploadNameSpan = root.querySelector("#chart-upload-file-name");
+
+    const primaryColorInput = root.querySelector("#chart-picker-primary");
+    const accentColorInput = root.querySelector("#chart-picker-accent");
+    const bgColorInput = root.querySelector("#chart-picker-bg");
+    const textColorInput = root.querySelector("#chart-picker-text");
 
     function renderItemsList() {
       itemsList.innerHTML = items.map((item, idx) => `
@@ -2154,6 +2206,23 @@
       `).join("");
     }
 
+    function applyLiveColorsToPreview() {
+      customColors.primary = primaryColorInput.value;
+      customColors.accent = accentColorInput.value;
+      customColors.bg = bgColorInput.value;
+      customColors.text = textColorInput.value;
+
+      const svgEl = previewBox.querySelector("svg");
+      if (svgEl && window.recolorSvgElement) {
+        window.recolorSvgElement(svgEl, customColors);
+      }
+
+      const iframeEl = previewBox.querySelector("iframe");
+      if (iframeEl && window.adaptPlotlyIframe) {
+        window.adaptPlotlyIframe(iframeEl, customColors);
+      }
+    }
+
     function updatePreview() {
       chartTitle = titleInput.value.trim();
       previewBox.removeAttribute("data-chart-rendered");
@@ -2162,21 +2231,116 @@
 
       if (chartType === "bar") {
         previewBox.setAttribute("data-chart-data", JSON.stringify(items));
+        if (window.initBauhausCharts) window.initBauhausCharts();
       } else if (chartType === "confusion-matrix") {
         previewBox.setAttribute("data-chart-data", JSON.stringify(matrix));
-      } else if (chartType === "svg" && customSvgUrl) {
-        previewBox.innerHTML = `<img src="${esc(customSvgUrl)}" alt="Python Chart" />`;
+        if (window.initBauhausCharts) window.initBauhausCharts();
+      } else if (chartType === "svg") {
+        if (uploadedFileType === "html" && uploadedBlobUrl) {
+          previewBox.innerHTML = `
+            <div class="bauhaus-chart-header">
+              <span class="chart-title-label">${esc(chartTitle || "PLOTLY INTERACTIVE CHART")}</span>
+            </div>
+            <iframe src="${esc(uploadedBlobUrl)}" style="width:100%;height:380px;border:none" onload="if (window.adaptPlotlyIframe) window.adaptPlotlyIframe(this, ${JSON.stringify(customColors)})"></iframe>
+          `;
+        } else if (uploadedFileType === "svg" && uploadedFileText) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(uploadedFileText, "image/svg+xml");
+          const svgEl = doc.querySelector("svg");
+          if (svgEl) {
+            svgEl.setAttribute("width", "100%");
+            svgEl.setAttribute("height", "100%");
+            if (window.adaptSvgElement) window.adaptSvgElement(svgEl);
+            if (window.recolorSvgElement) window.recolorSvgElement(svgEl, customColors);
+            previewBox.innerHTML = `
+              <div class="bauhaus-chart-header">
+                <span class="chart-title-label">${esc(chartTitle || "PYTHON SVG GRAPH")}</span>
+              </div>
+              <div class="chart-svg-wrapper">${svgEl.outerHTML}</div>
+            `;
+          }
+        } else if (customSvgUrl) {
+          const isPlotlyHtml = customSvgUrl.endsWith(".html") || customSvgUrl.endsWith(".htm");
+          if (isPlotlyHtml) {
+            previewBox.innerHTML = `
+              <div class="bauhaus-chart-header">
+                <span class="chart-title-label">${esc(chartTitle || "PLOTLY INTERACTIVE CHART")}</span>
+              </div>
+              <iframe src="${esc(customSvgUrl)}" style="width:100%;height:380px;border:none"></iframe>
+            `;
+          } else {
+            previewBox.innerHTML = `<img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" />`;
+            if (window.initBauhausCharts) window.initBauhausCharts();
+          }
+        } else {
+          previewBox.innerHTML = `<p style="padding:20px;font:11px var(--mono);color:#666">Upload an SVG/HTML file or enter a direct chart URL above to preview.</p>`;
+        }
       }
 
-      if (window.initBauhausCharts) {
-        window.initBauhausCharts();
-      }
+      applyLiveColorsToPreview();
     }
 
     renderItemsList();
     updatePreview();
 
-    // Event Listeners
+    // Color picker events
+    [primaryColorInput, accentColorInput, bgColorInput, textColorInput].forEach(inp => {
+      inp.addEventListener("input", () => {
+        applyLiveColorsToPreview();
+      });
+    });
+
+    root.querySelectorAll("[data-swatch]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const swatchColor = btn.getAttribute("data-swatch");
+        accentColorInput.value = swatchColor;
+        applyLiveColorsToPreview();
+      });
+    });
+
+    // Handle File Upload for SVG / Plotly HTML
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const ext = file.name.split(".").pop().toLowerCase();
+      uploadNameSpan.textContent = `LOADING FILE: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        uploadedFileText = e.target.result;
+        if (ext === "html" || ext === "htm") {
+          uploadedFileType = "html";
+          const blob = new Blob([uploadedFileText], { type: "text/html" });
+          if (uploadedBlobUrl) URL.revokeObjectURL(uploadedBlobUrl);
+          uploadedBlobUrl = URL.createObjectURL(blob);
+        } else {
+          uploadedFileType = "svg";
+        }
+
+        // Auto upload to Media storage for persistent server URL
+        try {
+          const folder = "projects";
+          const baseName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-") || `chart-${Date.now()}`;
+          const uploadRes = await api("/api/media", {
+            method: "POST",
+            body: { folder, filename: baseName, data: uploadedFileText.startsWith("data:") ? uploadedFileText : `data:text/plain;base64,${btoa(unescape(encodeURIComponent(uploadedFileText)))}` }
+          }).catch(() => null);
+
+          if (uploadRes && uploadRes.path) {
+            customSvgUrl = uploadRes.path;
+            const urlInput = root.querySelector("#chart-svg-url");
+            if (urlInput) urlInput.value = customSvgUrl;
+          }
+        } catch(e) {}
+
+        uploadNameSpan.textContent = `✓ LOADED & RECOLORED: ${file.name}`;
+        updatePreview();
+      };
+      reader.readAsText(file);
+    });
+
+    // Input Listeners
     titleInput.addEventListener("input", updatePreview);
 
     root.addEventListener("input", (e) => {
@@ -2208,6 +2372,7 @@
 
     root.addEventListener("click", (e) => {
       if (e.target.closest("[data-dismiss]")) {
+        if (uploadedBlobUrl) URL.revokeObjectURL(uploadedBlobUrl);
         root.remove();
         return;
       }
@@ -2261,8 +2426,17 @@
         insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="bar" data-chart-title="${esc(chartTitle)}" data-chart-data='${JSON.stringify(items)}'></div>\n\n`;
       } else if (chartType === "confusion-matrix") {
         insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="confusion-matrix" data-chart-title="${esc(chartTitle)}" data-chart-data='${JSON.stringify(matrix)}'></div>\n\n`;
-      } else if (chartType === "svg" && customSvgUrl) {
-        insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}"><img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" /></div>\n\n`;
+      } else if (chartType === "svg") {
+        if (customSvgUrl) {
+          const isPlotly = customSvgUrl.endsWith(".html") || customSvgUrl.endsWith(".htm") || uploadedFileType === "html";
+          if (isPlotly) {
+            insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}" data-chart-type="plotly"><iframe src="${esc(customSvgUrl)}" style="width:100%;height:450px;border:none"></iframe></div>\n\n`;
+          } else {
+            insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}"><img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" /></div>\n\n`;
+          }
+        } else if (uploadedFileType === "svg" && uploadedFileText) {
+          insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}">\n${uploadedFileText}\n</div>\n\n`;
+        }
       }
 
       if (target instanceof HTMLTextAreaElement) {
@@ -2278,29 +2452,20 @@
         if (mode === "source") {
           insertIntoTextarea(source, insertTag);
           if (editable) editable.innerHTML = markdownToHtml(source.value);
-        } else if (mode === "edit") {
-          editable.focus();
-          try {
-            document.execCommand("insertHTML", false, insertTag);
-          } catch(e) {
-            editable.innerHTML += insertTag;
-          }
-          if (source) source.value = htmlToMarkdown(editable).trim();
         } else if (mode === "preview") {
-          if (source) {
-            source.value = (source.value.trim() + insertTag).trim();
-          }
-          if (editable) {
-            editable.innerHTML = markdownToHtml(source.value);
-          }
-          if (previewPane) {
-            previewPane.innerHTML = `<div class="case-body content-body" style="font-family:var(--sans);line-height:1.6;padding:16px;background:#ffffff;border:1px solid var(--line);min-height:160px">${markdownToHtml(source.value)}</div>`;
-          }
+          insertIntoTextarea(source, insertTag);
+          if (editable) editable.innerHTML = markdownToHtml(source.value);
+          if (previewPane) previewPane.innerHTML = markdownToHtml(source.value);
+        } else {
+          editable.focus();
+          document.execCommand("insertHTML", false, insertTag);
+          syncWysiwyg(wrapper);
         }
-        syncWysiwyg(wrapper);
-        if (window.initBauhausCharts) window.initBauhausCharts();
       }
+
+      if (uploadedBlobUrl) URL.revokeObjectURL(uploadedBlobUrl);
       root.remove();
+      if (window.initBauhausCharts) window.initBauhausCharts();
     };
   }
 
