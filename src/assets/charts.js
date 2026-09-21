@@ -155,6 +155,47 @@
     }
   }
 
+  // --- ELEMENT-LEVEL SVG COLOR INSPECTOR & GROUP RECOLORER ---
+  function inspectSvgElements(svgEl) {
+    if (!svgEl) return [];
+    const colorMap = new Map();
+    const addColor = (val) => {
+      if (!val || val === "none" || val === "transparent" || val.startsWith("url(")) return;
+      const cleanVal = val.toLowerCase().trim();
+      colorMap.set(cleanVal, (colorMap.get(cleanVal) || 0) + 1);
+    };
+
+    svgEl.querySelectorAll("*").forEach(el => {
+      addColor(el.getAttribute("fill"));
+      addColor(el.getAttribute("stroke"));
+      const style = el.getAttribute("style") || "";
+      const fillMatch = style.match(/fill:\s*([^;]+)/i);
+      if (fillMatch) addColor(fillMatch[1]);
+      const strokeMatch = style.match(/stroke:\s*([^;]+)/i);
+      if (strokeMatch) addColor(strokeMatch[1]);
+    });
+
+    return Array.from(colorMap.entries()).map(([color, count]) => ({ color, count }));
+  }
+
+  function recolorSvgGroup(svgEl, oldColor, newColor) {
+    if (!svgEl || !oldColor || !newColor) return;
+    const target = oldColor.toLowerCase().trim();
+    svgEl.querySelectorAll("*").forEach(el => {
+      if ((el.getAttribute("fill") || "").toLowerCase().trim() === target) {
+        el.setAttribute("fill", newColor);
+      }
+      if ((el.getAttribute("stroke") || "").toLowerCase().trim() === target) {
+        el.setAttribute("stroke", newColor);
+      }
+      const style = el.getAttribute("style") || "";
+      if (style.toLowerCase().includes(target)) {
+        const newStyle = style.replace(new RegExp(target, "gi"), newColor);
+        el.setAttribute("style", newStyle);
+      }
+    });
+  }
+
   function adaptPlotlyIframe(iframeEl, customColors) {
     if (!iframeEl) return;
     const { primary, accent, bg, text } = customColors || {};
@@ -357,6 +398,148 @@
     attachChartEvents(container, matrixData);
   }
 
+  // --- RENDER LINE & TREND CHART ---
+  function renderLineChart(container, title, items, colors) {
+    const width = 600;
+    const height = 340;
+    const padding = { top: 40, right: 40, bottom: 50, left: 60 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    const dataItems = Array.isArray(items) && items.length ? items : [
+      { label: "Jan", val: 12 }, { label: "Feb", val: 19 }, { label: "Mar", val: 28 }, { label: "Apr", val: 35 }, { label: "May", val: 42 }
+    ];
+
+    const maxVal = Math.max(...dataItems.map(d => Number(d.val) || 0), 1);
+    const minVal = Math.min(0, ...dataItems.map(d => Number(d.val) || 0));
+    const valRange = (maxVal - minVal) || 1;
+
+    const lineColor = colors[1] || "#E03C31";
+    const pointColor = colors[0] || "#111111";
+
+    const points = dataItems.map((item, idx) => {
+      const x = padding.left + (idx / Math.max(1, dataItems.length - 1)) * chartWidth;
+      const y = padding.top + chartHeight - (((Number(item.val) || 0) - minVal) / valRange) * chartHeight;
+      return { x, y, label: item.label, val: item.val };
+    });
+
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+    let svgHtml = `
+      <div class="bauhaus-chart-header">
+        <span class="chart-title-label">${title ? title.toUpperCase() : "LINE & TREND ANALYSIS"}</span>
+        <div class="chart-actions">
+          <button type="button" class="chart-action-btn snap-png-btn">📸 SNAP PNG</button>
+          <button type="button" class="chart-action-btn snap-svg-btn">💾 SVG</button>
+          <button type="button" class="chart-action-btn snap-data-btn">📊 JSON</button>
+        </div>
+      </div>
+      <div class="chart-svg-wrapper">
+        <svg viewBox="0 0 ${width} ${height}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="${width}" height="${height}" fill="#FBF9F5" />
+          <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" stroke="#111111" stroke-width="1.5" />
+          <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" stroke="#111111" stroke-width="1.5" />
+
+          <!-- Grid Lines -->
+          ${[0, 0.25, 0.5, 0.75, 1].map(r => {
+            const gy = padding.top + chartHeight * (1 - r);
+            const gVal = (minVal + valRange * r).toFixed(1);
+            return `
+              <line x1="${padding.left}" y1="${gy}" x2="${width - padding.right}" y2="${gy}" stroke="#e8e5dc" stroke-width="1" stroke-dasharray="3 3" />
+              <text x="${padding.left - 8}" y="${gy + 4}" text-anchor="end" font-family="Courier New, monospace" font-size="9" fill="#5e5b55">${gVal}</text>
+            `;
+          }).join('')}
+
+          <!-- Trend Line -->
+          <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+          <!-- Data Points -->
+          ${points.map(p => `
+            <g class="chart-interact-shape" data-label="${p.label}" data-val="${p.val}">
+              <circle cx="${p.x}" cy="${p.y}" r="6" fill="${pointColor}" stroke="#FBF9F5" stroke-width="2" style="cursor:pointer" />
+              <text x="${p.x}" y="${height - padding.bottom + 18}" text-anchor="middle" font-family="Courier New, monospace" font-size="10" font-weight="700" fill="#111111">${p.label}</text>
+            </g>
+          `).join('')}
+        </svg>
+        <div class="chart-tooltip" style="display:none"></div>
+      </div>
+      <div class="chart-palette-bar">
+        <span class="palette-label">BAUHAUS PALETTE:</span>
+        <div class="palette-swatches">
+          ${colors.map((c, i) => `<button type="button" class="swatch-btn" data-color-idx="${i}" style="background:${c}"></button>`).join('')}
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = svgHtml;
+    attachChartEvents(container, dataItems);
+  }
+
+  // --- RENDER SCATTER & BUBBLE PLOT ---
+  function renderScatterChart(container, title, items, colors) {
+    const width = 600;
+    const height = 340;
+    const padding = { top: 40, right: 40, bottom: 50, left: 60 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    const dataItems = Array.isArray(items) && items.length ? items : [
+      { label: "Cluster A", val: 12, size: 14, x: 20 },
+      { label: "Cluster B", val: 45, size: 24, x: 50 },
+      { label: "Cluster C", val: 78, size: 18, x: 80 }
+    ];
+
+    const maxX = Math.max(...dataItems.map(d => Number(d.x) || Number(d.val) || 1), 10);
+    const maxY = Math.max(...dataItems.map(d => Number(d.val) || 1), 10);
+
+    const primaryColor = colors[0] || "#111111";
+    const accentColor = colors[1] || "#E03C31";
+
+    let svgHtml = `
+      <div class="bauhaus-chart-header">
+        <span class="chart-title-label">${title ? title.toUpperCase() : "SCATTER & BUBBLE DISTRIBUTION"}</span>
+        <div class="chart-actions">
+          <button type="button" class="chart-action-btn snap-png-btn">📸 SNAP PNG</button>
+          <button type="button" class="chart-action-btn snap-svg-btn">💾 SVG</button>
+          <button type="button" class="chart-action-btn snap-data-btn">📊 JSON</button>
+        </div>
+      </div>
+      <div class="chart-svg-wrapper">
+        <svg viewBox="0 0 ${width} ${height}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="${width}" height="${height}" fill="#FBF9F5" />
+          <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" stroke="#111111" stroke-width="1.5" />
+          <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" stroke="#111111" stroke-width="1.5" />
+
+          ${dataItems.map((item, idx) => {
+            const xVal = Number(item.x) || (idx + 1) * (maxX / (dataItems.length + 1));
+            const yVal = Number(item.val) || 0;
+            const cx = padding.left + (xVal / maxX) * chartWidth;
+            const cy = padding.top + chartHeight - (yVal / maxY) * chartHeight;
+            const r = Math.min(30, Math.max(6, Number(item.size) || 10));
+            const bubbleColor = idx % 2 === 0 ? accentColor : primaryColor;
+
+            return `
+              <g class="chart-interact-shape" data-label="${item.label}" data-val="X: ${xVal.toFixed(1)}, Y: ${yVal.toFixed(1)}">
+                <circle cx="${cx}" cy="${cy}" r="${r}" fill="${bubbleColor}" opacity="0.75" stroke="#111111" stroke-width="1.5" style="cursor:pointer" />
+                <text x="${cx}" y="${cy + 4}" text-anchor="middle" font-family="Courier New, monospace" font-size="9" font-weight="700" fill="#ffffff">${item.label}</text>
+              </g>
+            `;
+          }).join('')}
+        </svg>
+        <div class="chart-tooltip" style="display:none"></div>
+      </div>
+      <div class="chart-palette-bar">
+        <span class="palette-label">BAUHAUS PALETTE:</span>
+        <div class="palette-swatches">
+          ${colors.map((c, i) => `<button type="button" class="swatch-btn" data-color-idx="${i}" style="background:${c}"></button>`).join('')}
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = svgHtml;
+    attachChartEvents(container, dataItems);
+  }
+
   // --- ATTACH EVENT HANDLERS ---
   function attachChartEvents(container, chartData) {
     const tooltip = container.querySelector(".chart-tooltip");
@@ -525,6 +708,12 @@
       if (type === "bar") {
         renderBarChart(container, title, data, PRESET_PALETTES.classic);
         container.setAttribute("data-chart-rendered", "true");
+      } else if (type === "line") {
+        renderLineChart(container, title, data, PRESET_PALETTES.classic);
+        container.setAttribute("data-chart-rendered", "true");
+      } else if (type === "scatter") {
+        renderScatterChart(container, title, data, PRESET_PALETTES.classic);
+        container.setAttribute("data-chart-rendered", "true");
       } else if (type === "confusion-matrix") {
         renderConfusionMatrix(container, title, data, PRESET_PALETTES.classic);
         container.setAttribute("data-chart-rendered", "true");
@@ -535,6 +724,10 @@
   window.initBauhausCharts = initBauhausCharts;
   window.adaptSvgElement = adaptSvgElement;
   window.recolorSvgElement = recolorSvgElement;
+  window.inspectSvgElements = inspectSvgElements;
+  window.recolorSvgGroup = recolorSvgGroup;
+  window.renderLineChart = renderLineChart;
+  window.renderScatterChart = renderScatterChart;
   window.adaptPlotlyIframe = adaptPlotlyIframe;
   window.BAUHAUS_SWISS_PALETTE = BAUHAUS_SWISS_PALETTE;
 

@@ -2051,21 +2051,45 @@
     };
   }
 
-  function showChartPickerModal(target) {
+  function openChartStudioWorkspace(target) {
+    document.querySelector(".chart-studio-panel")?.remove();
     document.querySelector(".admin-modal-root")?.remove();
 
-    let chartType = "bar";
-    let chartTitle = "FEATURE IMPORTANCE (CHURN MODEL)";
+    let existingEl = null;
+    if (target && target.classList && target.classList.contains("bauhaus-chart")) {
+      existingEl = target;
+    } else if (target && target.querySelector) {
+      existingEl = target.querySelector(".bauhaus-chart");
+    }
+
+    let chartType = existingEl?.getAttribute("data-chart-type") || "bar";
+    let chartTitle = existingEl?.getAttribute("data-chart-title") || "FEATURE IMPORTANCE (CHURN MODEL)";
+    let chartWidth = existingEl?.getAttribute("data-chart-width") || "100%";
+    let chartHeight = existingEl?.getAttribute("data-chart-height") || "380px";
+
+    let rawData = existingEl?.getAttribute("data-chart-data");
     let items = [
-      { label: "Customer Tenure", val: 0.38 },
-      { label: "Contract Type", val: 0.26 },
-      { label: "Monthly Charges", val: 0.20 },
-      { label: "Tech Support", val: 0.16 }
+      { label: "Customer Tenure", val: 0.38, x: 20, size: 14 },
+      { label: "Contract Type", val: 0.26, x: 50, size: 24 },
+      { label: "Monthly Charges", val: 0.20, x: 80, size: 18 },
+      { label: "Tech Support", val: 0.16, x: 100, size: 12 }
     ];
     let matrix = { tp: 412, fp: 18, fn: 24, tn: 546 };
+
+    if (rawData) {
+      try {
+        const parsed = JSON.parse(rawData);
+        if (Array.isArray(parsed)) items = parsed;
+        else if (parsed && typeof parsed === "object") {
+          if (parsed.tp !== undefined) matrix = parsed;
+          else items = [parsed];
+        }
+      } catch(e) {}
+    }
+
     let customSvgUrl = "";
     let uploadedFileText = "";
-    let uploadedFileType = ""; // "svg" or "html"
+    let uploadedFileType = "";
     let uploadedBlobUrl = "";
     let customColors = {
       primary: "#111111",
@@ -2075,134 +2099,180 @@
     };
 
     const root = document.createElement("div");
-    root.className = "admin-modal-root";
+    root.className = "chart-studio-panel";
     root.innerHTML = `
-      <div class="admin-modal chart-picker-modal" role="dialog" aria-modal="true" style="width:min(820px, 96vw);max-height:92vh;display:flex;flex-direction:column;background:var(--paper,#fbf9f5)">
-        <div style="flex:0 0 auto;padding-bottom:10px;border-bottom:1px solid var(--line)">
-          <p class="admin-kicker">09 / DATA VISUALIZATION ENGINE</p>
-          <h2 style="margin-bottom:8px">GENERATE & INSERT DATA CHART<span class="red-stop">.</span></h2>
-          <p style="font-size:12px;color:#555;margin-bottom:10px">
-            Configure interactive Bar & Matrix charts, or upload Python Matplotlib/Seaborn SVG and Plotly HTML files. Renders with live color selection and snapshot export.
-          </p>
-          <div class="wysiwyg-tabs">
-            <button type="button" class="wysiwyg-tab active" id="chart-tab-bar">BAR / FEATURE IMPORTANCE</button>
-            <button type="button" class="wysiwyg-tab" id="chart-tab-matrix">CONFUSION MATRIX</button>
-            <button type="button" class="wysiwyg-tab" id="chart-tab-svg">UPLOAD SVG / PLOTLY HTML</button>
+      <div class="chart-studio-backdrop" data-dismiss="true"></div>
+      <div class="chart-studio-body">
+        <div class="chart-studio-header">
+          <div class="chart-studio-brand">
+            <span class="r2-badge" style="background:var(--red,#e03c31);color:#fff;font-weight:900">09 / STUDIO</span>
+            <h2>DATA VISUALIZATION STUDIO & EDITOR<span class="red-stop">.</span></h2>
+          </div>
+          <div class="chart-studio-actions">
+            <button type="button" class="admin-btn secondary" data-dismiss="true">CANCEL ✕</button>
+            <button type="button" class="admin-btn primary" id="chart-studio-insert-btn" style="font-weight:700">INSERT / UPDATE CHART <b>→</b></button>
           </div>
         </div>
 
-        <div style="flex:1 1 auto;overflow-y:auto;padding:12px 0">
-          <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">CHART TITLE:
-            <input type="text" id="chart-modal-title" value="${esc(chartTitle)}" style="width:100%;padding:6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);margin-top:4px">
-          </label>
-
-          <!-- BAR CHART CONTROLS -->
-          <div id="chart-view-bar" style="margin-top:10px">
-            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">DATA ITEMS (LABEL & VALUE):</label>
-            <div id="chart-bar-items-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
-            <button type="button" class="admin-btn secondary" id="chart-add-item-btn" style="padding:4px 8px;font-size:10px">+ ADD ITEM</button>
-          </div>
-
-          <!-- CONFUSION MATRIX CONTROLS -->
-          <div id="chart-view-matrix" style="display:none;margin-top:10px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <label style="font:11px var(--mono);font-weight:700">TRUE POSITIVES (TP):
-                <input type="number" id="chart-matrix-tp" value="${matrix.tp}" style="width:100%;padding:4px;border:1px solid var(--line)">
-              </label>
-              <label style="font:11px var(--mono);font-weight:700">FALSE POSITIVES (FP):
-                <input type="number" id="chart-matrix-fp" value="${matrix.fp}" style="width:100%;padding:4px;border:1px solid var(--line)">
-              </label>
-              <label style="font:11px var(--mono);font-weight:700">FALSE NEGATIVES (FN):
-                <input type="number" id="chart-matrix-fn" value="${matrix.fn}" style="width:100%;padding:4px;border:1px solid var(--line)">
-              </label>
-              <label style="font:11px var(--mono);font-weight:700">TRUE NEGATIVES (TN):
-                <input type="number" id="chart-matrix-tn" value="${matrix.tn}" style="width:100%;padding:4px;border:1px solid var(--line)">
-              </label>
-            </div>
-          </div>
-
-          <!-- UPLOAD SVG / PLOTLY CONTROLS -->
-          <div id="chart-view-svg" style="display:none;margin-top:10px">
-            <div style="border:2px dashed var(--line);padding:14px;text-align:center;background:#f4f2ea;margin-bottom:12px">
-              <span style="font-size:20px;display:block;margin-bottom:4px">📁 / 🖼️</span>
-              <p style="font:11px var(--mono);font-weight:700;margin:0 0 6px">ADD SVG OR PLOTLY GRAPH FROM FILE OR MEDIA LIBRARY</p>
-              <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-                <button type="button" class="admin-btn primary" onclick="document.getElementById('chart-file-upload-input').click()">SELECT FROM COMPUTER <b>→</b></button>
-                <button type="button" class="admin-btn secondary" id="chart-open-media-drawer-btn">🖼️ PICK FROM MEDIA LIBRARY <b>→</b></button>
-              </div>
-              <input type="file" id="chart-file-upload-input" accept=".svg,.html,.htm" style="display:none">
-              <span id="chart-upload-file-name" style="display:block;font:10px var(--mono);color:var(--red);margin-top:8px"></span>
+        <div class="chart-studio-grid">
+          <div class="chart-studio-sidebar">
+            <div class="chart-type-tabs">
+              <button type="button" class="chart-tab ${chartType === 'bar' ? 'active' : ''}" data-type="bar">📊 BAR</button>
+              <button type="button" class="chart-tab ${chartType === 'line' ? 'active' : ''}" data-type="line">📈 LINE</button>
+              <button type="button" class="chart-tab ${chartType === 'confusion-matrix' ? 'active' : ''}" data-type="confusion-matrix">🎯 MATRIX</button>
+              <button type="button" class="chart-tab ${chartType === 'scatter' ? 'active' : ''}" data-type="scatter">⚪ SCATTER</button>
+              <button type="button" class="chart-tab ${chartType === 'svg' ? 'active' : ''}" data-type="svg">🖼️ SVG / PLOTLY</button>
+              <button type="button" class="chart-tab" data-type="csv">📋 CSV PASTE</button>
             </div>
 
-            <!-- MEDIA LIBRARY DRAWER -->
-            <div id="chart-media-library-drawer" style="display:none;margin-bottom:12px;border:1px solid var(--line);padding:10px;background:#f7f5ef">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                <span style="font:700 10px var(--mono);color:#5e5b55">MEDIA LIBRARY ASSETS (CLICK TO SELECT):</span>
-                <button type="button" class="admin-btn secondary danger" id="chart-close-media-drawer-btn" style="padding:2px 6px;font-size:9px">CLOSE ✕</button>
-              </div>
-              <div id="chart-media-grid-container" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:8px;max-height:180px;overflow-y:auto">
-                <p style="font:10px var(--mono);color:#666">Loading assets from Media storage...</p>
+            <div class="chart-studio-section">
+              <label class="chart-field-label">CHART TITLE:
+                <input type="text" id="chart-studio-title" value="${esc(chartTitle)}" placeholder="Enter chart title..." class="chart-input">
+              </label>
+
+              <div class="chart-size-controls" style="margin-top:10px">
+                <span class="chart-field-label" style="display:block;margin-bottom:4px">CHART DIMENSIONS & ASPECT RATIO:</span>
+                <div class="chart-size-presets" style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap">
+                  <button type="button" class="admin-btn secondary chart-size-preset-btn" data-w="100%" data-h="380px">STANDARD (600x380)</button>
+                  <button type="button" class="admin-btn secondary chart-size-preset-btn" data-w="100%" data-h="320px">WIDE (850x320)</button>
+                  <button type="button" class="admin-btn secondary chart-size-preset-btn" data-w="500px" data-h="500px">SQUARE (500x500)</button>
+                  <button type="button" class="admin-btn secondary chart-size-preset-btn" data-w="100%" data-h="450px">FULL (100%)</button>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <label class="chart-field-label" style="flex:1">WIDTH:
+                    <input type="text" id="chart-studio-width" value="${esc(chartWidth)}" placeholder="e.g. 100% or 600px" class="chart-input">
+                  </label>
+                  <label class="chart-field-label" style="flex:1">HEIGHT:
+                    <input type="text" id="chart-studio-height" value="${esc(chartHeight)}" placeholder="e.g. 380px" class="chart-input">
+                  </label>
+                </div>
               </div>
             </div>
 
-            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">OR ENTER DIRECT FILE PATH / URL:
-              <input type="text" id="chart-svg-url" placeholder="/assets/images/projects/feature_importance.svg" style="width:100%;padding:6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);margin-top:4px">
-            </label>
-          </div>
+            <div id="chart-controls-container" class="chart-studio-section">
+              <div id="chart-view-items" style="${['bar','line','scatter'].includes(chartType) ? 'display:block' : 'display:none'}">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <span class="chart-field-label">DATA POINTS (LABEL, VAL, X, SIZE):</span>
+                  <button type="button" class="admin-btn secondary" id="chart-add-item-btn" style="padding:2px 6px;font-size:10px">+ ADD POINT</button>
+                </div>
+                <div id="chart-items-list" class="chart-items-scroll-list"></div>
+              </div>
 
-          <!-- RECOLORING & PALETTE SELECTOR CONTROLS -->
-          <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <label style="font:11px var(--mono);font-weight:700">🎨 LIVE COLOR CUSTOMIZER & BAUHAUS PALETTE</label>
-              <span style="font:9px var(--mono);color:#666">SELECT COLORS TO RECOLOR CHART</span>
-            </div>
-            
-            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#f4f2ea;padding:10px;border:1px solid var(--line);margin-bottom:12px">
-              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">PRIMARY:
-                <input type="color" id="chart-picker-primary" value="#111111" style="border:none;width:24px;height:24px;cursor:pointer">
-              </label>
-              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">ACCENT:
-                <input type="color" id="chart-picker-accent" value="#E03C31" style="border:none;width:24px;height:24px;cursor:pointer">
-              </label>
-              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">BACKGROUND:
-                <input type="color" id="chart-picker-bg" value="#FBF9F5" style="border:none;width:24px;height:24px;cursor:pointer">
-              </label>
-              <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">TEXT/LINE:
-                <input type="color" id="chart-picker-text" value="#111111" style="border:none;width:24px;height:24px;cursor:pointer">
-              </label>
-              
-              <div style="margin-left:auto;display:flex;gap:4px" id="chart-swatch-bar">
-                <button type="button" class="admin-btn secondary" data-swatch="#111111" style="background:#111111;width:18px;height:18px;padding:0;min-width:0;border:none" title="Ink"></button>
-                <button type="button" class="admin-btn secondary" data-swatch="#E03C31" style="background:#E03C31;width:18px;height:18px;padding:0;min-width:0;border:none" title="Bauhaus Red"></button>
-                <button type="button" class="admin-btn secondary" data-swatch="#F2C230" style="background:#F2C230;width:18px;height:18px;padding:0;min-width:0;border:none" title="Bauhaus Yellow"></button>
-                <button type="button" class="admin-btn secondary" data-swatch="#2457A6" style="background:#2457A6;width:18px;height:18px;padding:0;min-width:0;border:none" title="Swiss Blue"></button>
-                <button type="button" class="admin-btn secondary" data-swatch="#2F7D5A" style="background:#2F7D5A;width:18px;height:18px;padding:0;min-width:0;border:none" title="Primary Green"></button>
-                <button type="button" class="admin-btn secondary" data-swatch="#E87524" style="background:#E87524;width:18px;height:18px;padding:0;min-width:0;border:none" title="Bauhaus Orange"></button>
-                <button type="button" class="admin-btn secondary" data-swatch="#23827F" style="background:#23827F;width:18px;height:18px;padding:0;min-width:0;border:none" title="Teal"></button>
-                <button type="button" class="admin-btn secondary" data-swatch="#8064A8" style="background:#8064A8;width:18px;height:18px;padding:0;min-width:0;border:none" title="Violet"></button>
+              <div id="chart-view-matrix" style="${chartType === 'confusion-matrix' ? 'display:block' : 'display:none'}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <label class="chart-field-label">TRUE POSITIVES (TP):
+                    <input type="number" id="chart-matrix-tp" value="${matrix.tp}" class="chart-input">
+                  </label>
+                  <label class="chart-field-label">FALSE POSITIVES (FP):
+                    <input type="number" id="chart-matrix-fp" value="${matrix.fp}" class="chart-input">
+                  </label>
+                  <label class="chart-field-label">FALSE NEGATIVES (FN):
+                    <input type="number" id="chart-matrix-fn" value="${matrix.fn}" class="chart-input">
+                  </label>
+                  <label class="chart-field-label">TRUE NEGATIVES (TN):
+                    <input type="number" id="chart-matrix-tn" value="${matrix.tn}" class="chart-input">
+                  </label>
+                </div>
+              </div>
+
+              <div id="chart-view-svg" style="${chartType === 'svg' ? 'display:block' : 'display:none'}">
+                <div class="chart-upload-dropzone">
+                  <span style="font-size:24px;display:block;margin-bottom:4px">📁 / 🖼️</span>
+                  <p style="font:700 11px var(--mono);margin:0 0 8px">UPLOAD PYTHON SVG OR PLOTLY HTML FILE</p>
+                  <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+                    <button type="button" class="admin-btn primary" onclick="document.getElementById('chart-file-upload-input').click()">SELECT FROM COMPUTER <b>→</b></button>
+                    <button type="button" class="admin-btn secondary" id="chart-open-media-drawer-btn">🖼️ MEDIA LIBRARY <b>→</b></button>
+                  </div>
+                  <input type="file" id="chart-file-upload-input" accept=".svg,.html,.htm" style="display:none">
+                  <span id="chart-upload-file-name" style="display:block;font:10px var(--mono);color:var(--red);margin-top:6px"></span>
+                </div>
+
+                <div id="chart-media-library-drawer" style="display:none;margin-top:8px;border:1px solid var(--line);padding:8px;background:#f7f5ef">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <span style="font:700 10px var(--mono)">MEDIA ASSETS (CLICK TO SELECT):</span>
+                    <button type="button" class="admin-btn secondary danger" id="chart-close-media-drawer-btn" style="padding:2px 6px;font-size:9px">CLOSE ✕</button>
+                  </div>
+                  <div id="chart-media-grid-container" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:6px;max-height:160px;overflow-y:auto"></div>
+                </div>
+
+                <label class="chart-field-label" style="margin-top:8px;display:block">DIRECT FILE PATH / URL:
+                  <input type="text" id="chart-svg-url" placeholder="/assets/images/projects/sample_chart.svg" class="chart-input">
+                </label>
+
+                <div id="chart-svg-inspector" style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
+                  <span class="chart-field-label" style="display:block;margin-bottom:4px">🎨 SVG ELEMENT COLORS (CLICK TO RECOLOR):</span>
+                  <div id="chart-svg-color-groups" style="display:flex;flex-wrap:wrap;gap:6px">
+                    <span style="font:10px var(--mono);color:#888">Upload or select an SVG file to inspect elements.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="chart-view-csv" style="display:none">
+                <label class="chart-field-label">PASTE CSV / TSV DATA (LABEL, VAL, X, SIZE):
+                  <textarea id="chart-csv-textarea" rows="6" placeholder="Label, Value, X, Size&#10;Customer Tenure, 0.38, 20, 14&#10;Contract Type, 0.26, 50, 24&#10;Monthly Charges, 0.20, 80, 18" class="chart-input" style="font-family:var(--mono);line-height:1.4"></textarea>
+                </label>
+                <button type="button" class="admin-btn primary" id="chart-parse-csv-btn" style="width:100%;margin-top:6px">PARSE & IMPORT DATASET <b>→</b></button>
               </div>
             </div>
 
-            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">LIVE RENDERED CHART PREVIEW</label>
-            <div id="chart-modal-preview-box" class="bauhaus-chart" style="min-height:160px;border:1px solid var(--line);background:#FBF9F5"></div>
-          </div>
-        </div>
+            <div class="chart-studio-section" style="border-top:1px solid var(--line);padding-top:10px;margin-top:auto">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span class="chart-field-label">🎨 BAUHAUS PALETTE & PRESETS:</span>
+                <select id="chart-preset-select" class="chart-input" style="width:auto;padding:2px 6px;font-size:10px">
+                  <option value="classic">BAUHAUS CLASSIC</option>
+                  <option value="swiss">SWISS NEUTRAL</option>
+                  <option value="warm">WARM EDITORIAL</option>
+                  <option value="obsidian">OBSIDIAN NIGHT</option>
+                </select>
+              </div>
 
-        <div class="image-picker-actions" style="flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--line)">
-          <button type="button" class="admin-btn secondary" data-dismiss="true">CANCEL</button>
-          <button type="button" class="admin-btn" id="chart-modal-insert-btn" style="font-weight:700">INSERT CHART INTO EDITOR <b>→</b></button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#f4f2ea;padding:8px;border:1px solid var(--line);margin-bottom:8px">
+                <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">PRIMARY:
+                  <input type="color" id="chart-picker-primary" value="#111111" style="border:none;width:22px;height:22px;cursor:pointer">
+                </label>
+                <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">ACCENT:
+                  <input type="color" id="chart-picker-accent" value="#E03C31" style="border:none;width:22px;height:22px;cursor:pointer">
+                </label>
+                <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">BG:
+                  <input type="color" id="chart-picker-bg" value="#FBF9F5" style="border:none;width:22px;height:22px;cursor:pointer">
+                </label>
+                <label style="font:10px var(--mono);display:flex;align-items:center;gap:4px">TEXT:
+                  <input type="color" id="chart-picker-text" value="#111111" style="border:none;width:22px;height:22px;cursor:pointer">
+                </label>
+              </div>
+
+              <div style="display:flex;gap:3px;flex-wrap:wrap" id="chart-swatch-bar">
+                ${(window.BAUHAUS_SWISS_PALETTE || []).map(p => `
+                  <button type="button" class="swatch-opt-btn" data-swatch="${p.hex}" style="background:${p.hex};width:16px;height:16px;padding:0;border:1px solid #111;cursor:pointer" title="${p.name} (${p.hex})"></button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-studio-canvas-panel">
+            <div class="chart-canvas-header">
+              <span style="font:700 11px var(--mono);color:#5e5b55">LIVE RENDERED CHART VIEWPORT & PREVIEW</span>
+              <span id="chart-status-badge" style="font:700 10px var(--mono);color:var(--red)">READY</span>
+            </div>
+            <div class="chart-canvas-viewport">
+              <div id="chart-studio-preview-box" class="bauhaus-chart" style="width:${esc(chartWidth)};height:${esc(chartHeight)};min-height:360px;background:#FBF9F5;border:1px solid var(--line)"></div>
+            </div>
+          </div>
         </div>
       </div>
     `;
 
     document.body.appendChild(root);
 
-    const previewBox = root.querySelector("#chart-modal-preview-box");
-    const itemsList = root.querySelector("#chart-bar-items-list");
-    const titleInput = root.querySelector("#chart-modal-title");
-    const insertBtn = root.querySelector("#chart-modal-insert-btn");
+    const previewBox = root.querySelector("#chart-studio-preview-box");
+    const itemsList = root.querySelector("#chart-items-list");
+    const titleInput = root.querySelector("#chart-studio-title");
+    const widthInput = root.querySelector("#chart-studio-width");
+    const heightInput = root.querySelector("#chart-studio-height");
+    const insertBtn = root.querySelector("#chart-studio-insert-btn");
     const fileInput = root.querySelector("#chart-file-upload-input");
     const uploadNameSpan = root.querySelector("#chart-upload-file-name");
+    const svgColorGroupsContainer = root.querySelector("#chart-svg-color-groups");
 
     const openMediaDrawerBtn = root.querySelector("#chart-open-media-drawer-btn");
     const closeMediaDrawerBtn = root.querySelector("#chart-close-media-drawer-btn");
@@ -2213,30 +2283,226 @@
     const accentColorInput = root.querySelector("#chart-picker-accent");
     const bgColorInput = root.querySelector("#chart-picker-bg");
     const textColorInput = root.querySelector("#chart-picker-text");
+    const presetSelect = root.querySelector("#chart-preset-select");
 
-    // Handle Media Library Picker Drawer
+    function renderItemsList() {
+      itemsList.innerHTML = items.map((item, idx) => `
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <input type="text" class="chart-item-label chart-input" data-idx="${idx}" value="${esc(item.label)}" placeholder="Label" style="flex:2">
+          <input type="number" step="any" class="chart-item-val chart-input" data-idx="${idx}" value="${item.val}" placeholder="Val" style="flex:1">
+          <input type="number" step="any" class="chart-item-x chart-input" data-idx="${idx}" value="${item.x !== undefined ? item.x : (idx+1)*20}" placeholder="X" style="flex:1">
+          <input type="number" step="any" class="chart-item-size chart-input" data-idx="${idx}" value="${item.size !== undefined ? item.size : 12}" placeholder="Size" style="flex:1">
+          <button type="button" class="admin-btn secondary danger chart-del-item-btn" data-idx="${idx}" style="padding:2px 6px;font-size:10px">✕</button>
+        </div>
+      `).join("");
+    }
+
+    function applyLiveColorsToPreview() {
+      customColors.primary = primaryColorInput.value;
+      customColors.accent = accentColorInput.value;
+      customColors.bg = bgColorInput.value;
+      customColors.text = textColorInput.value;
+
+      const svgEl = previewBox.querySelector("svg");
+      if (svgEl && window.recolorSvgElement) {
+        window.recolorSvgElement(svgEl, customColors);
+      }
+
+      const iframeEl = previewBox.querySelector("iframe");
+      if (iframeEl && window.adaptPlotlyIframe) {
+        window.adaptPlotlyIframe(iframeEl, customColors);
+      }
+    }
+
+    function updateSvgColorInspector(svgEl) {
+      if (!svgEl || !window.inspectSvgElements) {
+        svgColorGroupsContainer.innerHTML = `<span style="font:10px var(--mono);color:#888">No SVG element inspector available.</span>`;
+        return;
+      }
+      const detected = window.inspectSvgElements(svgEl);
+      if (!detected.length) {
+        svgColorGroupsContainer.innerHTML = `<span style="font:10px var(--mono);color:#888">No element color groups detected in SVG.</span>`;
+        return;
+      }
+      svgColorGroupsContainer.innerHTML = detected.map((group) => `
+        <button type="button" class="chart-svg-group-btn" data-color="${group.color}" style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;background:#fff;border:1px solid var(--line);font:10px var(--mono);cursor:pointer" title="Click to recolor this element group (${group.count} elements)">
+          <span style="width:12px;height:12px;background:${group.color};border:1px solid #111;display:inline-block"></span>
+          <span>${group.color} (${group.count})</span>
+        </button>
+      `).join("");
+
+      svgColorGroupsContainer.querySelectorAll(".chart-svg-group-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const oldColor = btn.getAttribute("data-color");
+          if (window.showColorPickerModal) {
+            window.showColorPickerModal((newHex) => {
+              if (window.recolorSvgGroup) {
+                window.recolorSvgGroup(svgEl, oldColor, newHex);
+                updateSvgColorInspector(svgEl);
+              }
+            });
+          } else {
+            accentColorInput.click();
+          }
+        });
+      });
+    }
+
+    function updatePreview() {
+      chartTitle = titleInput.value.trim();
+      chartWidth = widthInput.value.trim() || "100%";
+      chartHeight = heightInput.value.trim() || "380px";
+
+      previewBox.style.width = chartWidth;
+      previewBox.style.height = chartHeight;
+
+      previewBox.removeAttribute("data-chart-rendered");
+      previewBox.setAttribute("data-chart-type", chartType);
+      previewBox.setAttribute("data-chart-title", chartTitle);
+      previewBox.setAttribute("data-chart-width", chartWidth);
+      previewBox.setAttribute("data-chart-height", chartHeight);
+
+      if (['bar', 'line', 'scatter'].includes(chartType)) {
+        previewBox.setAttribute("data-chart-data", JSON.stringify(items));
+        if (window.initBauhausCharts) window.initBauhausCharts();
+      } else if (chartType === "confusion-matrix") {
+        previewBox.setAttribute("data-chart-data", JSON.stringify(matrix));
+        if (window.initBauhausCharts) window.initBauhausCharts();
+      } else if (chartType === "svg") {
+        if (uploadedFileType === "html" && uploadedBlobUrl) {
+          previewBox.innerHTML = `
+            <div class="bauhaus-chart-header">
+              <span class="chart-title-label">${esc(chartTitle || "PLOTLY INTERACTIVE CHART")}</span>
+            </div>
+            <iframe src="${esc(uploadedBlobUrl)}" style="width:100%;height:${esc(chartHeight)};border:none" onload="if (window.adaptPlotlyIframe) window.adaptPlotlyIframe(this, ${JSON.stringify(customColors)})"></iframe>
+          `;
+        } else if (uploadedFileType === "svg" && uploadedFileText) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(uploadedFileText, "image/svg+xml");
+          const svgEl = doc.querySelector("svg");
+          if (svgEl) {
+            svgEl.setAttribute("width", "100%");
+            svgEl.setAttribute("height", "100%");
+            if (window.adaptSvgElement) window.adaptSvgElement(svgEl);
+            if (window.recolorSvgElement) window.recolorSvgElement(svgEl, customColors);
+            previewBox.innerHTML = `
+              <div class="bauhaus-chart-header">
+                <span class="chart-title-label">${esc(chartTitle || "PYTHON SVG GRAPH")}</span>
+              </div>
+              <div class="chart-svg-wrapper">${svgEl.outerHTML}</div>
+            `;
+            const renderedSvg = previewBox.querySelector("svg");
+            if (renderedSvg) updateSvgColorInspector(renderedSvg);
+          }
+        } else if (customSvgUrl) {
+          const isPlotlyHtml = customSvgUrl.endsWith(".html") || customSvgUrl.endsWith(".htm");
+          if (isPlotlyHtml) {
+            previewBox.innerHTML = `
+              <div class="bauhaus-chart-header">
+                <span class="chart-title-label">${esc(chartTitle || "PLOTLY INTERACTIVE CHART")}</span>
+              </div>
+              <iframe src="${esc(customSvgUrl)}" style="width:100%;height:${esc(chartHeight)};border:none"></iframe>
+            `;
+          } else {
+            previewBox.innerHTML = `<img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" />`;
+            if (window.initBauhausCharts) window.initBauhausCharts();
+          }
+        } else {
+          previewBox.innerHTML = `<p style="padding:20px;font:11px var(--mono);color:#666">Upload an SVG/HTML file or select from media library above to preview.</p>`;
+        }
+      }
+
+      applyLiveColorsToPreview();
+    }
+
+    renderItemsList();
+    updatePreview();
+
+    root.querySelectorAll(".chart-size-preset-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        widthInput.value = btn.getAttribute("data-w");
+        heightInput.value = btn.getAttribute("data-h");
+        updatePreview();
+      });
+    });
+
+    [widthInput, heightInput, titleInput].forEach((inp) => {
+      inp.addEventListener("input", updatePreview);
+    });
+
+    presetSelect?.addEventListener("change", (e) => {
+      const presetKey = e.target.value;
+      const presets = {
+        classic: { primary: "#111111", accent: "#E03C31", bg: "#FBF9F5", text: "#111111" },
+        swiss: { primary: "#4A4945", accent: "#23827F", bg: "#F4F2EA", text: "#111111" },
+        warm: { primary: "#2F7D5A", accent: "#E87524", bg: "#FBF9F5", text: "#111111" },
+        obsidian: { primary: "#111111", accent: "#E03C31", bg: "#171717", text: "#FBF9F5" }
+      };
+      const p = presets[presetKey] || presets.classic;
+      primaryColorInput.value = p.primary;
+      accentColorInput.value = p.accent;
+      bgColorInput.value = p.bg;
+      textColorInput.value = p.text;
+      applyLiveColorsToPreview();
+    });
+
+    [primaryColorInput, accentColorInput, bgColorInput, textColorInput].forEach(inp => {
+      inp.addEventListener("input", applyLiveColorsToPreview);
+    });
+
+    root.querySelectorAll(".swatch-opt-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        accentColorInput.value = btn.getAttribute("data-swatch");
+        applyLiveColorsToPreview();
+      });
+    });
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const ext = file.name.split(".").pop().toLowerCase();
+      uploadNameSpan.textContent = `LOADING FILE: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        uploadedFileText = e.target.result;
+        if (ext === "html" || ext === "htm") {
+          uploadedFileType = "html";
+          const blob = new Blob([uploadedFileText], { type: "text/html" });
+          if (uploadedBlobUrl) URL.revokeObjectURL(uploadedBlobUrl);
+          uploadedBlobUrl = URL.createObjectURL(blob);
+        } else {
+          uploadedFileType = "svg";
+        }
+        uploadNameSpan.textContent = `✓ LOADED & RECOLORED: ${file.name}`;
+        updatePreview();
+      };
+      reader.readAsText(file);
+    });
+
     openMediaDrawerBtn?.addEventListener("click", async () => {
       mediaDrawer.style.display = "block";
-      mediaGridContainer.innerHTML = `<p style="font:10px var(--mono);color:#666">Loading assets from Media storage...</p>`;
+      mediaGridContainer.innerHTML = `<p style="font:10px var(--mono);color:#666">Loading assets...</p>`;
       try {
         const res = await api("/api/media");
         const mediaFiles = Array.isArray(res) ? res : (Array.isArray(state.content?.media) ? state.content.media : []);
         if (!mediaFiles.length) {
-          mediaGridContainer.innerHTML = `<p style="font:10px var(--mono);color:#666">No media assets found in library.</p>`;
+          mediaGridContainer.innerHTML = `<p style="font:10px var(--mono);color:#666">No media assets found.</p>`;
           return;
         }
         mediaGridContainer.innerHTML = mediaFiles.map((f) => {
           const ext = String(f.name || "").split(".").pop().toLowerCase();
-          let iconOrImg = `<img src="${esc(f.path)}" alt="${esc(f.name)}" style="width:100%;height:54px;object-fit:cover" onerror="this.outerHTML='<div style=\\'height:54px;background:#171717;color:#fff;display:flex;align-items:center;justify-content:center;font:10px monospace\\'>🎨 ASSET</div>'">`;
+          let iconOrImg = `<img src="${esc(f.path)}" alt="${esc(f.name)}" style="width:100%;height:46px;object-fit:cover">`;
           if (ext === "html" || ext === "htm") {
-            iconOrImg = `<div style="height:54px;background:#171717;color:#fff;display:flex;align-items:center;justify-content:center;font:10px var(--mono)">📊 PLOTLY HTML</div>`;
+            iconOrImg = `<div style="height:46px;background:#171717;color:#fff;display:flex;align-items:center;justify-content:center;font:9px var(--mono)">📊 PLOTLY</div>`;
           } else if (ext === "svg") {
-            iconOrImg = `<div style="height:54px;background:#eae7df;display:flex;align-items:center;justify-content:center;font:10px var(--mono)">🎨 SVG</div>`;
+            iconOrImg = `<div style="height:46px;background:#eae7df;display:flex;align-items:center;justify-content:center;font:9px var(--mono)">🎨 SVG</div>`;
           }
           return `
-            <div class="chart-media-picker-item" data-path="${esc(f.path)}" data-ext="${ext}" style="border:1px solid var(--line);padding:4px;cursor:pointer;background:#ffffff">
+            <div class="chart-media-picker-item" data-path="${esc(f.path)}" data-ext="${ext}" style="border:1px solid var(--line);padding:3px;cursor:pointer;background:#ffffff">
               ${iconOrImg}
-              <span style="font:9px var(--mono);display:block;margin-top:4px;word-break:break-all;line-height:1.2">${esc(f.name)}</span>
+              <span style="font:8px var(--mono);display:block;margin-top:2px;word-break:break-all;line-height:1.1">${esc(f.name)}</span>
             </div>
           `;
         }).join("");
@@ -2248,7 +2514,7 @@
             customSvgUrl = path;
             const urlInput = root.querySelector("#chart-svg-url");
             if (urlInput) urlInput.value = path;
-            uploadNameSpan.textContent = `✓ SELECTED FROM MEDIA: ${path}`;
+            uploadNameSpan.textContent = `✓ SELECTED: ${path}`;
 
             try {
               const r = await fetch(path);
@@ -2276,152 +2542,34 @@
       mediaDrawer.style.display = "none";
     });
 
-    function renderItemsList() {
-      itemsList.innerHTML = items.map((item, idx) => `
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" class="chart-item-label" data-idx="${idx}" value="${esc(item.label)}" placeholder="Label" style="flex:2;padding:4px;font-size:12px;border:1px solid var(--line)">
-          <input type="number" step="any" class="chart-item-val" data-idx="${idx}" value="${item.val}" placeholder="Value" style="flex:1;padding:4px;font-size:12px;border:1px solid var(--line)">
-          <button type="button" class="admin-btn secondary danger chart-del-item-btn" data-idx="${idx}" style="padding:2px 6px;font-size:10px">✕</button>
-        </div>
-      `).join("");
-    }
-
-    function applyLiveColorsToPreview() {
-      customColors.primary = primaryColorInput.value;
-      customColors.accent = accentColorInput.value;
-      customColors.bg = bgColorInput.value;
-      customColors.text = textColorInput.value;
-
-      const svgEl = previewBox.querySelector("svg");
-      if (svgEl && window.recolorSvgElement) {
-        window.recolorSvgElement(svgEl, customColors);
-      }
-
-      const iframeEl = previewBox.querySelector("iframe");
-      if (iframeEl && window.adaptPlotlyIframe) {
-        window.adaptPlotlyIframe(iframeEl, customColors);
-      }
-    }
-
-    function updatePreview() {
-      chartTitle = titleInput.value.trim();
-      previewBox.removeAttribute("data-chart-rendered");
-      previewBox.setAttribute("data-chart-type", chartType);
-      previewBox.setAttribute("data-chart-title", chartTitle);
-
-      if (chartType === "bar") {
-        previewBox.setAttribute("data-chart-data", JSON.stringify(items));
-        if (window.initBauhausCharts) window.initBauhausCharts();
-      } else if (chartType === "confusion-matrix") {
-        previewBox.setAttribute("data-chart-data", JSON.stringify(matrix));
-        if (window.initBauhausCharts) window.initBauhausCharts();
-      } else if (chartType === "svg") {
-        if (uploadedFileType === "html" && uploadedBlobUrl) {
-          previewBox.innerHTML = `
-            <div class="bauhaus-chart-header">
-              <span class="chart-title-label">${esc(chartTitle || "PLOTLY INTERACTIVE CHART")}</span>
-            </div>
-            <iframe src="${esc(uploadedBlobUrl)}" style="width:100%;height:380px;border:none" onload="if (window.adaptPlotlyIframe) window.adaptPlotlyIframe(this, ${JSON.stringify(customColors)})"></iframe>
-          `;
-        } else if (uploadedFileType === "svg" && uploadedFileText) {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(uploadedFileText, "image/svg+xml");
-          const svgEl = doc.querySelector("svg");
-          if (svgEl) {
-            svgEl.setAttribute("width", "100%");
-            svgEl.setAttribute("height", "100%");
-            if (window.adaptSvgElement) window.adaptSvgElement(svgEl);
-            if (window.recolorSvgElement) window.recolorSvgElement(svgEl, customColors);
-            previewBox.innerHTML = `
-              <div class="bauhaus-chart-header">
-                <span class="chart-title-label">${esc(chartTitle || "PYTHON SVG GRAPH")}</span>
-              </div>
-              <div class="chart-svg-wrapper">${svgEl.outerHTML}</div>
-            `;
+    root.querySelector("#chart-parse-csv-btn")?.addEventListener("click", () => {
+      const csvText = root.querySelector("#chart-csv-textarea")?.value || "";
+      if (!csvText.trim()) return;
+      const lines = csvText.trim().split("\n");
+      const parsedItems = [];
+      lines.forEach((line, idx) => {
+        const parts = line.split(/[,;\t]+/).map(p => p.trim());
+        if (parts.length >= 2) {
+          const label = parts[0];
+          const val = parseFloat(parts[1]);
+          const x = parts[2] !== undefined ? parseFloat(parts[2]) : (idx + 1) * 20;
+          const size = parts[3] !== undefined ? parseFloat(parts[3]) : 14;
+          if (!isNaN(val)) {
+            parsedItems.push({ label, val, x: isNaN(x) ? 20 : x, size: isNaN(size) ? 14 : size });
           }
-        } else if (customSvgUrl) {
-          const isPlotlyHtml = customSvgUrl.endsWith(".html") || customSvgUrl.endsWith(".htm");
-          if (isPlotlyHtml) {
-            previewBox.innerHTML = `
-              <div class="bauhaus-chart-header">
-                <span class="chart-title-label">${esc(chartTitle || "PLOTLY INTERACTIVE CHART")}</span>
-              </div>
-              <iframe src="${esc(customSvgUrl)}" style="width:100%;height:380px;border:none"></iframe>
-            `;
-          } else {
-            previewBox.innerHTML = `<img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" />`;
-            if (window.initBauhausCharts) window.initBauhausCharts();
-          }
-        } else {
-          previewBox.innerHTML = `<p style="padding:20px;font:11px var(--mono);color:#666">Upload an SVG/HTML file or enter a direct chart URL above to preview.</p>`;
         }
-      }
-
-      applyLiveColorsToPreview();
-    }
-
-    renderItemsList();
-    updatePreview();
-
-    // Color picker events
-    [primaryColorInput, accentColorInput, bgColorInput, textColorInput].forEach(inp => {
-      inp.addEventListener("input", () => {
-        applyLiveColorsToPreview();
       });
-    });
-
-    root.querySelectorAll("[data-swatch]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const swatchColor = btn.getAttribute("data-swatch");
-        accentColorInput.value = swatchColor;
-        applyLiveColorsToPreview();
-      });
-    });
-
-    // Handle File Upload for SVG / Plotly HTML
-    fileInput.addEventListener("change", async () => {
-      const file = fileInput.files[0];
-      if (!file) return;
-
-      const ext = file.name.split(".").pop().toLowerCase();
-      uploadNameSpan.textContent = `LOADING FILE: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`;
-
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        uploadedFileText = e.target.result;
-        if (ext === "html" || ext === "htm") {
-          uploadedFileType = "html";
-          const blob = new Blob([uploadedFileText], { type: "text/html" });
-          if (uploadedBlobUrl) URL.revokeObjectURL(uploadedBlobUrl);
-          uploadedBlobUrl = URL.createObjectURL(blob);
-        } else {
-          uploadedFileType = "svg";
-        }
-
-        // Auto upload to Media storage for persistent server URL
-        try {
-          const folder = "projects";
-          const baseName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-") || `chart-${Date.now()}`;
-          const uploadRes = await api("/api/media", {
-            method: "POST",
-            body: { folder, filename: baseName, data: uploadedFileText.startsWith("data:") ? uploadedFileText : `data:text/plain;base64,${btoa(unescape(encodeURIComponent(uploadedFileText)))}` }
-          }).catch(() => null);
-
-          if (uploadRes && uploadRes.path) {
-            customSvgUrl = uploadRes.path;
-            const urlInput = root.querySelector("#chart-svg-url");
-            if (urlInput) urlInput.value = customSvgUrl;
-          }
-        } catch(e) {}
-
-        uploadNameSpan.textContent = `✓ LOADED & RECOLORED: ${file.name}`;
+      if (parsedItems.length) {
+        items = parsedItems;
+        chartType = "bar";
+        root.querySelectorAll(".chart-tab").forEach(t => t.classList.remove("active"));
+        root.querySelector(".chart-tab[data-type='bar']")?.classList.add("active");
+        root.querySelector("#chart-view-items").style.display = "block";
+        root.querySelector("#chart-view-csv").style.display = "none";
+        renderItemsList();
         updatePreview();
-      };
-      reader.readAsText(file);
+      }
     });
-
-    // Input Listeners
-    titleInput.addEventListener("input", updatePreview);
 
     root.addEventListener("input", (e) => {
       if (e.target.classList.contains("chart-item-label")) {
@@ -2431,6 +2579,14 @@
       } else if (e.target.classList.contains("chart-item-val")) {
         const idx = parseInt(e.target.getAttribute("data-idx"), 10);
         items[idx].val = parseFloat(e.target.value) || 0;
+        updatePreview();
+      } else if (e.target.classList.contains("chart-item-x")) {
+        const idx = parseInt(e.target.getAttribute("data-idx"), 10);
+        items[idx].x = parseFloat(e.target.value) || 0;
+        updatePreview();
+      } else if (e.target.classList.contains("chart-item-size")) {
+        const idx = parseInt(e.target.getAttribute("data-idx"), 10);
+        items[idx].size = parseFloat(e.target.value) || 10;
         updatePreview();
       } else if (e.target.id === "chart-matrix-tp") {
         matrix.tp = parseInt(e.target.value, 10) || 0;
@@ -2457,35 +2613,22 @@
         return;
       }
 
-      // Tabs
-      if (e.target.id === "chart-tab-bar") {
-        chartType = "bar";
-        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
-        e.target.classList.add("active");
-        root.querySelector("#chart-view-bar").style.display = "block";
-        root.querySelector("#chart-view-matrix").style.display = "none";
-        root.querySelector("#chart-view-svg").style.display = "none";
-        updatePreview();
-      } else if (e.target.id === "chart-tab-matrix") {
-        chartType = "confusion-matrix";
-        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
-        e.target.classList.add("active");
-        root.querySelector("#chart-view-bar").style.display = "none";
-        root.querySelector("#chart-view-matrix").style.display = "block";
-        root.querySelector("#chart-view-svg").style.display = "none";
-        updatePreview();
-      } else if (e.target.id === "chart-tab-svg") {
-        chartType = "svg";
-        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
-        e.target.classList.add("active");
-        root.querySelector("#chart-view-bar").style.display = "none";
-        root.querySelector("#chart-view-matrix").style.display = "none";
-        root.querySelector("#chart-view-svg").style.display = "block";
+      const tab = e.target.closest(".chart-tab");
+      if (tab) {
+        chartType = tab.getAttribute("data-type");
+        root.querySelectorAll(".chart-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        root.querySelector("#chart-view-items").style.display = ['bar','line','scatter'].includes(chartType) ? "block" : "none";
+        root.querySelector("#chart-view-matrix").style.display = chartType === "confusion-matrix" ? "block" : "none";
+        root.querySelector("#chart-view-svg").style.display = chartType === "svg" ? "block" : "none";
+        root.querySelector("#chart-view-csv").style.display = chartType === "csv" ? "block" : "none";
+
         updatePreview();
       }
 
       if (e.target.id === "chart-add-item-btn") {
-        items.push({ label: `Feature ${items.length + 1}`, val: 0.15 });
+        items.push({ label: `Point ${items.length + 1}`, val: 15, x: (items.length + 1) * 20, size: 12 });
         renderItemsList();
         updatePreview();
       }
@@ -2499,23 +2642,26 @@
       }
     });
 
-    // Insert into Editor
     insertBtn.onclick = () => {
+      const title = titleInput.value.trim();
+      const w = widthInput.value.trim() || "100%";
+      const h = heightInput.value.trim() || "380px";
+
       let insertTag = "";
-      if (chartType === "bar") {
-        insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="bar" data-chart-title="${esc(chartTitle)}" data-chart-data='${JSON.stringify(items)}'></div>\n\n`;
+      if (['bar', 'line', 'scatter'].includes(chartType)) {
+        insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="${chartType}" data-chart-title="${esc(title)}" data-chart-width="${esc(w)}" data-chart-height="${esc(h)}" data-chart-data='${JSON.stringify(items)}'></div>\n\n`;
       } else if (chartType === "confusion-matrix") {
-        insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="confusion-matrix" data-chart-title="${esc(chartTitle)}" data-chart-data='${JSON.stringify(matrix)}'></div>\n\n`;
+        insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="confusion-matrix" data-chart-title="${esc(title)}" data-chart-width="${esc(w)}" data-chart-height="${esc(h)}" data-chart-data='${JSON.stringify(matrix)}'></div>\n\n`;
       } else if (chartType === "svg") {
         if (customSvgUrl) {
           const isPlotly = customSvgUrl.endsWith(".html") || customSvgUrl.endsWith(".htm") || uploadedFileType === "html";
           if (isPlotly) {
-            insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}" data-chart-type="plotly"><iframe src="${esc(customSvgUrl)}" style="width:100%;height:450px;border:none"></iframe></div>\n\n`;
+            insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(title)}" data-chart-type="plotly" data-chart-width="${esc(w)}" data-chart-height="${esc(h)}"><iframe src="${esc(customSvgUrl)}" style="width:100%;height:${esc(h)};border:none"></iframe></div>\n\n`;
           } else {
-            insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}"><img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" /></div>\n\n`;
+            insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(title)}" data-chart-width="${esc(w)}" data-chart-height="${esc(h)}"><img src="${esc(customSvgUrl)}" alt="${esc(title)}" /></div>\n\n`;
           }
         } else if (uploadedFileType === "svg" && uploadedFileText) {
-          insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}">\n${uploadedFileText}\n</div>\n\n`;
+          insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(title)}" data-chart-width="${esc(w)}" data-chart-height="${esc(h)}">\n${uploadedFileText}\n</div>\n\n`;
         }
       }
 
@@ -2529,7 +2675,9 @@
         const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
         const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
 
-        if (mode === "source") {
+        if (existingEl) {
+          existingEl.outerHTML = insertTag.trim();
+        } else if (mode === "source") {
           insertIntoTextarea(source, insertTag);
           if (editable) editable.innerHTML = markdownToHtml(source.value);
         } else if (mode === "preview") {
@@ -2547,6 +2695,10 @@
       root.remove();
       if (window.initBauhausCharts) window.initBauhausCharts();
     };
+  }
+
+  function showChartPickerModal(target) {
+    openChartStudioWorkspace(target);
   }
 
   // --- EDITORIAL PORTRAIT PHOTO STUDIO ENGINE ---
