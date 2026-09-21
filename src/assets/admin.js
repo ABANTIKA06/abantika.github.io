@@ -3140,6 +3140,8 @@
 
     const usedFormatted = formatBytes(totalBytes);
     const maxFormatted = formatBytes(R2_FREE_CAPACITY_BYTES);
+    const freeBytes = Math.max(0, R2_FREE_CAPACITY_BYTES - totalBytes);
+    const freeFormatted = formatBytes(freeBytes);
     const percentNum = (totalBytes / R2_FREE_CAPACITY_BYTES) * 100;
     const percentFormatted = percentNum < 0.01 && totalBytes > 0 ? "<0.01" : percentNum.toFixed(2);
     const cappedPercent = Math.min(Math.max(percentNum, totalBytes > 0 ? 0.5 : 0), 100);
@@ -3180,12 +3182,123 @@
     const largestFileName = largestFile ? largestFile.name : "None";
     const largestFileFormatted = largestFile ? formatBytes(largestFile.size || 0) : "0 B";
 
+    const currentView = state.r2View || "matrix"; // default to 10-Block Matrix View
+
+    // Render Indicator View HTML
+    let indicatorHtml = "";
+    if (currentView === "pie") {
+      // DONUT PIE ARC VIEW
+      const strokeColor = percentNum >= 90 ? "#E03C31" : (percentNum >= 75 ? "#F2C230" : "#2457A6");
+      const dashOffset = 314.15 * (1 - cappedPercent / 100);
+      indicatorHtml = `
+        <div class="r2-view-pie" style="display:flex;align-items:center;gap:24px;background:#f4f2ea;padding:16px;border:1px solid var(--line);margin-top:10px">
+          <svg width="130" height="130" viewBox="0 0 130 130">
+            <circle cx="65" cy="65" r="50" fill="none" stroke="#e8e5dc" stroke-width="14" />
+            <circle cx="65" cy="65" r="50" fill="none" stroke="${strokeColor}" stroke-width="14"
+                    stroke-dasharray="314.15" stroke-dashoffset="${dashOffset}"
+                    transform="rotate(-90 65 65)" stroke-linecap="butt" />
+            <text x="65" y="61" text-anchor="middle" font-family="Courier New, monospace" font-size="18" font-weight="900" fill="#111111">${percentFormatted}%</text>
+            <text x="65" y="76" text-anchor="middle" font-family="Courier New, monospace" font-size="8" font-weight="700" fill="#5e5b55">R2 USED</text>
+          </svg>
+          <div style="flex:1">
+            <div style="margin-bottom:10px;border-bottom:1px solid var(--line);padding-bottom:6px">
+              <span style="font:700 9px var(--mono);color:#5e5b55;letter-spacing:0.1em">R2 BUCKET CONSUMPTION</span>
+              <strong style="display:block;font-size:24px;font-weight:900;margin-top:2px">${usedFormatted}</strong>
+            </div>
+            <div style="display:flex;gap:20px">
+              <div>
+                <span style="font:700 9px var(--mono);color:#5e5b55">CAPACITY</span>
+                <strong style="display:block;font-size:12px;font-weight:900">${maxFormatted}</strong>
+              </div>
+              <div>
+                <span style="font:700 9px var(--mono);color:#5e5b55">REMAINING FREE</span>
+                <strong style="display:block;font-size:12px;font-weight:900">${freeFormatted}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (currentView === "linear") {
+      // LINEAR SCALE VIEW
+      indicatorHtml = `
+        <div class="r2-view-linear" style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+            <span style="font:700 10px var(--mono);color:#5e5b55">0.0 GB</span>
+            <strong style="font-size:28px;font-weight:900;letter-spacing:-0.06em;color:${statusClass === 'status-critical' ? '#E03C31' : '#111111'}">${percentFormatted}% USED</strong>
+            <span style="font:700 10px var(--mono);color:#5e5b55">${freeFormatted} FREE</span>
+          </div>
+          <div class="r2-progress-bar-wrap">
+            <div class="r2-progress-bar-fill ${barColorClass}" style="width:${cappedPercent}%"></div>
+          </div>
+          <div class="r2-progress-labels" style="margin-top:4px">
+            <span>0 GB</span>
+            <span>2.5 GB</span>
+            <span>5.0 GB</span>
+            <span>7.5 GB</span>
+            <span>10.0 GB MAX</span>
+          </div>
+        </div>
+      `;
+    } else if (currentView === "wheel") {
+      // 10-SECTOR RADIAL WHEEL VIEW
+      const sectorsCount = Math.min(10, Math.ceil((totalBytes / R2_FREE_CAPACITY_BYTES) * 10));
+      const sectorsPaths = Array.from({length: 10}).map((_, i) => {
+        const startAngle = (i * 36 - 90) * (Math.PI / 180);
+        const endAngle = ((i + 1) * 36 - 90) * (Math.PI / 180);
+        const r1 = 34, r2 = 60;
+        const x1 = Math.cos(startAngle) * r1, y1 = Math.sin(startAngle) * r1;
+        const x2 = Math.cos(startAngle) * r2, y2 = Math.sin(startAngle) * r2;
+        const x3 = Math.cos(endAngle) * r2, y3 = Math.sin(endAngle) * r2;
+        const x4 = Math.cos(endAngle) * r1, y4 = Math.sin(endAngle) * r1;
+        const pathD = `M ${x1} ${y1} L ${x2} ${y2} A ${r2} ${r2} 0 0 1 ${x3} ${y3} L ${x4} ${y4} A ${r1} ${r1} 0 0 0 ${x1} ${y1} Z`;
+        const isSectorFilled = (i + 1) * (1024*1024*1024) <= totalBytes || (i === 0 && totalBytes > 0);
+        const fillColor = isSectorFilled ? (percentNum >= 90 ? '#E03C31' : (percentNum >= 75 ? '#F2C230' : '#111111')) : '#e8e5dc';
+        return `<path d="${pathD}" fill="${fillColor}" stroke="#FBF9F5" stroke-width="1.5" />`;
+      }).join('');
+
+      indicatorHtml = `
+        <div class="r2-view-wheel" style="display:flex;align-items:center;gap:24px;background:#f4f2ea;padding:16px;border:1px solid var(--line);margin-top:10px">
+          <svg width="140" height="140" viewBox="-70 -70 140 140">
+            ${sectorsPaths}
+            <circle cx="0" cy="0" r="30" fill="#FBF9F5" stroke="#111111" stroke-width="1" />
+            <text x="0" y="-1" text-anchor="middle" font-family="Courier New, monospace" font-size="14" font-weight="900" fill="#111111">${sectorsCount}</text>
+            <text x="0" y="11" text-anchor="middle" font-family="Courier New, monospace" font-size="7" font-weight="700" fill="#5e5b55">/10 GB</text>
+          </svg>
+          <div style="flex:1">
+            <span style="font:700 9px var(--mono);color:#5e5b55;letter-spacing:0.14em">10-SECTOR GAUGE WHEEL</span>
+            <h4 style="margin:4px 0 4px;font-size:16px;font-weight:900">RADIAL STORAGE DIAL</h4>
+            <p style="font:11px/1.4 var(--mono);color:#666;margin:0">Each of the 10 radial sectors represents 1.0 GB of R2 capacity. <b>${sectorsCount} GB</b> occupied.</p>
+          </div>
+        </div>
+      `;
+    } else {
+      // 10-BLOCK MATRIX GRID VIEW (DEFAULT)
+      indicatorHtml = `
+        <div class="r2-view-matrix" style="margin-top:10px">
+          <div class="r2-matrix-blocks">
+            ${Array.from({length: 10}).map((_, i) => {
+              const isFilled = (i + 1) * (1024*1024*1024) <= totalBytes || (i === 0 && totalBytes > 0);
+              const isCaution = isFilled && percentNum >= 75 && percentNum < 90;
+              const isCritical = isFilled && percentNum >= 90;
+              const fillClass = isCritical ? 'critical' : (isCaution ? 'caution' : (isFilled ? 'filled' : 'empty'));
+              return `<div class="r2-matrix-block ${fillClass}" title="Sector ${i+1}: ${i+1} GB Capacity"><span>0${i+1} GB</span></div>`;
+            }).join('')}
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font:9px var(--mono);color:#666">
+            <span>0 GB</span>
+            <span>USED: ${usedFormatted} (${percentFormatted}%)</span>
+            <span>10 GB MAX</span>
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="r2-storage-card">
         <div class="r2-storage-header">
           <div class="r2-storage-title">
             <span class="r2-badge">CLOUDFLARE R2 BUCKET</span>
-            <h3 style="margin-top:4px">STORAGE CAPACITY & USAGE<span class="red-stop">.</span></h3>
+            <h3 style="margin-top:4px">STORAGE CAPACITY & MONITOR<span class="red-stop">.</span></h3>
           </div>
           <div class="r2-storage-actions">
             <button type="button" class="admin-btn secondary" data-act="sync-r2-metrics">🔄 SYNC R2 METRICS</button>
@@ -3215,17 +3328,18 @@
           </div>
         </div>
 
-        <div class="r2-progress-container">
-          <div class="r2-progress-bar-wrap">
-            <div class="r2-progress-bar-fill ${barColorClass}" style="width: ${cappedPercent}%"></div>
+        <!-- INDICATOR VIEW SWITCHER -->
+        <div style="border-top:1px solid var(--line);padding-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font:700 10px var(--mono);color:#5e5b55;letter-spacing:0.12em">INDICATOR DESIGN STYLE:</span>
+            <div class="wysiwyg-tabs" style="margin:0">
+              <button type="button" class="wysiwyg-tab ${currentView === 'matrix' ? 'active' : ''}" data-act="switch-r2-view" data-view="matrix">📊 10-BLOCK MATRIX</button>
+              <button type="button" class="wysiwyg-tab ${currentView === 'pie' ? 'active' : ''}" data-act="switch-r2-view" data-view="pie">🍩 DONUT PIE ARC</button>
+              <button type="button" class="wysiwyg-tab ${currentView === 'linear' ? 'active' : ''}" data-act="switch-r2-view" data-view="linear">📏 LINEAR SCALE</button>
+              <button type="button" class="wysiwyg-tab ${currentView === 'wheel' ? 'active' : ''}" data-act="switch-r2-view" data-view="wheel">🎯 RADIAL WHEEL</button>
+            </div>
           </div>
-          <div class="r2-progress-labels">
-            <span>0 GB</span>
-            <span>2.5 GB (25%)</span>
-            <span>5.0 GB (50%)</span>
-            <span>7.5 GB (75% CAUTION)</span>
-            <span>10.0 GB MAX</span>
-          </div>
+          ${indicatorHtml}
         </div>
 
         ${alertBannerHtml}
@@ -4193,6 +4307,10 @@
           } catch (e) {
             prog.fail(e.message);
           }
+        }
+        if (name === "switch-r2-view") {
+          state.r2View = act.getAttribute("data-view") || "matrix";
+          await render();
         }
       }
       if (copy) {

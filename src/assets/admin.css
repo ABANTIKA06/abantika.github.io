@@ -2104,4 +2104,53 @@ table.bauhaus-table tr:hover,
   font-weight: 700;
 }
 
+/* 10-Block Matrix Grid View */
+.r2-matrix-blocks {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.r2-matrix-block {
+  height: 38px;
+  border: 1px solid var(--ink, #111111);
+  background: #e8e5dc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.r2-matrix-block span {
+  font: 700 8px var(--mono, monospace);
+  color: #666;
+}
+
+.r2-matrix-block.filled {
+  background: var(--ink, #111111);
+}
+
+.r2-matrix-block.filled span {
+  color: #ffffff;
+}
+
+.r2-matrix-block.caution {
+  background: #f2c230;
+}
+
+.r2-matrix-block.caution span {
+  color: #111111;
+}
+
+.r2-matrix-block.critical {
+  background: #e03c31;
+  animation: r2PulseRed 2s infinite alternate;
+}
+
+.r2-matrix-block.critical span {
+  color: #ffffff;
+}
+
+
 
