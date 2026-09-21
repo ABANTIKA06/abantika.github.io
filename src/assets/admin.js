@@ -4140,10 +4140,18 @@
       if (act) {
         const name = act.getAttribute("data-act");
         if (name === "logout") {
-          await api("/api/auth/logout", { method: "POST", body: {} });
+          try {
+            await api("/api/auth/logout", { method: "POST", body: {} });
+          } catch (e) {
+            console.warn("Logout API call failed:", e);
+          }
           state.user = null;
           state.content = null;
-          await render();
+          state.error = "";
+          state.message = "";
+          location.hash = "#/";
+          await render(true);
+          return;
         }
         if (name === "dev") {
           await api("/api/auth/dev", { method: "POST", body: {} });

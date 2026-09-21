@@ -56,8 +56,12 @@ function cookieHeader(value, { clear = false } = {}) {
     "HttpOnly",
     "SameSite=Lax"
   ];
-  if (clear) parts.push("Max-Age=0");
-  else parts.push(`Max-Age=${Math.floor(MAX_AGE_MS / 1000)}`);
+  if (clear) {
+    parts.push("Max-Age=0");
+    parts.push("Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+  } else {
+    parts.push(`Max-Age=${Math.floor(MAX_AGE_MS / 1000)}`);
+  }
   if (env.publicOrigin.startsWith("https://")) parts.push("Secure");
   return parts.join("; ");
 }
