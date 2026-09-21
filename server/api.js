@@ -117,8 +117,11 @@ function currentUser(req) {
 function requireUser(req, res) {
   const user = currentUser(req);
   if (!user) {
-    send(res, 401, { error: "Sign in with the authorized GitHub account." });
+    send(res, 401, { error: "Sign in with the authorized account." });
     return null;
+  }
+  if (res && !res.headersSent) {
+    try { session.write(res, user); } catch(e) {}
   }
   return user;
 }

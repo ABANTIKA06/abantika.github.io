@@ -36,7 +36,7 @@ module.exports = {
   githubClientId: required("GITHUB_CLIENT_ID"),
   githubClientSecret: required("GITHUB_CLIENT_SECRET"),
   allowedGithubUser: required("ALLOWED_GITHUB_USER") || "local-admin",
-  sessionSecret: required("SESSION_SECRET") || process.env.VERCEL_GIT_COMMIT_SHA || "abantika-session-secret-default-key-2026",
+  sessionSecret: required("SESSION_SECRET") || "abantika-session-secret-default-key-2026",
   adminDevLogin: required("ADMIN_DEV_LOGIN") || "local-admin",
   adminPasscode: required("ADMIN_PASSCODE") || "abantika2026",
   githubToken: required("GITHUB_TOKEN"),

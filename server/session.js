@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const env = require("./env");
 
 const COOKIE = "abantika_admin";
-const MAX_AGE_MS = 1000 * 60 * 60 * 12;
+const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30; // 30 Days (Extended Session)
 
 function b64url(value) {
   return Buffer.from(value).toString("base64url");
