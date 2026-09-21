@@ -399,7 +399,9 @@
   }
 
   function initBauhausCharts() {
-    document.querySelectorAll(".bauhaus-chart").forEach(container => {
+    document.querySelectorAll(".bauhaus-chart").forEach(async (container) => {
+      if (container.getAttribute("data-chart-rendered") === "true") return;
+
       const type = container.getAttribute("data-chart-type") || "bar";
       const title = container.getAttribute("data-chart-title") || "";
       const rawData = container.getAttribute("data-chart-data");
@@ -409,6 +411,47 @@
         if (rawData) data = JSON.parse(rawData);
       } catch (e) {}
 
+      // 1. Check for SVG image tags to inline & convert
+      const imgChild = container.querySelector("img[src*='.svg']");
+      if (imgChild) {
+        try {
+          const src = imgChild.getAttribute("src");
+          const res = await fetch(src);
+          if (res.ok) {
+            const svgText = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgText, "image/svg+xml");
+            const svgEl = doc.querySelector("svg");
+            if (svgEl) {
+              svgEl.setAttribute("width", "100%");
+              svgEl.setAttribute("height", "100%");
+              adaptSvgElement(svgEl, PRESET_PALETTES.classic);
+              container.innerHTML = `
+                <div class="bauhaus-chart-header">
+                  <span class="chart-title-label">${title ? title.toUpperCase() : "PYTHON SVG GRAPH (ADAPTED)"}</span>
+                  <div class="chart-actions">
+                    <button type="button" class="chart-action-btn snap-png-btn">📸 SNAP PNG</button>
+                    <button type="button" class="chart-action-btn snap-svg-btn">💾 SVG</button>
+                  </div>
+                </div>
+                <div class="chart-svg-wrapper">${svgEl.outerHTML}</div>
+              `;
+              container.setAttribute("data-chart-rendered", "true");
+              return;
+            }
+          }
+        } catch (err) {}
+      }
+
+      // 2. Direct SVG child
+      const svgChild = container.querySelector("svg");
+      if (svgChild) {
+        adaptSvgElement(svgChild, PRESET_PALETTES.classic);
+        container.setAttribute("data-chart-rendered", "true");
+        return;
+      }
+
+      // 3. Render Bar / Confusion Matrix
       if (!data) {
         if (type === "bar") {
           data = [
@@ -424,11 +467,10 @@
 
       if (type === "bar") {
         renderBarChart(container, title, data, PRESET_PALETTES.classic);
+        container.setAttribute("data-chart-rendered", "true");
       } else if (type === "confusion-matrix") {
         renderConfusionMatrix(container, title, data, PRESET_PALETTES.classic);
-      } else {
-        const svgChild = container.querySelector("svg");
-        if (svgChild) adaptSvgElement(svgChild, PRESET_PALETTES.classic);
+        container.setAttribute("data-chart-rendered", "true");
       }
     });
   }

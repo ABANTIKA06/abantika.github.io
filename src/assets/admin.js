@@ -450,6 +450,7 @@
           <button type="button" class="wysiwyg-btn" data-wysiwyg-cmd="quote">QUOTE</button>
           <button type="button" class="wysiwyg-btn" data-wysiwyg-cmd="hr">HR</button>
           <button type="button" class="wysiwyg-btn table-btn" data-wysiwyg-cmd="table" title="Generate & Format Table" style="font-weight:700">⊞ TABLE</button>
+          <button type="button" class="wysiwyg-btn chart-btn" data-wysiwyg-cmd="chart" title="Generate & Format Interactive Data Chart" style="font-weight:700;color:var(--accent-red,#e03c31)">📊 CHART</button>
           <span class="wysiwyg-sep"></span>
           <button type="button" class="wysiwyg-btn wikilink-btn" data-wysiwyg-cmd="wikilink">[[ WIKILINK ]]</button>
           <button type="button" class="wysiwyg-btn math-btn" data-wysiwyg-cmd="math" title="Insert LaTeX Math Formula" style="font-weight:700;color:var(--accent-red,#e03c31)">∑ LATEX MATH</button>
@@ -2050,6 +2051,259 @@
     };
   }
 
+  function showChartPickerModal(target) {
+    document.querySelector(".admin-modal-root")?.remove();
+
+    let chartType = "bar";
+    let chartTitle = "FEATURE IMPORTANCE (CHURN MODEL)";
+    let items = [
+      { label: "Customer Tenure", val: 0.38 },
+      { label: "Contract Type", val: 0.26 },
+      { label: "Monthly Charges", val: 0.20 },
+      { label: "Tech Support", val: 0.16 }
+    ];
+    let matrix = { tp: 412, fp: 18, fn: 24, tn: 546 };
+    let customSvgUrl = "";
+
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal chart-picker-modal" role="dialog" aria-modal="true" style="width:min(760px, 96vw);max-height:90vh;display:flex;flex-direction:column;background:var(--paper,#fbf9f5)">
+        <div style="flex:0 0 auto;padding-bottom:10px;border-bottom:1px solid var(--line)">
+          <p class="admin-kicker">09 / DATA VISUALIZATION ENGINE</p>
+          <h2 style="margin-bottom:8px">GENERATE & INSERT DATA CHART<span class="red-stop">.</span></h2>
+          <p style="font-size:12px;color:#555;margin-bottom:10px">
+            Choose a chart type, configure parameters, or link a Python Matplotlib/Seaborn SVG. Renders with full interactivity, snapshots, and color customizer.
+          </p>
+          <div class="wysiwyg-tabs">
+            <button type="button" class="wysiwyg-tab active" id="chart-tab-bar">BAR / FEATURE IMPORTANCE</button>
+            <button type="button" class="wysiwyg-tab" id="chart-tab-matrix">CONFUSION MATRIX</button>
+            <button type="button" class="wysiwyg-tab" id="chart-tab-svg">PYTHON SVG / PLOTLY EMBED</button>
+          </div>
+        </div>
+
+        <div style="flex:1 1 auto;overflow-y:auto;padding:12px 0">
+          <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">CHART TITLE:
+            <input type="text" id="chart-modal-title" value="${esc(chartTitle)}" style="width:100%;padding:6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);margin-top:4px">
+          </label>
+
+          <!-- BAR CHART CONTROLS -->
+          <div id="chart-view-bar" style="margin-top:10px">
+            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">DATA ITEMS (LABEL & VALUE):</label>
+            <div id="chart-bar-items-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+            <button type="button" class="admin-btn secondary" id="chart-add-item-btn" style="padding:4px 8px;font-size:10px">+ ADD ITEM</button>
+          </div>
+
+          <!-- CONFUSION MATRIX CONTROLS -->
+          <div id="chart-view-matrix" style="display:none;margin-top:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label style="font:11px var(--mono);font-weight:700">TRUE POSITIVES (TP):
+                <input type="number" id="chart-matrix-tp" value="${matrix.tp}" style="width:100%;padding:4px;border:1px solid var(--line)">
+              </label>
+              <label style="font:11px var(--mono);font-weight:700">FALSE POSITIVES (FP):
+                <input type="number" id="chart-matrix-fp" value="${matrix.fp}" style="width:100%;padding:4px;border:1px solid var(--line)">
+              </label>
+              <label style="font:11px var(--mono);font-weight:700">FALSE NEGATIVES (FN):
+                <input type="number" id="chart-matrix-fn" value="${matrix.fn}" style="width:100%;padding:4px;border:1px solid var(--line)">
+              </label>
+              <label style="font:11px var(--mono);font-weight:700">TRUE NEGATIVES (TN):
+                <input type="number" id="chart-matrix-tn" value="${matrix.tn}" style="width:100%;padding:4px;border:1px solid var(--line)">
+              </label>
+            </div>
+          </div>
+
+          <!-- PYTHON SVG CONTROLS -->
+          <div id="chart-view-svg" style="display:none;margin-top:10px">
+            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">PYTHON GRAPH URL / SVG FILE PATH (e.g. /assets/images/charts/my_plot.svg):
+              <input type="text" id="chart-svg-url" placeholder="/assets/images/charts/feature_importance.svg" style="width:100%;padding:6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);margin-top:4px">
+            </label>
+            <p style="font-size:11px;color:#666;margin-top:4px">
+              💡 Tip: Save Python figures in Jupyter/Colab using <code>plt.savefig("my_chart.svg")</code> and upload via Media tab!
+            </p>
+          </div>
+
+          <!-- PREVIEW AREA -->
+          <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px">
+            <label style="display:block;font:11px var(--mono);font-weight:700;margin-bottom:6px">LIVE RENDERED CHART PREVIEW</label>
+            <div id="chart-modal-preview-box" class="bauhaus-chart" style="min-height:120px"></div>
+          </div>
+        </div>
+
+        <div class="image-picker-actions" style="flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--line)">
+          <button type="button" class="admin-btn secondary" data-dismiss="true">CANCEL</button>
+          <button type="button" class="admin-btn" id="chart-modal-insert-btn" style="font-weight:700">INSERT CHART INTO EDITOR <b>→</b></button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(root);
+
+    const previewBox = root.querySelector("#chart-modal-preview-box");
+    const itemsList = root.querySelector("#chart-bar-items-list");
+    const titleInput = root.querySelector("#chart-modal-title");
+    const insertBtn = root.querySelector("#chart-modal-insert-btn");
+
+    function renderItemsList() {
+      itemsList.innerHTML = items.map((item, idx) => `
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" class="chart-item-label" data-idx="${idx}" value="${esc(item.label)}" placeholder="Label" style="flex:2;padding:4px;font-size:12px;border:1px solid var(--line)">
+          <input type="number" step="any" class="chart-item-val" data-idx="${idx}" value="${item.val}" placeholder="Value" style="flex:1;padding:4px;font-size:12px;border:1px solid var(--line)">
+          <button type="button" class="admin-btn secondary danger chart-del-item-btn" data-idx="${idx}" style="padding:2px 6px;font-size:10px">✕</button>
+        </div>
+      `).join("");
+    }
+
+    function updatePreview() {
+      chartTitle = titleInput.value.trim();
+      previewBox.removeAttribute("data-chart-rendered");
+      previewBox.setAttribute("data-chart-type", chartType);
+      previewBox.setAttribute("data-chart-title", chartTitle);
+
+      if (chartType === "bar") {
+        previewBox.setAttribute("data-chart-data", JSON.stringify(items));
+      } else if (chartType === "confusion-matrix") {
+        previewBox.setAttribute("data-chart-data", JSON.stringify(matrix));
+      } else if (chartType === "svg" && customSvgUrl) {
+        previewBox.innerHTML = `<img src="${esc(customSvgUrl)}" alt="Python Chart" />`;
+      }
+
+      if (window.initBauhausCharts) {
+        window.initBauhausCharts();
+      }
+    }
+
+    renderItemsList();
+    updatePreview();
+
+    // Event Listeners
+    titleInput.addEventListener("input", updatePreview);
+
+    root.addEventListener("input", (e) => {
+      if (e.target.classList.contains("chart-item-label")) {
+        const idx = parseInt(e.target.getAttribute("data-idx"), 10);
+        items[idx].label = e.target.value;
+        updatePreview();
+      } else if (e.target.classList.contains("chart-item-val")) {
+        const idx = parseInt(e.target.getAttribute("data-idx"), 10);
+        items[idx].val = parseFloat(e.target.value) || 0;
+        updatePreview();
+      } else if (e.target.id === "chart-matrix-tp") {
+        matrix.tp = parseInt(e.target.value, 10) || 0;
+        updatePreview();
+      } else if (e.target.id === "chart-matrix-fp") {
+        matrix.fp = parseInt(e.target.value, 10) || 0;
+        updatePreview();
+      } else if (e.target.id === "chart-matrix-fn") {
+        matrix.fn = parseInt(e.target.value, 10) || 0;
+        updatePreview();
+      } else if (e.target.id === "chart-matrix-tn") {
+        matrix.tn = parseInt(e.target.value, 10) || 0;
+        updatePreview();
+      } else if (e.target.id === "chart-svg-url") {
+        customSvgUrl = e.target.value.trim();
+        updatePreview();
+      }
+    });
+
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-dismiss]")) {
+        root.remove();
+        return;
+      }
+
+      // Tabs
+      if (e.target.id === "chart-tab-bar") {
+        chartType = "bar";
+        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
+        e.target.classList.add("active");
+        root.querySelector("#chart-view-bar").style.display = "block";
+        root.querySelector("#chart-view-matrix").style.display = "none";
+        root.querySelector("#chart-view-svg").style.display = "none";
+        updatePreview();
+      } else if (e.target.id === "chart-tab-matrix") {
+        chartType = "confusion-matrix";
+        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
+        e.target.classList.add("active");
+        root.querySelector("#chart-view-bar").style.display = "none";
+        root.querySelector("#chart-view-matrix").style.display = "block";
+        root.querySelector("#chart-view-svg").style.display = "none";
+        updatePreview();
+      } else if (e.target.id === "chart-tab-svg") {
+        chartType = "svg";
+        root.querySelectorAll(".wysiwyg-tab").forEach(t => t.classList.remove("active"));
+        e.target.classList.add("active");
+        root.querySelector("#chart-view-bar").style.display = "none";
+        root.querySelector("#chart-view-matrix").style.display = "none";
+        root.querySelector("#chart-view-svg").style.display = "block";
+        updatePreview();
+      }
+
+      if (e.target.id === "chart-add-item-btn") {
+        items.push({ label: `Feature ${items.length + 1}`, val: 0.15 });
+        renderItemsList();
+        updatePreview();
+      }
+
+      const delBtn = e.target.closest(".chart-del-item-btn");
+      if (delBtn) {
+        const idx = parseInt(delBtn.getAttribute("data-idx"), 10);
+        items.splice(idx, 1);
+        renderItemsList();
+        updatePreview();
+      }
+    });
+
+    // Insert into Editor
+    insertBtn.onclick = () => {
+      let insertTag = "";
+      if (chartType === "bar") {
+        insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="bar" data-chart-title="${esc(chartTitle)}" data-chart-data='${JSON.stringify(items)}'></div>\n\n`;
+      } else if (chartType === "confusion-matrix") {
+        insertTag = `\n\n<div class="bauhaus-chart" data-chart-type="confusion-matrix" data-chart-title="${esc(chartTitle)}" data-chart-data='${JSON.stringify(matrix)}'></div>\n\n`;
+      } else if (chartType === "svg" && customSvgUrl) {
+        insertTag = `\n\n<div class="bauhaus-chart" data-chart-title="${esc(chartTitle)}"><img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" /></div>\n\n`;
+      }
+
+      if (target instanceof HTMLTextAreaElement) {
+        insertIntoTextarea(target, insertTag);
+      } else if (target && target.querySelector) {
+        const wrapper = target;
+        const editable = wrapper.querySelector(".wysiwyg-editable");
+        const source = wrapper.querySelector(".wysiwyg-source");
+        const previewPane = wrapper.querySelector(".wysiwyg-preview-pane");
+        const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
+        const mode = activeTab ? activeTab.getAttribute("data-wysiwyg-mode") : "edit";
+
+        if (mode === "source") {
+          insertIntoTextarea(source, insertTag);
+          if (editable) editable.innerHTML = markdownToHtml(source.value);
+        } else if (mode === "edit") {
+          editable.focus();
+          try {
+            document.execCommand("insertHTML", false, insertTag);
+          } catch(e) {
+            editable.innerHTML += insertTag;
+          }
+          if (source) source.value = htmlToMarkdown(editable).trim();
+        } else if (mode === "preview") {
+          if (source) {
+            source.value = (source.value.trim() + insertTag).trim();
+          }
+          if (editable) {
+            editable.innerHTML = markdownToHtml(source.value);
+          }
+          if (previewPane) {
+            previewPane.innerHTML = `<div class="case-body content-body" style="font-family:var(--sans);line-height:1.6;padding:16px;background:#ffffff;border:1px solid var(--line);min-height:160px">${markdownToHtml(source.value)}</div>`;
+          }
+        }
+        syncWysiwyg(wrapper);
+        if (window.initBauhausCharts) window.initBauhausCharts();
+      }
+      root.remove();
+    };
+  }
+
   // --- EDITORIAL PORTRAIT PHOTO STUDIO ENGINE ---
   let portraitStudioState = {
     activeImg: null,
@@ -3258,6 +3512,11 @@
 
         if (cmd === "table") {
           showTablePickerModal(wrapper);
+          return;
+        }
+
+        if (cmd === "chart") {
+          showChartPickerModal(wrapper);
           return;
         }
 
