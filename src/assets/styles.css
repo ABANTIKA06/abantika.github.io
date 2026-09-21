@@ -1068,5 +1068,157 @@ table.bauhaus-table tr:hover,
   background: #ece8dd;
 }
 
+/* --- BAUHAUS CHART ENGINE STYLES --- */
+.bauhaus-chart {
+  width: 100%;
+  margin: 24px 0;
+  border: 1px solid var(--ink, #111111);
+  background: var(--paper, #fbf9f5);
+  box-shadow: 4px 4px 0px rgba(17,17,17,0.06);
+}
+.bauhaus-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #eae7df;
+  border-bottom: 1px solid var(--ink, #111111);
+}
+.chart-title-label {
+  font: 800 11px var(--mono, monospace);
+  letter-spacing: 0.1em;
+  color: var(--ink, #111111);
+}
+.chart-actions {
+  display: flex;
+  gap: 6px;
+}
+.chart-action-btn {
+  font: 700 10px var(--mono, monospace);
+  padding: 4px 8px;
+  background: var(--paper, #fbf9f5);
+  border: 1px solid var(--ink, #111111);
+  color: var(--ink, #111111);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chart-action-btn:hover {
+  background: var(--ink, #111111);
+  color: var(--paper, #fbf9f5);
+}
+.chart-svg-wrapper {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  background: #fbf9f5;
+  padding: 8px;
+}
+.chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  padding: 5px 10px;
+  background: #111111;
+  color: #ffffff;
+  font: 11px var(--mono, monospace);
+  border-radius: 0;
+  z-index: 10;
+  white-space: nowrap;
+}
+.chart-palette-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: #f4f2ea;
+  border-top: 1px solid var(--line, #d0ccc0);
+  font: 700 10px var(--mono, monospace);
+}
+.palette-swatches {
+  display: flex;
+  gap: 4px;
+}
+.swatch-btn {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #111111;
+  cursor: pointer;
+}
+.palette-preset-select {
+  font: 700 10px var(--mono, monospace);
+  padding: 2px 6px;
+  border: 1px solid var(--ink, #111111);
+  background: #ffffff;
+  margin-left: auto;
+}
+
+/* --- CATEGORY FILTER PILLS --- */
+.category-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.filter-pill {
+  font: 700 11px var(--mono, monospace);
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--line, #d0ccc0);
+  color: var(--ink, #111111);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.filter-pill.active,
+.filter-pill:hover {
+  background: var(--ink, #111111);
+  color: var(--paper, #fbf9f5);
+  border-color: var(--ink, #111111);
+}
+
+/* --- CODE COPY BUTTON --- */
+pre {
+  position: relative;
+}
+.code-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font: 700 10px var(--mono, monospace);
+  padding: 4px 8px;
+  background: #eae7df;
+  border: 1px solid var(--ink, #111111);
+  color: var(--ink, #111111);
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+pre:hover .code-copy-btn {
+  opacity: 1;
+}
+.code-copy-btn.copied {
+  background: var(--red, #e03c31);
+  color: #ffffff;
+}
+
+/* --- RESUME & CONTACT DRAWER --- */
+.header-resume-btn {
+  font: 700 11px var(--mono, monospace);
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
+  border: 1px solid var(--ink, #111111);
+  background: var(--red, #e03c31);
+  color: #ffffff !important;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.15s ease;
+}
+.header-resume-btn:hover {
+  opacity: 0.9;
+}
+
+
 
 

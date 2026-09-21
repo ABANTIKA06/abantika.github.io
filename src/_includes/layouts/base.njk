@@ -464,6 +464,30 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script src="/assets/charts.js?v=4.0.8" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("pre").forEach(function (pre) {
+          if (pre.querySelector(".code-copy-btn")) return;
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "code-copy-btn";
+          btn.textContent = "COPY";
+          btn.addEventListener("click", function () {
+            var code = pre.querySelector("code") ? pre.querySelector("code").innerText : pre.innerText;
+            navigator.clipboard.writeText(code).then(function () {
+              btn.textContent = "COPIED!";
+              btn.classList.add("copied");
+              setTimeout(function () {
+                btn.textContent = "COPY";
+                btn.classList.remove("copied");
+              }, 2000);
+            }).catch(function () {});
+          });
+          pre.appendChild(btn);
+        });
+      });
+    </script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function () {
