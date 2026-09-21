@@ -728,6 +728,7 @@
   window.recolorSvgGroup = recolorSvgGroup;
   window.renderLineChart = renderLineChart;
   window.renderScatterChart = renderScatterChart;
+  window.showColorPickerModal = showColorPickerModal;
   window.adaptPlotlyIframe = adaptPlotlyIframe;
   window.BAUHAUS_SWISS_PALETTE = BAUHAUS_SWISS_PALETTE;
 

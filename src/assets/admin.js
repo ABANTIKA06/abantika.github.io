@@ -2091,6 +2091,27 @@
     let uploadedFileText = "";
     let uploadedFileType = "";
     let uploadedBlobUrl = "";
+
+    if (existingEl) {
+      const existingSvg = existingEl.querySelector("svg");
+      if (existingSvg) {
+        uploadedFileText = existingSvg.outerHTML;
+        uploadedFileType = "svg";
+        chartType = "svg";
+      }
+      const existingImg = existingEl.querySelector("img");
+      if (existingImg) {
+        customSvgUrl = existingImg.getAttribute("src") || "";
+        chartType = "svg";
+      }
+      const existingIframe = existingEl.querySelector("iframe");
+      if (existingIframe) {
+        customSvgUrl = existingIframe.getAttribute("src") || "";
+        uploadedFileType = "html";
+        chartType = "svg";
+      }
+    }
+
     let customColors = {
       primary: "#111111",
       accent: "#E03C31",
@@ -2334,16 +2355,18 @@
       svgColorGroupsContainer.querySelectorAll(".chart-svg-group-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           const oldColor = btn.getAttribute("data-color");
-          if (window.showColorPickerModal) {
-            window.showColorPickerModal((newHex) => {
-              if (window.recolorSvgGroup) {
-                window.recolorSvgGroup(svgEl, oldColor, newHex);
-                updateSvgColorInspector(svgEl);
-              }
-            });
-          } else {
-            accentColorInput.click();
-          }
+          const picker = window.showColorPickerModal || function(cb) {
+            const hex = prompt("Enter new color hex code (e.g. #E03C31 or #2457A6):", oldColor);
+            if (hex) cb(hex);
+          };
+          picker((newHex) => {
+            if (window.recolorSvgGroup) {
+              window.recolorSvgGroup(svgEl, oldColor, newHex);
+              uploadedFileText = svgEl.outerHTML;
+              updateSvgColorInspector(svgEl);
+              applyLiveColorsToPreview();
+            }
+          });
         });
       });
     }
@@ -2404,6 +2427,15 @@
               <iframe src="${esc(customSvgUrl)}" style="width:100%;height:${esc(chartHeight)};border:none"></iframe>
             `;
           } else {
+            if (!uploadedFileText || uploadedFileType !== "svg") {
+              fetch(customSvgUrl).then(r => r.ok ? r.text() : "").then(txt => {
+                if (txt && txt.includes("<svg")) {
+                  uploadedFileText = txt;
+                  uploadedFileType = "svg";
+                  updatePreview();
+                }
+              }).catch(() => {});
+            }
             previewBox.innerHTML = `<img src="${esc(customSvgUrl)}" alt="${esc(chartTitle)}" />`;
             if (window.initBauhausCharts) window.initBauhausCharts();
           }
