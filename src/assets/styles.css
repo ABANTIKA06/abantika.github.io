@@ -1201,24 +1201,6 @@ pre:hover .code-copy-btn {
   color: #ffffff;
 }
 
-/* --- RESUME & CONTACT DRAWER --- */
-.header-resume-btn {
-  font: 700 11px var(--mono, monospace);
-  letter-spacing: 0.08em;
-  padding: 6px 12px;
-  border: 1px solid var(--ink, #111111);
-  background: var(--red, #e03c31);
-  color: #ffffff !important;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: opacity 0.15s ease;
-}
-.header-resume-btn:hover {
-  opacity: 0.9;
-}
-
 
 
 
