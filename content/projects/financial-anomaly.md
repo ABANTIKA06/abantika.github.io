@@ -25,11 +25,8 @@ headline:
 sections:
   - label: 01 / PROBLEM
     heading: THE QUESTION
-    body: |-
-      | Header 1 | Header 2 | Header 3 |
-      | :--- | :--- | :--- |
-      | Cell 1 | Cell 2 | Cell 3 |
-      | Cell 4 | Cell 5 | Cell 6 |
+    body: >-
+      ![Image](https://pub-65f85f4baefb46c4b29927f0c91b7302.r2.dev/projects/bauhaus_swiss_sample_chart.svg)
   - label: 02 / DATA
     heading: THE EVIDENCE
     body: ''
@@ -42,10 +39,7 @@ sections:
 ---
 ## THE QUESTION
 
-| Header 1 | Header 2 | Header 3 |
-| :--- | :--- | :--- |
-| Cell 1 | Cell 2 | Cell 3 |
-| Cell 4 | Cell 5 | Cell 6 |
+![Image](https://pub-65f85f4baefb46c4b29927f0c91b7302.r2.dev/projects/bauhaus_swiss_sample_chart.svg)
 
 ## THE EVIDENCE
 
