@@ -2168,5 +2168,35 @@ table.bauhaus-table tr:hover,
   color: #ffffff;
 }
 
+/* R2 Storage View Switcher Tabs */
+.r2-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.r2-tab {
+  font: 700 10px var(--mono, monospace);
+  padding: 4px 8px;
+  background: #eae7df;
+  color: var(--ink, #111111);
+  border: 1px solid var(--ink, #111111);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.r2-tab:hover {
+  background: #d8d3c5;
+}
+
+.r2-tab.active {
+  background: var(--ink, #111111);
+  color: #fbf9f5;
+  border-color: var(--ink, #111111);
+}
+
+
 
 

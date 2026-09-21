@@ -3412,11 +3412,11 @@
         <div style="border-top:1px solid var(--line);padding-top:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font:700 10px var(--mono);color:#5e5b55;letter-spacing:0.12em">INDICATOR DESIGN STYLE:</span>
-            <div class="wysiwyg-tabs" style="margin:0">
-              <button type="button" class="wysiwyg-tab ${currentView === 'matrix' ? 'active' : ''}" data-act="switch-r2-view" data-view="matrix">📊 10-BLOCK MATRIX</button>
-              <button type="button" class="wysiwyg-tab ${currentView === 'pie' ? 'active' : ''}" data-act="switch-r2-view" data-view="pie">🍩 DONUT PIE ARC</button>
-              <button type="button" class="wysiwyg-tab ${currentView === 'linear' ? 'active' : ''}" data-act="switch-r2-view" data-view="linear">📏 LINEAR SCALE</button>
-              <button type="button" class="wysiwyg-tab ${currentView === 'wheel' ? 'active' : ''}" data-act="switch-r2-view" data-view="wheel">🎯 RADIAL WHEEL</button>
+            <div class="r2-tabs" style="display:flex;gap:4px;margin:0">
+              <button type="button" class="r2-tab ${currentView === 'matrix' ? 'active' : ''}" data-act="switch-r2-view" data-view="matrix">📊 10-BLOCK MATRIX</button>
+              <button type="button" class="r2-tab ${currentView === 'pie' ? 'active' : ''}" data-act="switch-r2-view" data-view="pie">🍩 DONUT PIE ARC</button>
+              <button type="button" class="r2-tab ${currentView === 'linear' ? 'active' : ''}" data-act="switch-r2-view" data-view="linear">📏 LINEAR SCALE</button>
+              <button type="button" class="r2-tab ${currentView === 'wheel' ? 'active' : ''}" data-act="switch-r2-view" data-view="wheel">🎯 RADIAL WHEEL</button>
             </div>
           </div>
           ${indicatorHtml}
