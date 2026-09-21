@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Bauhaus Swiss sample data chart</title>
+  <desc id="desc">Illustrative monthly project performance chart using the Abantika Bauhaus Swiss palette.</desc>
+  <rect width="1200" height="760" fill="#F2F0EA"/>
+
+  <!-- Header -->
+  <text x="72" y="72" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#111111" letter-spacing="1">PROJECT PERFORMANCE</text>
+  <text x="74" y="103" font-family="monospace" font-size="13" fill="#4A4945" letter-spacing="2">ILLUSTRATIVE DATA / 2026 / BAUHAUS × SWISS</text>
+  <circle cx="1085" cy="67" r="24" fill="#E03C31"/>
+  <rect x="1118" y="43" width="48" height="48" fill="#F2C230"/>
+
+  <!-- Chart frame -->
+  <line x1="90" y1="170" x2="90" y2="625" stroke="#111111" stroke-width="2"/>
+  <line x1="90" y1="625" x2="1135" y2="625" stroke="#111111" stroke-width="2"/>
+
+  <!-- Grid -->
+  <g stroke="#D4D1C9" stroke-width="1">
+    <line x1="90" y1="170" x2="1135" y2="170"/>
+    <line x1="90" y1="261" x2="1135" y2="261"/>
+    <line x1="90" y1="352" x2="1135" y2="352"/>
+    <line x1="90" y1="443" x2="1135" y2="443"/>
+    <line x1="90" y1="534" x2="1135" y2="534"/>
+  </g>
+
+  <!-- Y labels -->
+  <g font-family="monospace" font-size="12" fill="#4A4945" text-anchor="end">
+    <text x="78" y="175">100</text>
+    <text x="78" y="266">80</text>
+    <text x="78" y="357">60</text>
+    <text x="78" y="448">40</text>
+    <text x="78" y="539">20</text>
+    <text x="78" y="630">0</text>
+  </g>
+
+  <!-- Area under line -->
+  <path d="M150 489 L300 430 L450 457 L600 339 L750 375 L900 248 L1050 294 L1050 625 L150 625 Z" fill="#2457A6" opacity="0.08"/>
+
+  <!-- Data line -->
+  <polyline points="150,489 300,430 450,457 600,339 750,375 900,248 1050,294" fill="none" stroke="#2457A6" stroke-width="5"/>
+
+  <!-- Data points -->
+  <g fill="#F2F0EA" stroke="#2457A6" stroke-width="4">
+    <circle cx="150" cy="489" r="8"/>
+    <circle cx="300" cy="430" r="8"/>
+    <circle cx="450" cy="457" r="8"/>
+    <circle cx="600" cy="339" r="8"/>
+    <circle cx="750" cy="375" r="8"/>
+    <circle cx="900" cy="248" r="8"/>
+    <circle cx="1050" cy="294" r="8"/>
+  </g>
+
+  <!-- Highlight marker -->
+  <line x1="900" y1="210" x2="900" y2="625" stroke="#E03C31" stroke-width="2" stroke-dasharray="5 7"/>
+  <circle cx="900" cy="248" r="13" fill="#E03C31" stroke="#F2F0EA" stroke-width="5"/>
+  <text x="920" y="226" font-family="monospace" font-size="12" font-weight="700" fill="#E03C31">PEAK / 83</text>
+
+  <!-- X labels -->
+  <g font-family="monospace" font-size="12" fill="#4A4945" text-anchor="middle">
+    <text x="150" y="650">JAN</text>
+    <text x="300" y="650">FEB</text>
+    <text x="450" y="650">MAR</text>
+    <text x="600" y="650">APR</text>
+    <text x="750" y="650">MAY</text>
+    <text x="900" y="650">JUN</text>
+    <text x="1050" y="650">JUL</text>
+  </g>
+
+  <!-- Legend / metadata -->
+  <rect x="90" y="690" width="14" height="14" fill="#2457A6"/>
+  <text x="114" y="702" font-family="monospace" font-size="12" fill="#111111">PROJECT INDEX</text>
+  <rect x="275" y="690" width="14" height="14" fill="#E03C31"/>
+  <text x="299" y="702" font-family="monospace" font-size="12" fill="#111111">HIGHLIGHT</text>
+  <text x="1135" y="702" text-anchor="end" font-family="monospace" font-size="12" fill="#4A4945">SOURCE: SAMPLE DATA</text>
+
+  <!-- Geometric accents -->
+  <line x1="1030" y1="135" x2="1135" y2="135" stroke="#111111" stroke-width="2"/>
+  <rect x="1040" y="118" width="28" height="28" fill="#F2C230"/>
+  <rect x="1080" y="118" width="28" height="28" fill="#2F7D5A"/>
+</svg>
