@@ -27,7 +27,21 @@ eleventyComputed:
     </header>
     <div class="detail-with-share">
       <article class="case-body article-body">
-        {{ article.html | safe }}
+        {% if article.sections and article.sections.length > 0 %}
+          {% for section in article.sections %}
+          <section>
+            {% if section.label %}<p class="case-num">{{ section.label }}</p>{% endif %}
+            {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+            {% if section.html %}
+            <div>{{ section.html | safe }}</div>
+            {% elseif section.body %}
+            <p>{{ section.body }}</p>
+            {% endif %}
+          </section>
+          {% endfor %}
+        {% else %}
+          {{ article.html | safe }}
+        {% endif %}
         {% if article.backlinks and article.backlinks.length %}
         <aside class="related-block backlinks-block">
           <p class="eyebrow" style="color:var(--red)">REFERENCED BY</p>

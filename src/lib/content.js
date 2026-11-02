@@ -297,10 +297,18 @@ function loadNotes() {
   return listMarkdown(notesDir).map((file) => {
     const item = loadMarkdownFile(file, "note");
     const slug = item.slug || path.basename(file, ".md");
+    const rawSections = Array.isArray(item.sections) ? item.sections : [];
+    const sections = rawSections.map((sec, idx) => ({
+      label: sec.label || `0${idx + 1} / SECTION`,
+      heading: sec.heading || "",
+      body: sec.body || "",
+      html: renderMarkdown(sec.body || "")
+    }));
     return {
       ...item,
       slug,
       url: `/notes/${slug}/`,
+      sections,
       tags: Array.isArray(item.tags) ? item.tags : []
     };
   });
@@ -421,11 +429,19 @@ function loadBlog() {
   return listMarkdown(path.join(CONTENT, "blog"))
     .map((file) => {
       const item = loadMarkdownFile(file, "blog");
+      const rawSections = Array.isArray(item.sections) ? item.sections : [];
+      const sections = rawSections.map((sec, idx) => ({
+        label: sec.label || `0${idx + 1} / SECTION`,
+        heading: sec.heading || "",
+        body: sec.body || "",
+        html: renderMarkdown(sec.body || "")
+      }));
       return {
         ...item,
         url: `/blog/${item.slug}/`,
         headline: item.headline && item.headline.length ? item.headline : [item.title.toUpperCase()],
         relatedProject: item.relatedProject || "",
+        sections,
         tags: Array.isArray(item.tags) ? item.tags : []
       };
     })
@@ -435,13 +451,64 @@ function loadBlog() {
 function loadJournal() {
   const entries = listMarkdown(path.join(CONTENT, "journal")).map((file) => {
     const item = loadMarkdownFile(file, "journal");
-    const sections = parseJournalSections(item.body);
+    const rawSections = Array.isArray(item.sections) && item.sections.length > 0 ? item.sections : null;
+    let sectionsList = [];
+    let did = "";
+    let learned = "";
+    let next = "";
+
+    if (rawSections) {
+      sectionsList = rawSections.map((sec, idx) => ({
+        label: sec.label || `0${idx + 1} / SECTION`,
+        heading: sec.heading || "",
+        body: sec.body || "",
+        html: renderMarkdown(sec.body || "")
+      }));
+      sectionsList.forEach((sec, idx) => {
+        const l = (sec.label + " " + sec.heading).toLowerCase();
+        if (l.includes("did") || idx === 0) did = sec.body;
+        else if (l.includes("learned") || idx === 1) learned = sec.body;
+        else if (l.includes("next") || idx === 2) next = sec.body;
+      });
+    } else {
+      const legacy = parseJournalSections(item.body);
+      did = legacy.did;
+      learned = legacy.learned;
+      next = legacy.next;
+      sectionsList = [
+        { label: "01 / WHAT I DID", heading: "THE WORK", body: legacy.did, html: legacy.didHtml },
+        { label: "02 / WHAT I LEARNED", heading: "THE NOTE", body: legacy.learned, html: legacy.learnedHtml },
+        { label: "03 / NEXT", heading: "THE FOLLOW-UP", body: legacy.next, html: legacy.nextHtml }
+      ].filter((s) => Boolean(s.body));
+    }
+
+    const legacySections = {
+      did,
+      learned,
+      next,
+      didHtml: renderMarkdown(did),
+      learnedHtml: renderMarkdown(learned),
+      nextHtml: renderMarkdown(next)
+    };
+
+    sectionsList.did = did;
+    sectionsList.learned = learned;
+    sectionsList.next = next;
+    sectionsList.didHtml = legacySections.didHtml;
+    sectionsList.learnedHtml = legacySections.learnedHtml;
+    sectionsList.nextHtml = legacySections.nextHtml;
+
     return {
       ...item,
       url: `/journal/${item.year}/${item.month}/${item.day}/`,
       headline: item.headline && item.headline.length ? item.headline : [item.title.toUpperCase()],
       project: item.project || "",
-      sections,
+      sections: sectionsList,
+      sectionsList,
+      sectionsLegacy: legacySections,
+      did,
+      learned,
+      next,
       data: item.data || "",
       method: item.method || "",
       result: item.result || "",

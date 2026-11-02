@@ -1167,6 +1167,7 @@
         </div>
         <div class="admin-sticky-controls-bar">
           <div class="admin-actions">
+            <button class="admin-btn" type="button" data-act="preview-note"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
             <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE NOTE</span></button>
           </div>
         </div>
@@ -1190,6 +1191,7 @@
         ${renderSectionListContainer(sections)}
 
         <div class="admin-actions" style="margin-top:24px">
+          <button class="admin-btn" type="button" data-act="preview-note">PREVIEW <b>→</b></button>
           <button class="admin-btn primary" type="submit" data-publish="false">SAVE NOTE <b>→</b></button>
           ${!isNew ? `<button class="admin-btn" type="button" data-act="promote-note" data-target="blog">PROMOTE TO BLOG <b>→</b></button>
           <button class="admin-btn" type="button" data-act="promote-note" data-target="project">PROMOTE TO PROJECT <b>→</b></button>
@@ -3708,9 +3710,33 @@
   function blogPreview(form) {
     const title = esc(formValue(form, "title"));
     const sections = collectSections(form);
-    const bodyMd = serializeSectionsToMarkdown(sections);
-    const html = markdownToHtml(bodyMd);
-    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">BLOG PREVIEW</p><h1>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body article-body">${html}</article></main>`);
+    const sectionsHtml = sections
+      .map(
+        (section, idx) => `
+        <section>
+          ${section.label ? `<p class="case-num">${esc(section.label)}</p>` : ""}
+          ${section.heading ? `<h2>${esc(section.heading)}</h2>` : ""}
+          <div>${markdownToHtml(section.body)}</div>
+        </section>`
+      )
+      .join("");
+    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">05 / BLOG</p><h1>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body article-body">${sectionsHtml}</article></main>`);
+  }
+
+  function notePreview(form) {
+    const title = esc(formValue(form, "title"));
+    const sections = collectSections(form);
+    const sectionsHtml = sections
+      .map(
+        (section, idx) => `
+        <section>
+          ${section.label ? `<p class="case-num">${esc(section.label)}</p>` : ""}
+          ${section.heading ? `<h2>${esc(section.heading)}</h2>` : ""}
+          <div>${markdownToHtml(section.body)}</div>
+        </section>`
+      )
+      .join("");
+    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">NOTE PREVIEW</p><h1>${title}<span class="red-stop">.</span></h1></header><article class="case-body">${sectionsHtml}</article></main>`);
   }
 
   function journalPreview(form) {
@@ -3720,8 +3746,8 @@
       .map(
         (section, idx) => `
         <section>
-          <p class="case-num">${esc(section.label || `0${idx + 1} / SECTION`)}</p>
-          <h2>${esc(section.heading || "")}</h2>
+          ${section.label ? `<p class="case-num">${esc(section.label)}</p>` : ""}
+          ${section.heading ? `<h2>${esc(section.heading)}</h2>` : ""}
           <div>${markdownToHtml(section.body)}</div>
         </section>`
       )
@@ -4437,6 +4463,7 @@
         if (name === "close-preview") act.closest(".admin-preview").remove();
         if (name === "preview-project") { syncAllWysiwyg(act.closest("form")); projectPreview(act.closest("form")); }
         if (name === "preview-blog") { syncAllWysiwyg(act.closest("form")); blogPreview(act.closest("form")); }
+        if (name === "preview-note") { syncAllWysiwyg(act.closest("form")); notePreview(act.closest("form")); }
         if (name === "preview-journal") { syncAllWysiwyg(act.closest("form")); journalPreview(act.closest("form")); }
         if (name === "pick-custom-art") {
           showMediaSelectModal((selectedPath) => {

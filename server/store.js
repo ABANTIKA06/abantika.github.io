@@ -236,12 +236,14 @@ function publicBlog(item) {
     featured: Boolean(item.featured),
     relatedProject: item.relatedProject || "",
     headline: item.headline || [],
+    sections: item.sections || [],
     body: item.body || "",
     url: item.url
   };
 }
 
 function publicJournal(item) {
+  const rawSections = Array.isArray(item.sections) ? item.sections : (item.sectionsList || []);
   return {
     title: item.title,
     date: item.dateISO,
@@ -249,9 +251,11 @@ function publicJournal(item) {
     project: item.project || "",
     published: Boolean(item.published),
     summary: item.summary || "",
-    did: item.sections.did || "",
-    learned: item.sections.learned || "",
-    next: item.sections.next || "",
+    did: item.did || (rawSections[0] && rawSections[0].body ? rawSections[0].body : ""),
+    learned: item.learned || (rawSections[1] && rawSections[1].body ? rawSections[1].body : ""),
+    next: item.next || (rawSections[2] && rawSections[2].body ? rawSections[2].body : ""),
+    sections: rawSections,
+    body: item.body || "",
     data: item.data || "",
     method: item.method || "",
     result: item.result || "",
@@ -505,6 +509,13 @@ function saveBlog(input, { isNew = false } = {}) {
   requireFields({ ...input, slug }, ["title", "slug", "description", "date"], "blog");
   const file = blogFile(slug);
   if (isNew && (fs.existsSync(file) || Boolean(getVirtualFile(file)))) throw new Error(`article "${slug}" already exists`);
+  const sections = Array.isArray(input.sections)
+    ? input.sections.map((section) => ({
+        label: String(section.label || "").trim(),
+        heading: String(section.heading || "").trim(),
+        body: String(section.body || "").trim()
+      }))
+    : [];
   const data = {
     type: "blog",
     title: String(input.title).trim(),
@@ -517,7 +528,8 @@ function saveBlog(input, { isNew = false } = {}) {
     published: bool(input.published),
     featured: bool(input.featured),
     relatedProject: String(input.relatedProject || "").trim(),
-    headline: toLines(input.headline)
+    headline: toLines(input.headline),
+    sections
   };
   writeMarkdown(file, data, String(input.body || ""));
   return publicBlog(loadBlog().find((item) => item.slug === slug));
@@ -530,6 +542,14 @@ function journalId(date, title) {
 }
 
 function journalBody(input) {
+  if (Array.isArray(input.sections) && input.sections.length > 0) {
+    return input.sections
+      .map((sec) => {
+        const title = sec.heading || sec.label || "Section";
+        return `## ${title}\n\n${String(sec.body || "").trim()}`;
+      })
+      .join("\n\n");
+  }
   return [
     "## What I did",
     "",
@@ -553,6 +573,15 @@ function saveJournal(input, { id, isNew = false } = {}) {
   const dateISO = String(input.date).slice(0, 10);
   const duplicate = loadJournal().find((item) => item.dateISO === dateISO && path.basename(item.file, ".md") !== nextId);
   if (duplicate) throw new Error(`a journal entry already exists for ${dateISO}`);
+
+  const sections = Array.isArray(input.sections)
+    ? input.sections.map((section) => ({
+        label: String(section.label || "").trim(),
+        heading: String(section.heading || "").trim(),
+        body: String(section.body || "").trim()
+      }))
+    : [];
+
   const data = {
     type: "journal",
     date: dateISO,
@@ -560,12 +589,13 @@ function saveJournal(input, { id, isNew = false } = {}) {
     headline: toLines(input.headline),
     project: String(input.project || "").trim(),
     published: bool(input.published),
-    summary: String(input.summary || input.did || "").trim(),
+    summary: String(input.summary || input.did || (sections[0] && sections[0].body ? sections[0].body : "")).trim(),
     data: String(input.data || "").trim(),
     method: String(input.method || "").trim(),
     result: String(input.result || "").trim(),
     dataset: String(input.dataset || "").trim(),
-    tools: String(input.tools || "").trim()
+    tools: String(input.tools || "").trim(),
+    sections
   };
   writeMarkdown(file, data, journalBody(input));
   if (id && id !== nextId) {
@@ -921,6 +951,7 @@ function getNote(slugOrFilename) {
     filename: name,
     slug: path.basename(name, ".md"),
     data: parsed.data || {},
+    sections: parsed.data.sections || [],
     body: parsed.content || ""
   };
 }
@@ -932,13 +963,21 @@ function saveNote(payload) {
   if (!slug) throw new Error("Note requires a valid slug.");
   const filename = `${slug}.md`;
   const file = path.join(CONTENT, "notes", filename);
+  const sections = Array.isArray(payload.sections)
+    ? payload.sections.map((section) => ({
+        label: String(section.label || "").trim(),
+        heading: String(section.heading || "").trim(),
+        body: String(section.body || "").trim()
+      }))
+    : [];
   const data = {
     type: "note",
     title,
     slug,
     date: payload.date || new Date().toISOString().slice(0, 10),
     tags: toList(payload.tags),
-    published: bool(payload.published)
+    published: bool(payload.published),
+    sections
   };
   writeMarkdown(file, data, payload.body || "");
   return { filename, slug, data };

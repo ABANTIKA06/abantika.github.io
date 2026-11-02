@@ -36,21 +36,36 @@ eleventyComputed:
           {% if note.tools %}<p><strong>TOOLS</strong> {{ note.tools }}</p>{% endif %}
         </aside>
         {% endif %}
-        <section>
-          <p class="case-num">01 / WHAT I DID</p>
-          <h2>THE WORK</h2>
-          {{ note.sections.didHtml | safe }}
-        </section>
-        <section>
-          <p class="case-num">02 / WHAT I LEARNED</p>
-          <h2>THE NOTE</h2>
-          {{ note.sections.learnedHtml | safe }}
-        </section>
-        <section>
-          <p class="case-num">03 / NEXT</p>
-          <h2>THE FOLLOW-UP</h2>
-          {{ note.sections.nextHtml | safe }}
-        </section>
+        {% set activeSections = note.sectionsList if (note.sectionsList and note.sectionsList.length > 0) else note.sections %}
+        {% if activeSections and activeSections.length > 0 %}
+          {% for section in activeSections %}
+          <section>
+            {% if section.label %}<p class="case-num">{{ section.label }}</p>{% endif %}
+            {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+            {% if section.html %}
+            <div>{{ section.html | safe }}</div>
+            {% elseif section.body %}
+            <p>{{ section.body }}</p>
+            {% endif %}
+          </section>
+          {% endfor %}
+        {% else %}
+          <section>
+            <p class="case-num">01 / WHAT I DID</p>
+            <h2>THE WORK</h2>
+            {{ (note.sections.didHtml or note.sectionsLegacy.didHtml) | safe }}
+          </section>
+          <section>
+            <p class="case-num">02 / WHAT I LEARNED</p>
+            <h2>THE NOTE</h2>
+            {{ (note.sections.learnedHtml or note.sectionsLegacy.learnedHtml) | safe }}
+          </section>
+          <section>
+            <p class="case-num">03 / NEXT</p>
+            <h2>THE FOLLOW-UP</h2>
+            {{ (note.sections.nextHtml or note.sectionsLegacy.nextHtml) | safe }}
+          </section>
+        {% endif %}
         {% if note.backlinks and note.backlinks.length %}
         <aside class="related-block backlinks-block">
           <p class="eyebrow" style="color:var(--red)">REFERENCED BY</p>

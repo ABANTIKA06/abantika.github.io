@@ -21,10 +21,24 @@ eleventyComputed:
     </header>
     <div class="detail-with-share">
       <article class="case-body">
-        {% if note.html %}
-        <div class="case-markdown">{{ note.html | safe }}</div>
+        {% if note.sections and note.sections.length > 0 %}
+          {% for section in note.sections %}
+          <section>
+            {% if section.label %}<p class="case-num">{{ section.label }}</p>{% endif %}
+            {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+            {% if section.html %}
+            <div>{{ section.html | safe }}</div>
+            {% elseif section.body %}
+            <p>{{ section.body }}</p>
+            {% endif %}
+          </section>
+          {% endfor %}
         {% else %}
-        <p>{{ note.body }}</p>
+          {% if note.html %}
+          <div class="case-markdown">{{ note.html | safe }}</div>
+          {% else %}
+          <p>{{ note.body }}</p>
+          {% endif %}
         {% endif %}
 
         {% if note.backlinks and note.backlinks.length > 0 %}
