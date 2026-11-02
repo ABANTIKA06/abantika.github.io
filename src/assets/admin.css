@@ -2350,3 +2350,88 @@ table.bauhaus-table tr:hover,
 
 
 
+
+
+/* Recycle Bin Styles (Bauhaus Editorial) */
+.admin-trash-list {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+}
+.admin-trash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  transition: background 0.2s ease, padding-left 0.2s ease;
+}
+.admin-trash-row:hover {
+  background: #ebe9e2;
+  padding-left: 8px;
+}
+.trash-row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 130px;
+  flex-shrink: 0;
+}
+.trash-row-meta .type-badge {
+  font: 10px var(--mono);
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  width: fit-content;
+}
+.trash-row-meta .trash-date {
+  font: 10px var(--mono);
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.trash-row-meta .trash-countdown {
+  font: 11px var(--mono);
+  color: var(--red);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.trash-row-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.trash-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trash-path {
+  font: 11px var(--mono);
+  color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trash-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+@media (max-width: 768px) {
+  .admin-trash-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .trash-row-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

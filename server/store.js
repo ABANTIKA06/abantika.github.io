@@ -182,6 +182,9 @@ function overview() {
       draft: journal.filter((item) => !item.published).length,
       total: journal.length
     },
+    trash: {
+      total: listTrash().length
+    },
     lastPublished: publishedDates[0] ? publishedDates[0].toISOString().slice(0, 10) : ""
   };
 }
@@ -271,25 +274,184 @@ function journalFile(id) {
   return path.join(CONTENT, "journal", `${safeSlug(id)}.md`);
 }
 
+const TRASH_FILE = path.join(CONTENT, "trash.json");
+const RETENTION_DAYS = 180; // 6 months retention policy
+const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+function loadTrashRaw() {
+  const virt = getVirtualFile(TRASH_FILE);
+  if (virt) {
+    try { return JSON.parse(virt); } catch (e) { return []; }
+  }
+  if (fs.existsSync(TRASH_FILE)) {
+    try { return JSON.parse(fs.readFileSync(TRASH_FILE, "utf8")); } catch (e) { return []; }
+  }
+  return [];
+}
+
+function saveTrashRaw(items) {
+  const jsonStr = JSON.stringify(items, null, 2);
+  safeWriteFile(TRASH_FILE, jsonStr, "utf8");
+}
+
+function cleanExpiredTrash() {
+  const items = loadTrashRaw();
+  const now = Date.now();
+  const valid = [];
+  let changed = false;
+  items.forEach((item) => {
+    const expires = item.expiresAt ? new Date(item.expiresAt).getTime() : (new Date(item.deletedAt).getTime() + RETENTION_MS);
+    if (expires <= now) {
+      changed = true; // Automatically purged after 6 months!
+    } else {
+      valid.push(item);
+    }
+  });
+  if (changed) {
+    saveTrashRaw(valid);
+  }
+  return valid;
+}
+
+function listTrash() {
+  const items = cleanExpiredTrash();
+  const now = Date.now();
+  return items.map((item) => {
+    const expiresMs = item.expiresAt ? new Date(item.expiresAt).getTime() : (new Date(item.deletedAt).getTime() + RETENTION_MS);
+    const msLeft = Math.max(0, expiresMs - now);
+    const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+    return {
+      ...item,
+      daysLeft,
+      expired: daysLeft <= 0
+    };
+  }).sort((a, b) => new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime());
+}
+
+function moveToTrash({ type, originalId, originalPath, title, content, mediaData }) {
+  const now = new Date();
+  const deletedAt = now.toISOString();
+  const expiresAt = new Date(now.getTime() + RETENTION_MS).toISOString();
+  const id = `trash_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const item = {
+    id,
+    type,
+    title: title || originalId || "Untitled",
+    originalId,
+    originalPath: String(originalPath || "").replace(/\\/g, "/"),
+    deletedAt,
+    expiresAt,
+    content: content || "",
+    mediaData: mediaData || null
+  };
+  const list = loadTrashRaw();
+  list.unshift(item);
+  saveTrashRaw(list);
+  return item;
+}
+
+function restoreFromTrash(trashId) {
+  const list = loadTrashRaw();
+  const idx = list.findIndex((i) => i.id === trashId);
+  if (idx === -1) {
+    throw new Error(`Trash item "${trashId}" not found.`);
+  }
+  const item = list[idx];
+  const targetAbs = path.isAbsolute(item.originalPath)
+    ? path.normalize(item.originalPath)
+    : path.normalize(path.join(ROOT, item.originalPath));
+
+  if (fs.existsSync(targetAbs) || Boolean(getVirtualFile(targetAbs))) {
+    throw new Error(`Cannot restore: an item already exists at ${item.originalPath}.`);
+  }
+
+  if (item.type === "media") {
+    const buf = item.mediaData ? Buffer.from(item.mediaData, "base64") : Buffer.from("");
+    safeWriteFile(targetAbs, buf);
+    const rel = path.relative(ROOT, targetAbs).replace(/\\/g, "/");
+    mediaBufferCache.set(rel, buf);
+  } else {
+    safeWriteFile(targetAbs, item.content, "utf8");
+  }
+
+  list.splice(idx, 1);
+  saveTrashRaw(list);
+  return { restored: true, item };
+}
+
+function purgeFromTrash(trashId) {
+  const list = loadTrashRaw();
+  const idx = list.findIndex((i) => i.id === trashId);
+  if (idx === -1) {
+    throw new Error(`Trash item "${trashId}" not found.`);
+  }
+  const item = list[idx];
+  list.splice(idx, 1);
+  saveTrashRaw(list);
+  return { purged: true, id: trashId, item };
+}
+
+function emptyTrash() {
+  const list = loadTrashRaw();
+  saveTrashRaw([]);
+  return { ok: true, count: list.length };
+}
+
 function deleteProject(slug) {
   const file = projectFile(slug);
+  let content = getVirtualFile(file);
+  if (content === null && fs.existsSync(file)) {
+    content = fs.readFileSync(file, "utf8");
+  }
+  const project = loadProjects().find((p) => p.slug === slug);
+  moveToTrash({
+    type: "project",
+    originalId: safeSlug(slug),
+    originalPath: `content/projects/${safeSlug(slug)}.md`,
+    title: project ? project.title : slug,
+    content: content || ""
+  });
   safeUnlinkFile(file);
   ensureFolderGitkeep("content/projects");
-  return { ok: true, slug: safeSlug(slug) };
+  return { ok: true, trashed: true, slug: safeSlug(slug) };
 }
 
 function deleteBlog(slug) {
   const file = blogFile(slug);
+  let content = getVirtualFile(file);
+  if (content === null && fs.existsSync(file)) {
+    content = fs.readFileSync(file, "utf8");
+  }
+  const article = loadBlog().find((b) => b.slug === slug);
+  moveToTrash({
+    type: "blog",
+    originalId: safeSlug(slug),
+    originalPath: `content/blog/${safeSlug(slug)}.md`,
+    title: article ? article.title : slug,
+    content: content || ""
+  });
   safeUnlinkFile(file);
   ensureFolderGitkeep("content/blog");
-  return { ok: true, slug: safeSlug(slug) };
+  return { ok: true, trashed: true, slug: safeSlug(slug) };
 }
 
 function deleteJournal(id) {
   const file = journalFile(id);
+  let content = getVirtualFile(file);
+  if (content === null && fs.existsSync(file)) {
+    content = fs.readFileSync(file, "utf8");
+  }
+  const entry = loadJournal().find((j) => (j.id === id || path.basename(j.file, ".md") === id));
+  moveToTrash({
+    type: "journal",
+    originalId: safeSlug(id),
+    originalPath: `content/journal/${safeSlug(id)}.md`,
+    title: entry ? entry.title : id,
+    content: content || ""
+  });
   safeUnlinkFile(file);
   ensureFolderGitkeep("content/journal");
-  return { ok: true, id: safeSlug(id) };
+  return { ok: true, trashed: true, id: safeSlug(id) };
 }
 
 function saveProject(input, { isNew = false } = {}) {
@@ -723,9 +885,20 @@ async function removeMedia({ folder, filename, force }) {
     }
   }
 
+  let buf = getMediaBuffer(relPath);
+  if (!buf && fs.existsSync(file)) {
+    try { buf = fs.readFileSync(file); } catch (e) {}
+  }
+  moveToTrash({
+    type: "media",
+    originalId: name,
+    originalPath: relPath,
+    title: name,
+    mediaData: buf ? buf.toString("base64") : null
+  });
   safeUnlinkFile(file);
   ensureFolderGitkeep(`src/assets/images/${folder}`);
-  return { ok: true };
+  return { ok: true, trashed: true };
 }
 
 function listNotes() {
@@ -775,9 +948,21 @@ function deleteNote(slugOrFilename) {
   const clean = safeSlug(slugOrFilename);
   const name = clean.endsWith(".md") ? clean : `${clean}.md`;
   const file = path.join(CONTENT, "notes", name);
+  let content = getVirtualFile(file);
+  if (content === null && fs.existsSync(file)) {
+    content = fs.readFileSync(file, "utf8");
+  }
+  const note = listNotes().find((n) => n.slug === clean || path.basename(n.file, ".md") === clean);
+  moveToTrash({
+    type: "note",
+    originalId: clean,
+    originalPath: `content/notes/${name}`,
+    title: note ? (note.data?.title || note.title) : clean,
+    content: content || ""
+  });
   safeUnlinkFile(file);
   ensureFolderGitkeep("content/notes");
-  return { ok: true, filename: name };
+  return { ok: true, trashed: true, filename: name };
 }
 
 function promoteNote({ slugOrFilename, targetType }) {
@@ -855,6 +1040,11 @@ module.exports = {
   getVirtualFile,
   isVirtualDeleted,
   ensureFolderGitkeep,
-  PROTECTED_FOLDERS
+  PROTECTED_FOLDERS,
+  listTrash,
+  moveToTrash,
+  restoreFromTrash,
+  purgeFromTrash,
+  emptyTrash
 };
 

@@ -305,6 +305,35 @@ async function handle(req, res) {
     const user = requireUser(req, res);
     if (!user) return true;
 
+    if (route === "GET /api/trash") {
+      send(res, 200, { items: store.listTrash() });
+      return true;
+    }
+    if (route === "POST /api/trash/restore") {
+      const resData = store.restoreFromTrash(body.id);
+      await saved(resData, {
+        commitMessage: `trash: restore ${resData.item.type} ${resData.item.originalId}`,
+        filePaths: [resData.item.originalPath, "content/trash.json"]
+      });
+      return true;
+    }
+    if (route === "DELETE /api/trash/empty") {
+      const resData = store.emptyTrash();
+      await saved(resData, {
+        commitMessage: "trash: empty recycle bin",
+        filePaths: ["content/trash.json"]
+      });
+      return true;
+    }
+    if (req.method === "DELETE" && url.pathname.startsWith("/api/trash/")) {
+      const id = decodeURIComponent(url.pathname.slice("/api/trash/".length));
+      const resData = store.purgeFromTrash(id);
+      await saved(resData, {
+        commitMessage: `trash: permanently purge ${resData.item.title || id}`,
+        filePaths: ["content/trash.json"]
+      });
+      return true;
+    }
     if (route === "GET /api/overview") {
       send(res, 200, store.overview());
       return true;
@@ -385,7 +414,7 @@ async function handle(req, res) {
       const slug = resData.slug || body.slug || "note";
       await saved(resData, {
         commitMessage: `note: save ${resData.title || slug}`,
-        filePaths: [path.join("content", "notes", `${slug}.md`), path.join("content", "notes", ".gitkeep")]
+        filePaths: [path.join("content", "notes", `${slug}.md`), path.join("content", "notes", ".gitkeep"), "content/trash.json"]
       });
       return true;
     }
@@ -491,7 +520,7 @@ async function handle(req, res) {
       const resData = store.deleteProject(slug);
       await saved(resData, {
         commitMessage: `content: delete project ${slug}`,
-        filePaths: [path.join("content", "projects", `${slug}.md`), path.join("content", "projects", ".gitkeep")]
+        filePaths: [path.join("content", "projects", `${slug}.md`), path.join("content", "projects", ".gitkeep"), "content/trash.json"]
       });
       return true;
     }
@@ -500,7 +529,7 @@ async function handle(req, res) {
       const resData = store.deleteBlog(slug);
       await saved(resData, {
         commitMessage: `blog: delete article ${slug}`,
-        filePaths: [path.join("content", "blog", `${slug}.md`), path.join("content", "blog", ".gitkeep")]
+        filePaths: [path.join("content", "blog", `${slug}.md`), path.join("content", "blog", ".gitkeep"), "content/trash.json"]
       });
       return true;
     }
@@ -509,7 +538,7 @@ async function handle(req, res) {
       const resData = store.deleteJournal(id);
       await saved(resData, {
         commitMessage: `journal: delete entry ${id}`,
-        filePaths: [path.join("content", "journal", `${id}.md`), path.join("content", "journal", ".gitkeep")]
+        filePaths: [path.join("content", "journal", `${id}.md`), path.join("content", "journal", ".gitkeep"), "content/trash.json"]
       });
       return true;
     }
@@ -612,7 +641,7 @@ async function handle(req, res) {
       const resData = await store.removeMedia(body);
       await saved(resData, {
         commitMessage: `media: remove ${body.filename}`,
-        filePaths: [path.join("src", "assets", "images", body.folder, body.filename), path.join("src", "assets", "images", body.folder, ".gitkeep")]
+        filePaths: [path.join("src", "assets", "images", body.folder, body.filename), path.join("src", "assets", "images", body.folder, ".gitkeep"), "content/trash.json"]
       });
       return true;
     }

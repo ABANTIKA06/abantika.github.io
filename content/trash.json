@@ -1,0 +1,35 @@
+[
+  {
+    "id": "trash_1729856973000_jnl_2026-09-17",
+    "type": "journal",
+    "title": "WHAT are we planning with Finance",
+    "originalId": "2026-09-17-what-are-we-planning-with-finance",
+    "originalPath": "content/journal/2026-09-17-what-are-we-planning-with-finance.md",
+    "deletedAt": "2026-10-25T11:49:33.000Z",
+    "expiresAt": "2027-04-23T11:49:33.000Z",
+    "content": "---\ntype: journal\ndate: '2026-09-17'\ntitle: WHAT are we planning with Finance\nheadline:\n  - PLAN\n  - FINANCE\n  - DEEPER\nproject: ''\npublished: true\nsummary: '[PLACEHOLDER — What was done.]'\ndata: ''\nmethod: ''\nresult: ''\ndataset: ''\ntools: ''\n---\n## What I did\n\n[PLACEHOLDER — What was done.]\n\n## What I learned\n\n[PLACEHOLDER — What was learned.]\n\n## Next\n\n[PLACEHOLDER — Next steps.]\n",
+    "mediaData": null
+  },
+  {
+    "id": "trash_1729856988000_jnl_2026-09-01",
+    "type": "journal",
+    "title": "Analytical work in progress",
+    "originalId": "2026-09-01-analytical-work-in-progress",
+    "originalPath": "content/journal/2026-09-01-analytical-work-in-progress.md",
+    "deletedAt": "2026-10-25T11:49:48.000Z",
+    "expiresAt": "2027-04-23T11:49:48.000Z",
+    "content": "---\ntype: journal\ndate: \"2026-09-01\"\ntitle: \"Analytical work in progress\"\nheadline:\n  - ANALYTICAL\n  - WORK IN\n  - PROGRESS\nproject: \"customer-churn-prediction\"\npublished: true\nsummary: \"[PLACEHOLDER — A concise research note, experiment log, or reflection will appear here.]\"\n---\n\n## What I did\n\n[PLACEHOLDER — A concise research note, experiment log, or reflection will appear here.]\n\n## What I learned\n\n[PLACEHOLDER — Learning notes will appear here when a real entry is supplied.]\n\n## Next\n\n[PLACEHOLDER — Next steps will appear here when a real entry is supplied.]\n",
+    "mediaData": null
+  },
+  {
+    "id": "trash_1726993733000_note_bayesian",
+    "type": "note",
+    "title": "Bayesian A/B Testing Notes",
+    "originalId": "bayesian-testing",
+    "originalPath": "content/notes/bayesian-testing.md",
+    "deletedAt": "2026-09-22T08:28:53.000Z",
+    "expiresAt": "2027-03-21T08:28:53.000Z",
+    "content": "---\ntype: note\ntitle: Bayesian A/B Testing Notes\nslug: bayesian-testing\ndate: 2026-09-17\ntags:\n  - statistics\n  - A/B testing\npublished: true\n---\n\n# Notes on Bayesian A/B Testing\n\nInvestigating priors and posterior distributions when testing model performance against [[Customer Churn Prediction]].\n\nReferences:\n- [[Why Accuracy Wasn't Enough]]\n",
+    "mediaData": null
+  }
+]

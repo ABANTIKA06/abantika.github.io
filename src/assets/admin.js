@@ -503,6 +503,7 @@
           <a href="#/notes" class="${isCurrent("/notes") ? "active" : ""}"><i>06</i> NOTES</a>
           <a href="#/media" class="${isCurrent("/media") ? "active" : ""}"><i>07</i> MEDIA</a>
           <a href="#/settings" class="${isCurrent("/settings") ? "active" : ""}"><i>08</i> SETTINGS</a>
+          <a href="#/trash" class="${isCurrent("/trash") ? "active" : ""}"><i>09</i> RECYCLE BIN</a>
         </div>
         <div class="admin-user-mobile mobile-only">
           <span class="admin-mobile-username">LOGGED IN AS <b>@${esc(state.user.login)}</b></span>
@@ -584,6 +585,7 @@
         <div class="admin-stat"><span>PROJECTS</span><strong>${overview.projects.published}</strong><p>${overview.projects.draft} DRAFT / ${overview.projects.total} TOTAL</p></div>
         <div class="admin-stat"><span>BLOG</span><strong>${overview.blog.published}</strong><p>${overview.blog.draft} DRAFT / ${overview.blog.total} TOTAL</p></div>
         <div class="admin-stat"><span>JOURNAL</span><strong>${overview.journal.total}</strong><p>${overview.journal.published} PUBLISHED / ${overview.journal.draft} DRAFT</p></div>
+        <div class="admin-stat"><span>RECYCLE BIN</span><strong>${overview.trash ? overview.trash.total : 0}</strong><p>6-MONTH RETENTION</p></div>
       </section>
       <p class="admin-kicker" style="margin-top:36px">LAST PUBLISHED</p>
       <p>${esc(overview.lastPublished || "—")}</p>`
@@ -758,8 +760,8 @@
           </div>
         </div>
         <p style="margin-top:12px;font-size:14px;line-height:1.5">
-          You are about to permanently delete <strong>"${esc(title)}"</strong>.
-          This action will remove the ${esc(type)} file from the repository and trigger a public site redeploy.
+          You are about to move <strong>"${esc(title)}"</strong> to the Recycle Bin.
+          It will be preserved in the Recycle Bin for 6 months before being permanently erased. You can restore it anytime.
         </p>
         <div class="sudo-delete-box">
           <label for="sudo-delete-input">To confirm deletion, please type <code>sudo delete</code> below:</label>
@@ -767,7 +769,7 @@
         </div>
         <div class="admin-actions" style="margin-top:20px">
           <button type="button" class="admin-btn" data-dismiss="true">CANCEL</button>
-          <button type="button" class="admin-btn admin-btn-danger" id="confirm-sudo-delete-btn" disabled>DELETE PERMANENTLY</button>
+          <button type="button" class="admin-btn admin-btn-danger" id="confirm-sudo-delete-btn" disabled>MOVE TO RECYCLE BIN</button>
         </div>
       </div>`;
 
@@ -3714,6 +3716,9 @@
         app.innerHTML = settingsForm();
       } else if (path === "/media") {
         app.innerHTML = mediaView();
+      } else if (path === "/trash") {
+        const trashRes = await api("/api/trash");
+        app.innerHTML = trashView(trashRes.items || []);
       } else {
         app.innerHTML = chrome("MISSING", "<h1>NOT FOUND<span class='red-stop'>.</span></h1>");
       }
@@ -4357,6 +4362,87 @@
             if (input) input.value = selectedPath;
           });
         }
+        if (name === "restore-trash") {
+          const id = act.getAttribute("data-id");
+          const title = act.getAttribute("data-title") || "Item";
+          const ok = await askCommit({
+            kicker: "09 / RESTORE",
+            title: "RESTORE ITEM",
+            copy: `Restore "${title}" back to its original location on the website?`,
+            confirmLabel: "YES, RESTORE",
+            primary: true
+          });
+          if (!ok) return;
+          const prog = showProgressModal({
+            kicker: "09 / RECYCLE BIN",
+            title: "RESTORING ITEM...",
+            copy: `Restoring "${title}" and updating public site.`
+          });
+          try {
+            const res = await api("/api/trash/restore", { method: "POST", body: { id } });
+            prog.finish("ITEM RESTORED", `"${title}" has been restored to ${res.item?.originalPath || "its original location"}.`);
+            state.content = null;
+            await loadContent();
+            go("/trash");
+          } catch (err) {
+            prog.fail(err.message);
+          }
+          return;
+        }
+
+        if (name === "purge-trash") {
+          const id = act.getAttribute("data-id");
+          const title = act.getAttribute("data-title") || "Item";
+          const ok = await askCommit({
+            kicker: "09 / PERMANENT PURGE",
+            title: "PURGE ITEM PERMANENTLY",
+            copy: `Permanently erase "${title}"? This cannot be undone.`,
+            confirmLabel: "YES, PURGE NOW",
+            primary: false
+          });
+          if (!ok) return;
+          const prog = showProgressModal({
+            kicker: "09 / RECYCLE BIN",
+            title: "PURGING ITEM...",
+            copy: `Permanently erasing "${title}".`
+          });
+          try {
+            await api(`/api/trash/${encodeURIComponent(id)}`, { method: "DELETE" });
+            prog.finish("ITEM PURGED", `"${title}" was permanently removed.`);
+            state.content = null;
+            await loadContent();
+            go("/trash");
+          } catch (err) {
+            prog.fail(err.message);
+          }
+          return;
+        }
+
+        if (name === "empty-trash") {
+          const ok = await askCommit({
+            kicker: "09 / EMPTY RECYCLE BIN",
+            title: "EMPTY RECYCLE BIN",
+            copy: "Permanently delete ALL items currently in the Recycle Bin? This action is irreversible.",
+            confirmLabel: "EMPTY ALL NOW",
+            primary: false
+          });
+          if (!ok) return;
+          const prog = showProgressModal({
+            kicker: "09 / RECYCLE BIN",
+            title: "EMPTYING RECYCLE BIN...",
+            copy: "Permanently deleting all trashed items."
+          });
+          try {
+            await api("/api/trash/empty", { method: "DELETE" });
+            prog.finish("RECYCLE BIN EMPTIED", "All items in the Recycle Bin have been permanently erased.");
+            state.content = null;
+            await loadContent();
+            go("/trash");
+          } catch (err) {
+            prog.fail(err.message);
+          }
+          return;
+        }
         if (name === "delete-project") {
           const form = act.closest("form");
           const slug = act.getAttribute("data-slug") || form?.getAttribute("data-slug");
@@ -4366,11 +4452,11 @@
             type: "project",
             title,
             onConfirm: async () => {
-              const prog = showProgressModal({ kicker: "03 / PROJECT", title: "DELETING PROJECT...", copy: "Removing project and rebuilding site." });
+              const prog = showProgressModal({ kicker: "03 / PROJECT", title: "MOVING TO RECYCLE BIN...", copy: "Moving project to Recycle Bin (kept for 6 months) and rebuilding site." });
               try {
                 await api(`/api/projects/${encodeURIComponent(slug)}`, { method: "DELETE" });
                 state.content = null;
-                prog.finish("PROJECT DELETED", `Project "${title}" has been deleted.`);
+                prog.finish("MOVED TO RECYCLE BIN", `Project "${title}" was moved to the Recycle Bin. Kept for 6 months.`);
                 go("/projects");
               } catch (e) {
                 prog.fail(e.message);
@@ -4387,11 +4473,11 @@
             type: "article",
             title,
             onConfirm: async () => {
-              const prog = showProgressModal({ kicker: "04 / BLOG", title: "DELETING ARTICLE...", copy: "Removing article and rebuilding site." });
+              const prog = showProgressModal({ kicker: "04 / BLOG", title: "MOVING TO RECYCLE BIN...", copy: "Moving article to Recycle Bin (kept for 6 months) and rebuilding site." });
               try {
                 await api(`/api/blog/${encodeURIComponent(slug)}`, { method: "DELETE" });
                 state.content = null;
-                prog.finish("ARTICLE DELETED", `Article "${title}" has been deleted.`);
+                prog.finish("MOVED TO RECYCLE BIN", `Article "${title}" was moved to the Recycle Bin. Kept for 6 months.`);
                 go("/blog");
               } catch (e) {
                 prog.fail(e.message);
@@ -4408,11 +4494,11 @@
             type: "journal entry",
             title,
             onConfirm: async () => {
-              const prog = showProgressModal({ kicker: "05 / JOURNAL", title: "DELETING JOURNAL ENTRY...", copy: "Removing entry and rebuilding site." });
+              const prog = showProgressModal({ kicker: "05 / JOURNAL", title: "MOVING TO RECYCLE BIN...", copy: "Moving journal entry to Recycle Bin (kept for 6 months) and rebuilding site." });
               try {
                 await api(`/api/journal/${encodeURIComponent(id)}`, { method: "DELETE" });
                 state.content = null;
-                prog.finish("JOURNAL ENTRY DELETED", `Journal entry "${title}" has been deleted.`);
+                prog.finish("MOVED TO RECYCLE BIN", `Journal entry "${title}" was moved to the Recycle Bin. Kept for 6 months.`);
                 go("/journal");
               } catch (e) {
                 prog.fail(e.message);
@@ -4429,11 +4515,11 @@
             type: "note",
             title,
             onConfirm: async () => {
-              const prog = showProgressModal({ kicker: "06 / NOTE", title: "DELETING NOTE...", copy: "Removing note and rebuilding site." });
+              const prog = showProgressModal({ kicker: "06 / NOTE", title: "MOVING TO RECYCLE BIN...", copy: "Moving note to Recycle Bin (kept for 6 months) and rebuilding site." });
               try {
                 await api(`/api/notes/${encodeURIComponent(slug)}`, { method: "DELETE" });
                 state.content = null;
-                prog.finish("NOTE DELETED", `Note "${title}" has been deleted.`);
+                prog.finish("MOVED TO RECYCLE BIN", `Note "${title}" was moved to the Recycle Bin. Kept for 6 months.`);
                 go("/notes");
               } catch (e) {
                 prog.fail(e.message);
