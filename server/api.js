@@ -385,7 +385,7 @@ async function handle(req, res) {
       const slug = resData.slug || body.slug || "note";
       await saved(resData, {
         commitMessage: `note: save ${resData.title || slug}`,
-        filePaths: [path.join("content", "notes", `${slug}.md`)]
+        filePaths: [path.join("content", "notes", `${slug}.md`), path.join("content", "notes", ".gitkeep")]
       });
       return true;
     }
@@ -491,7 +491,7 @@ async function handle(req, res) {
       const resData = store.deleteProject(slug);
       await saved(resData, {
         commitMessage: `content: delete project ${slug}`,
-        filePaths: [path.join("content", "projects", `${slug}.md`)]
+        filePaths: [path.join("content", "projects", `${slug}.md`), path.join("content", "projects", ".gitkeep")]
       });
       return true;
     }
@@ -500,7 +500,7 @@ async function handle(req, res) {
       const resData = store.deleteBlog(slug);
       await saved(resData, {
         commitMessage: `blog: delete article ${slug}`,
-        filePaths: [path.join("content", "blog", `${slug}.md`)]
+        filePaths: [path.join("content", "blog", `${slug}.md`), path.join("content", "blog", ".gitkeep")]
       });
       return true;
     }
@@ -509,7 +509,7 @@ async function handle(req, res) {
       const resData = store.deleteJournal(id);
       await saved(resData, {
         commitMessage: `journal: delete entry ${id}`,
-        filePaths: [path.join("content", "journal", `${id}.md`)]
+        filePaths: [path.join("content", "journal", `${id}.md`), path.join("content", "journal", ".gitkeep")]
       });
       return true;
     }
@@ -612,7 +612,7 @@ async function handle(req, res) {
       const resData = await store.removeMedia(body);
       await saved(resData, {
         commitMessage: `media: remove ${body.filename}`,
-        filePaths: [path.join("src", "assets", "images", body.folder, body.filename)]
+        filePaths: [path.join("src", "assets", "images", body.folder, body.filename), path.join("src", "assets", "images", body.folder, ".gitkeep")]
       });
       return true;
     }

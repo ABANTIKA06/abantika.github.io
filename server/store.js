@@ -22,6 +22,39 @@ const IMAGES = path.join(ROOT, "src", "assets", "images");
 const FOLDERS = ["projects", "blog", "journal", "about"];
 const r2 = require("./r2");
 
+const PROTECTED_FOLDERS = [
+  "content/projects",
+  "content/blog",
+  "content/journal",
+  "content/notes",
+  "src/assets/images/projects",
+  "src/assets/images/blog",
+  "src/assets/images/journal",
+  "src/assets/images/about"
+];
+
+function ensureFolderGitkeep(folderRelPath) {
+  const normRel = String(folderRelPath || "").replace(/\\/g, "/");
+  const absPath = path.isAbsolute(folderRelPath) ? path.normalize(folderRelPath) : path.normalize(path.join(ROOT, folderRelPath));
+  const gitkeepAbs = path.join(absPath, ".gitkeep");
+  const gitkeepRel = path.relative(ROOT, gitkeepAbs).replace(/\\/g, "/");
+  setVirtualFile(gitkeepAbs, "\n");
+  setVirtualFile(gitkeepRel, "\n");
+  try {
+    ensureDir(absPath);
+    if (!fs.existsSync(gitkeepAbs)) {
+      fs.writeFileSync(gitkeepAbs, "\n", "utf8");
+    }
+  } catch (err) {}
+  return gitkeepRel;
+}
+
+// Guarantee all protected folders have .gitkeep in memory and on disk at startup
+PROTECTED_FOLDERS.forEach((rel) => {
+  ensureFolderGitkeep(rel);
+});
+
+
 function ensureDir(dir) {
   try {
     fs.mkdirSync(dir, { recursive: true });
@@ -241,18 +274,21 @@ function journalFile(id) {
 function deleteProject(slug) {
   const file = projectFile(slug);
   safeUnlinkFile(file);
+  ensureFolderGitkeep("content/projects");
   return { ok: true, slug: safeSlug(slug) };
 }
 
 function deleteBlog(slug) {
   const file = blogFile(slug);
   safeUnlinkFile(file);
+  ensureFolderGitkeep("content/blog");
   return { ok: true, slug: safeSlug(slug) };
 }
 
 function deleteJournal(id) {
   const file = journalFile(id);
   safeUnlinkFile(file);
+  ensureFolderGitkeep("content/journal");
   return { ok: true, id: safeSlug(id) };
 }
 
@@ -688,6 +724,7 @@ async function removeMedia({ folder, filename, force }) {
   }
 
   safeUnlinkFile(file);
+  ensureFolderGitkeep(`src/assets/images/${folder}`);
   return { ok: true };
 }
 
@@ -739,6 +776,7 @@ function deleteNote(slugOrFilename) {
   const name = clean.endsWith(".md") ? clean : `${clean}.md`;
   const file = path.join(CONTENT, "notes", name);
   safeUnlinkFile(file);
+  ensureFolderGitkeep("content/notes");
   return { ok: true, filename: name };
 }
 
@@ -815,6 +853,8 @@ module.exports = {
   loadJournal,
   loadNotes,
   getVirtualFile,
-  isVirtualDeleted
+  isVirtualDeleted,
+  ensureFolderGitkeep,
+  PROTECTED_FOLDERS
 };
 

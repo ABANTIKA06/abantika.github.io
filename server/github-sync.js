@@ -103,7 +103,47 @@ async function commitFiles(files = [], commitMessage = "content: update site fil
     }
   }
 
+  // GUARDIAN: Ensure protected content & media directories NEVER become empty in git tree
+  const PROTECTED_DIRS = [
+    "content/projects",
+    "content/blog",
+    "content/journal",
+    "content/notes",
+    "src/assets/images/projects",
+    "src/assets/images/blog",
+    "src/assets/images/journal",
+    "src/assets/images/about"
+  ];
+
+  let gitkeepSha = null;
+  const touchedProtectedDirs = new Set();
+  for (const file of files) {
+    const relPath = file.path.replace(/^\/+/, "").replace(/\\/g, "/");
+    for (const pDir of PROTECTED_DIRS) {
+      if (relPath.startsWith(pDir + "/")) {
+        touchedProtectedDirs.add(pDir);
+      }
+    }
+  }
+
+  for (const pDir of touchedProtectedDirs) {
+    const gitkeepPath = `${pDir}/.gitkeep`;
+    const alreadyInTree = treeItems.some((t) => t.path === gitkeepPath);
+    if (!alreadyInTree) {
+      if (!gitkeepSha) {
+        gitkeepSha = await createBlob("\n", false);
+      }
+      treeItems.push({
+        path: gitkeepPath,
+        mode: "100644",
+        type: "blob",
+        sha: gitkeepSha
+      });
+    }
+  }
+
   const newTree = await request("/git/trees", {
+
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
