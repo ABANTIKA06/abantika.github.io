@@ -518,6 +518,8 @@
   background: #c52a36 !important;
   border-color: #c52a36 !important;
 }
+.admin-btn:disabled,
+.admin-btn[disabled],
 .admin-btn-danger:disabled,
 .admin-btn-danger[disabled] {
   opacity: 0.35 !important;

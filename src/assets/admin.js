@@ -741,6 +741,94 @@
     document.body.appendChild(root);
   }
 
+  function showSudoConfirmModal({ kicker, title, message, promptLabel, expectedText, buttonLabel, isDanger = true, onConfirm }) {
+    document.querySelector(".admin-modal-root")?.remove();
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    const expected = String(expectedText || "").trim();
+    const normalize = (str) => String(str || "").replace(/\s+/g, " ").trim().toUpperCase();
+    const borderColor = isDanger ? "var(--red)" : "var(--line)";
+    const iconHtml = isDanger ? `
+      <svg class="admin-cross-icon" viewBox="0 0 52 52">
+        <circle class="admin-cross-circle" cx="26" cy="26" r="23" />
+        <path class="admin-cross-line1" d="M17 17 L35 35" />
+        <path class="admin-cross-line2" d="M35 17 L17 35" />
+      </svg>` : `
+      <svg class="admin-cross-icon" viewBox="0 0 52 52" style="color:#22a722">
+        <circle class="admin-cross-circle" cx="26" cy="26" r="23" stroke="#22a722" />
+        <path d="M16 26 L23 33 L36 19" fill="none" stroke="#22a722" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal" role="dialog" aria-modal="true" style="border:2px solid ${borderColor}">
+        <div class="admin-tick-container">
+          ${iconHtml}
+          <div>
+            <p class="admin-kicker" style="color:${isDanger ? 'var(--red)' : '#1d1d1d'};margin:0">${esc(kicker || "CONFIRM ACTION")}</p>
+            <h2 id="admin-modal-title" style="margin:4px 0 0;font-size:clamp(22px, 3vw, 30px);${isDanger ? 'color:var(--red)' : ''}">${esc(title)}<span class="red-stop">.</span></h2>
+          </div>
+        </div>
+        ${message ? `<p style="margin-top:12px;font-size:14px;line-height:1.5">${message}</p>` : ""}
+        <div class="sudo-delete-box" style="margin-top:16px">
+          <label for="sudo-confirm-input">${promptLabel || `To confirm, please type <code>${esc(expected)}</code> below:`}</label>
+          <input type="text" id="sudo-confirm-input" class="sudo-delete-input" placeholder="${esc(expected)}" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="admin-actions" style="margin-top:20px">
+          <button type="button" class="admin-btn" data-dismiss="true">CANCEL</button>
+          <button type="button" class="admin-btn ${isDanger ? 'admin-btn-danger' : 'primary'}" id="confirm-sudo-action-btn" disabled>${esc(buttonLabel || "CONFIRM")}</button>
+        </div>
+      </div>`;
+
+    const inputEl = root.querySelector("#sudo-confirm-input");
+    const confirmBtn = root.querySelector("#confirm-sudo-action-btn");
+
+    const checkMatch = () => {
+      const val = normalize(inputEl.value);
+      const exp = normalize(expected);
+      if (val === exp) {
+        confirmBtn.removeAttribute("disabled");
+        inputEl.classList.add("valid");
+      } else {
+        confirmBtn.setAttribute("disabled", "true");
+        inputEl.classList.remove("valid");
+      }
+    };
+
+    inputEl?.addEventListener("input", checkMatch);
+
+    const close = () => {
+      document.removeEventListener("keydown", onKey);
+      root.remove();
+    };
+
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      } else if (event.key === "Enter" && !confirmBtn.hasAttribute("disabled")) {
+        event.preventDefault();
+        close();
+        onConfirm();
+      }
+    };
+
+    root.addEventListener("click", (event) => {
+      if (event.target.closest("[data-dismiss]")) {
+        close();
+      } else if (event.target.closest("#confirm-sudo-action-btn")) {
+        if (!confirmBtn.hasAttribute("disabled")) {
+          close();
+          onConfirm();
+        }
+      }
+    });
+
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(root);
+    setTimeout(() => inputEl?.focus(), 100);
+  }
+
   function showDeleteConfirmModal({ kicker, type, title, onConfirm }) {
     document.querySelector(".admin-modal-root")?.remove();
     const root = document.createElement("div");
@@ -4365,82 +4453,91 @@
         if (name === "restore-trash") {
           const id = act.getAttribute("data-id");
           const title = act.getAttribute("data-title") || "Item";
-          const ok = await askCommit({
+          showSudoConfirmModal({
             kicker: "09 / RESTORE",
             title: "RESTORE ITEM",
-            copy: `Restore "${title}" back to its original location on the website?`,
-            confirmLabel: "YES, RESTORE",
-            primary: true
+            message: `Restore <strong>"${esc(title)}"</strong> back to its original location?<br>It will be republished to the public website.`,
+            promptLabel: `To confirm restoration, please type <code>SUDO RESTORE</code> below:`,
+            expectedText: "SUDO RESTORE",
+            buttonLabel: "RESTORE NOW",
+            isDanger: false,
+            onConfirm: async () => {
+              const prog = showProgressModal({
+                kicker: "09 / RECYCLE BIN",
+                title: "RESTORING ITEM...",
+                copy: `Restoring "${title}" and updating public site.`
+              });
+              try {
+                const res = await api("/api/trash/restore", { method: "POST", body: { id } });
+                prog.finish("ITEM RESTORED", `"${title}" has been restored to ${res.item?.originalPath || "its original location"}.`);
+                state.content = null;
+                await loadContent();
+                go("/trash");
+              } catch (err) {
+                prog.fail(err.message);
+              }
+            }
           });
-          if (!ok) return;
-          const prog = showProgressModal({
-            kicker: "09 / RECYCLE BIN",
-            title: "RESTORING ITEM...",
-            copy: `Restoring "${title}" and updating public site.`
-          });
-          try {
-            const res = await api("/api/trash/restore", { method: "POST", body: { id } });
-            prog.finish("ITEM RESTORED", `"${title}" has been restored to ${res.item?.originalPath || "its original location"}.`);
-            state.content = null;
-            await loadContent();
-            go("/trash");
-          } catch (err) {
-            prog.fail(err.message);
-          }
           return;
         }
 
         if (name === "purge-trash") {
           const id = act.getAttribute("data-id");
           const title = act.getAttribute("data-title") || "Item";
-          const ok = await askCommit({
+          showSudoConfirmModal({
             kicker: "09 / PERMANENT PURGE",
             title: "PURGE ITEM PERMANENTLY",
-            copy: `Permanently erase "${title}"? This cannot be undone.`,
-            confirmLabel: "YES, PURGE NOW",
-            primary: false
+            message: `You are about to permanently erase <strong>"${esc(title)}"</strong> from the Recycle Bin.<br><span style="color:var(--red);font-weight:700">This action is completely irreversible and cannot be recovered.</span>`,
+            promptLabel: `To permanently delete, please type <code>SUDO PURGE FINAL</code> below:`,
+            expectedText: "SUDO PURGE FINAL",
+            buttonLabel: "PURGE PERMANENTLY",
+            isDanger: true,
+            onConfirm: async () => {
+              const prog = showProgressModal({
+                kicker: "09 / RECYCLE BIN",
+                title: "PURGING ITEM...",
+                copy: `Permanently erasing "${title}".`
+              });
+              try {
+                await api(`/api/trash/${encodeURIComponent(id)}`, { method: "DELETE" });
+                prog.finish("ITEM PURGED", `"${title}" was permanently removed.`);
+                state.content = null;
+                await loadContent();
+                go("/trash");
+              } catch (err) {
+                prog.fail(err.message);
+              }
+            }
           });
-          if (!ok) return;
-          const prog = showProgressModal({
-            kicker: "09 / RECYCLE BIN",
-            title: "PURGING ITEM...",
-            copy: `Permanently erasing "${title}".`
-          });
-          try {
-            await api(`/api/trash/${encodeURIComponent(id)}`, { method: "DELETE" });
-            prog.finish("ITEM PURGED", `"${title}" was permanently removed.`);
-            state.content = null;
-            await loadContent();
-            go("/trash");
-          } catch (err) {
-            prog.fail(err.message);
-          }
           return;
         }
 
         if (name === "empty-trash") {
-          const ok = await askCommit({
+          showSudoConfirmModal({
             kicker: "09 / EMPTY RECYCLE BIN",
             title: "EMPTY RECYCLE BIN",
-            copy: "Permanently delete ALL items currently in the Recycle Bin? This action is irreversible.",
-            confirmLabel: "EMPTY ALL NOW",
-            primary: false
+            message: `You are about to permanently purge <strong>ALL ITEMS</strong> currently in the Recycle Bin.<br><span style="color:var(--red);font-weight:700">All deleted files will be irreversibly erased from the repository.</span>`,
+            promptLabel: `To permanently empty the bin, please type <code>SUDO PURGE FINAL</code> below:`,
+            expectedText: "SUDO PURGE FINAL",
+            buttonLabel: "EMPTY ALL PERMANENTLY",
+            isDanger: true,
+            onConfirm: async () => {
+              const prog = showProgressModal({
+                kicker: "09 / RECYCLE BIN",
+                title: "EMPTYING RECYCLE BIN...",
+                copy: "Permanently purging all trashed items."
+              });
+              try {
+                await api("/api/trash/empty", { method: "DELETE" });
+                prog.finish("RECYCLE BIN EMPTIED", "All items in the Recycle Bin have been permanently erased.");
+                state.content = null;
+                await loadContent();
+                go("/trash");
+              } catch (err) {
+                prog.fail(err.message);
+              }
+            }
           });
-          if (!ok) return;
-          const prog = showProgressModal({
-            kicker: "09 / RECYCLE BIN",
-            title: "EMPTYING RECYCLE BIN...",
-            copy: "Permanently deleting all trashed items."
-          });
-          try {
-            await api("/api/trash/empty", { method: "DELETE" });
-            prog.finish("RECYCLE BIN EMPTIED", "All items in the Recycle Bin have been permanently erased.");
-            state.content = null;
-            await loadContent();
-            go("/trash");
-          } catch (err) {
-            prog.fail(err.message);
-          }
           return;
         }
         if (name === "delete-project") {
