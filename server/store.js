@@ -23,7 +23,13 @@ const FOLDERS = ["projects", "blog", "journal", "about"];
 const r2 = require("./r2");
 
 function ensureDir(dir) {
-  fs.mkdirSync(dir, { recursive: true });
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    if (err.code !== "EROFS" && err.code !== "ENOENT" && err.code !== "EACCES" && err.code !== "EPERM" && !String(err.message).includes("read-only")) {
+      throw err;
+    }
+  }
 }
 
 function safeSlug(input) {
@@ -92,7 +98,7 @@ function safeWriteFile(file, content, encoding = "utf8") {
     ensureDir(path.dirname(file));
     fs.writeFileSync(file, content, encoding);
   } catch (err) {
-    if (err.code !== "EROFS" && !String(err.message).includes("read-only")) {
+    if (err.code !== "EROFS" && err.code !== "ENOENT" && err.code !== "EACCES" && err.code !== "EPERM" && !String(err.message).includes("read-only")) {
       throw err;
     }
   }
@@ -105,7 +111,7 @@ function safeUnlinkFile(file) {
       fs.unlinkSync(file);
     }
   } catch (err) {
-    if (err.code !== "EROFS" && !String(err.message).includes("read-only")) {
+    if (err.code !== "EROFS" && err.code !== "ENOENT" && err.code !== "EACCES" && err.code !== "EPERM" && !String(err.message).includes("read-only")) {
       throw err;
     }
   }

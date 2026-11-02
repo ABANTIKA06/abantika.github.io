@@ -1136,7 +1136,7 @@
         </div>
         <div class="admin-sticky-controls-bar">
           <div class="admin-actions">
-            <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE ENTRY</span></button>
+            <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
             <button class="admin-btn" type="button" data-act="preview-journal"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
             <button class="admin-btn primary" type="submit" form="journal-editor-form" data-publish="true"><span class="btn-icon">${ICONS.publish}</span> <span class="btn-text">PUBLISH</span></button>
           </div>
@@ -1159,7 +1159,7 @@
             ${input("METHOD", "method", item.method || "")}
             ${input("RESULT", "result", item.result || "")}
             ${input("TOOLS", "tools", item.tools || "")}
-            ${check("PUBLISHED", "published", item.published)}
+            ${check("PUBLISHED", "published", item.published !== false)}
           </div>
         </div>
 
@@ -4715,7 +4715,7 @@
         return;
       }
       
-      const isPublish = publishFlag === "true" || type === "journal" || ["about", "settings", "skills", "media-upload"].includes(type);
+      const isPublish = publishFlag === "true" || (publishFlag !== "false" && (Boolean(formValue(form, "published")) || ["about", "settings", "skills", "media-upload"].includes(type)));
       const isMedia = type === "media-upload";
       const prog = showProgressModal({
         kicker: isMedia ? "07 / MEDIA UPLOAD" : (isPublish ? "00 / PUBLISHING" : "00 / SAVING DRAFT"),
