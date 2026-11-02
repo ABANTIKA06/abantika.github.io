@@ -63,6 +63,20 @@ module.exports = function (eleventyConfig) {
       (item) => item.published && (item.relatedProject === slug || item.project === slug)
     )
   );
+  eleventyConfig.addFilter("truncateWords", (value, maxWords = 28) => {
+    if (!value || typeof value !== "string") return "";
+    const clean = value
+      .replace(/!\[.*?\]\(.*?\)/g, "")
+      .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
+      .replace(/[#*_`]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!clean) return "";
+    const words = clean.split(" ");
+    if (words.length <= maxWords) return clean;
+    return words.slice(0, maxWords).join(" ") + "...";
+  });
+
   eleventyConfig.addFilter("editorialBreak", (value) => {
     const words = String(value || "")
       .toUpperCase()

@@ -17,7 +17,7 @@ image: /assets/og-image.png
       <div>
         <p class="eyebrow">{% if note.project %}PROJECT / {{ note.project | replace("-", " ") | upper }}{% else %}FIELD NOTE{% endif %}</p>
         <h2>{{ note.headline | joinLines | safe }}<span class="red-stop">.</span></h2>
-        <p>{{ note.summary }}</p>
+        <p>{{ (note.summary or (note.sections[0] and note.sections[0].body) or "") | truncateWords(28) }}</p>
       </div>
     </a>
     {% endfor %}

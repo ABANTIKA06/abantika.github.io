@@ -498,8 +498,22 @@ function loadJournal() {
     sectionsList.learnedHtml = legacySections.learnedHtml;
     sectionsList.nextHtml = legacySections.nextHtml;
 
+    const firstSectionText = sectionsList[0] && sectionsList[0].body ? sectionsList[0].body : did;
+    const cleanFirstSec = String(firstSectionText || "")
+      .replace(/!\[.*?\]\(.*?\)/g, "")
+      .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
+      .replace(/[#*_`]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    let summaryText = String(item.summary || "").trim();
+    if (!summaryText || summaryText.length > 250) {
+      const words = cleanFirstSec.split(" ").filter(Boolean);
+      summaryText = words.length <= 28 ? cleanFirstSec : words.slice(0, 28).join(" ") + "...";
+    }
+
     return {
       ...item,
+      summary: summaryText,
       url: `/journal/${item.year}/${item.month}/${item.day}/`,
       headline: item.headline && item.headline.length ? item.headline : [item.title.toUpperCase()],
       project: item.project || "",

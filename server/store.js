@@ -582,6 +582,18 @@ function saveJournal(input, { id, isNew = false } = {}) {
       }))
     : [];
 
+  const firstSecText = (sections[0] && sections[0].body ? sections[0].body : input.did || "")
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
+    .replace(/[#*_`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  let summary = String(input.summary || "").trim();
+  if (!summary || summary.length > 250) {
+    const words = firstSecText.split(" ").filter(Boolean);
+    summary = words.length <= 28 ? firstSecText : words.slice(0, 28).join(" ") + "...";
+  }
+
   const data = {
     type: "journal",
     date: dateISO,
@@ -589,7 +601,7 @@ function saveJournal(input, { id, isNew = false } = {}) {
     headline: toLines(input.headline),
     project: String(input.project || "").trim(),
     published: bool(input.published),
-    summary: String(input.summary || input.did || (sections[0] && sections[0].body ? sections[0].body : "")).trim(),
+    summary,
     data: String(input.data || "").trim(),
     method: String(input.method || "").trim(),
     result: String(input.result || "").trim(),
