@@ -1,5 +1,5 @@
 ---
-title: FINANCIAL ANOMALY
+title: Financial Anomaly
 slug: financial-anomaly
 number: '00'
 date: '2026-09-19'
@@ -13,7 +13,7 @@ technologies:
   - MATPLOTLIB
   - PLOTLY
 featured: true
-published: true
+published: false
 art: matrix
 artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
 customArt: ''
