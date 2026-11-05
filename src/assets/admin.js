@@ -3853,7 +3853,7 @@
     if (!force && isFormActive() && currentRenderPath === path) {
       return;
     }
-    if (isRendering) return;
+    if (isRendering && !force) return;
     isRendering = true;
     state.error = "";
     try {
@@ -3964,9 +3964,6 @@
         app.innerHTML = settingsForm();
       } else if (path === "/media") {
         app.innerHTML = mediaView();
-      } else if (path === "/trash") {
-        const trashRes = await api("/api/trash");
-        app.innerHTML = trashView(trashRes.items || []);
       } else {
         app.innerHTML = chrome("MISSING", "<h1>NOT FOUND<span class='red-stop'>.</span></h1>");
       }
