@@ -1,5 +1,5 @@
 ---
-title: Customer Churn Prediction
+title: Bank Customer Churn Prediction
 slug: customer-churn-prediction
 number: '01'
 date: '2026-09-09'
@@ -17,7 +17,7 @@ technologies:
   - SQL
   - Power BI
 featured: true
-published: false
+published: true
 art: dots
 artLabel: DATA / MODEL / DECISION
 customArt: ''
