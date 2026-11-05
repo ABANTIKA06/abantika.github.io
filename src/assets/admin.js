@@ -211,6 +211,17 @@
     el.classList.toggle("error", isError);
   }
 
+  function slugify(val) {
+    return String(val || "")
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[^\w\s-]/g, "")
+      .trim()
+      .replace(/[\s_]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
   function formValue(form, name) {
     const field = form.elements[name];
     if (!field) return "";
@@ -582,10 +593,10 @@
       `<h1>CONSOLE<span class="red-stop">.</span></h1>
       ${syncWarning}
       <section class="admin-grid">
-        <div class="admin-stat"><span>PROJECTS</span><strong>${overview.projects.published}</strong><p>${overview.projects.draft} DRAFT / ${overview.projects.total} TOTAL</p></div>
-        <div class="admin-stat"><span>BLOG</span><strong>${overview.blog.published}</strong><p>${overview.blog.draft} DRAFT / ${overview.blog.total} TOTAL</p></div>
-        <div class="admin-stat"><span>JOURNAL</span><strong>${overview.journal.total}</strong><p>${overview.journal.published} PUBLISHED / ${overview.journal.draft} DRAFT</p></div>
-        <div class="admin-stat"><span>RECYCLE BIN</span><strong>${overview.trash ? overview.trash.total : 0}</strong><p>6-MONTH RETENTION</p></div>
+        <a class="admin-stat" href="#/projects" style="text-decoration:none;color:inherit;cursor:pointer;display:block"><span>PROJECTS</span><strong>${overview.projects.published}</strong><p>${overview.projects.draft} DRAFT / ${overview.projects.total} TOTAL <b>→</b></p></a>
+        <a class="admin-stat" href="#/blog" style="text-decoration:none;color:inherit;cursor:pointer;display:block"><span>BLOG</span><strong>${overview.blog.published}</strong><p>${overview.blog.draft} DRAFT / ${overview.blog.total} TOTAL <b>→</b></p></a>
+        <a class="admin-stat" href="#/journal" style="text-decoration:none;color:inherit;cursor:pointer;display:block"><span>JOURNAL</span><strong>${overview.journal.total}</strong><p>${overview.journal.published} PUBLISHED / ${overview.journal.draft} DRAFT <b>→</b></p></a>
+        <a class="admin-stat" href="#/trash" style="text-decoration:none;color:inherit;cursor:pointer;display:block"><span>RECYCLE BIN</span><strong>${overview.trash ? overview.trash.total : 0}</strong><p>6-MONTH RETENTION <b>→</b></p></a>
       </section>
       <p class="admin-kicker" style="margin-top:36px">LAST PUBLISHED</p>
       <p>${esc(overview.lastPublished || "—")}</p>`
@@ -986,6 +997,7 @@
 
   function projectForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
+    const dateVal = item.dateISO || (item.date && String(item.date).slice(0, 10)) || today;
     const sections = ensureSections(item, [
       { label: "01 / PROBLEM", heading: "THE QUESTION", body: "" },
       { label: "02 / DATA", heading: "THE EVIDENCE", body: "" },
@@ -1026,9 +1038,9 @@
           </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
-            ${input("SLUG", "slug", item.slug || "")}
+            ${input("SLUG", "slug", item.slug || "", 'placeholder="auto-generated-from-title"')}
             ${input("NUMBER", "number", item.number || "")}
-            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("DATE", "date", dateVal, 'type="date"', true)}
             ${input("YEAR", "year", item.year || "")}
             ${input("CATEGORY", "category", item.category || "", "", true)}
             ${area("DESCRIPTION", "description", item.description || "", "", true)}
@@ -1079,6 +1091,7 @@
 
   function blogForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
+    const dateVal = item.dateISO || (item.date && String(item.date).slice(0, 10)) || today;
     const sections = ensureSections(item, [
       { label: "01 / INTRODUCTION", heading: "THE CONTEXT", body: "" },
       { label: "02 / ANALYSIS", heading: "THE FINDINGS", body: "" },
@@ -1118,8 +1131,8 @@
           </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
-            ${input("SLUG", "slug", item.slug || "")}
-            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("SLUG", "slug", item.slug || "", 'placeholder="auto-generated-from-title"')}
+            ${input("DATE", "date", dateVal, 'type="date"', true)}
             ${input("CATEGORY", "category", item.category || "", "", true)}
             ${area("TAGS (ONE PER LINE)", "tags", (item.tags || []).join("\n"))}
             ${area("DESCRIPTION", "description", item.description || "", "", true)}
@@ -1145,6 +1158,7 @@
 
   function noteForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
+    const dateVal = item.dateISO || (item.date && String(item.date).slice(0, 10)) || today;
     const sections = ensureSections(item, [
       { label: "01 / NOTE CONTENT", heading: "THE RESEARCH NOTE", body: item.body || "" }
     ]);
@@ -1181,8 +1195,8 @@
           </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
-            ${input("SLUG", "slug", item.slug || "")}
-            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("SLUG", "slug", item.slug || "", 'placeholder="auto-generated-from-title"')}
+            ${input("DATE", "date", dateVal, 'type="date"', true)}
             ${input("TAGS (COMMA SEPARATED)", "tags", (item.tags || []).join(", "))}
             ${check("PUBLISHED", "published", item.published !== false)}
           </div>
@@ -1203,6 +1217,7 @@
 
   function journalForm(item, isNew) {
     const today = new Date().toISOString().slice(0, 10);
+    const dateVal = item.dateISO || (item.date && String(item.date).slice(0, 10)) || today;
     const defaultSections = [
       { label: "01 / WHAT I DID", heading: "THE WORK", body: item.did || "" },
       { label: "02 / WHAT I LEARNED", heading: "THE INSIGHT", body: item.learned || "" },
@@ -1242,7 +1257,7 @@
             <span class="toggle-hint" style="font-size:10px;color:var(--accent-red,#e03c31);font-weight:700">▼ CLICK TO COLLAPSE METADATA</span>
           </div>
           <div class="collapsible-details-content">
-            ${input("DATE", "date", item.date || today, 'type="date"', true)}
+            ${input("DATE", "date", dateVal, 'type="date"', true)}
             ${input("TITLE", "title", item.title || "", "", true)}
             ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
             ${sel("RELATED PROJECT", "project", item.project || "", [{ value: "", label: "NONE" }].concat((state.content.projects || []).map((p) => ({ value: p.slug, label: p.title }))))}
@@ -3641,6 +3656,77 @@
     );
   }
 
+  function trashView(items) {
+    const list = Array.isArray(items) ? items : [];
+    const count = list.length;
+    return chrome(
+      "09 / RECYCLE BIN",
+      `
+      <div class="admin-toolbar" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:24px">
+        <div>
+          <h1>RECYCLE BIN<span class="red-stop">.</span></h1>
+          <p style="font:11px var(--mono);color:#666;margin:6px 0 0;letter-spacing:0.04em">
+            DELETED ITEMS ARE KEPT FOR 6 MONTHS (180 DAYS) BEFORE AUTOMATIC EXPIRATION.
+          </p>
+        </div>
+        ${count > 0 ? `<button type="button" class="admin-btn admin-btn-danger" data-act="empty-trash" style="font-weight:700">EMPTY RECYCLE BIN (${count}) 🗑️</button>` : ""}
+      </div>
+
+      <div class="admin-stat-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin-bottom:28px">
+        <div class="admin-stat" style="border:1px solid var(--line);padding:16px;background:#fff">
+          <span style="font:10px var(--mono);color:#777;letter-spacing:0.1em;display:block">DELETED ITEMS</span>
+          <strong style="font:32px var(--sans);display:block;margin:4px 0">${count}</strong>
+          <p style="font:11px var(--mono);color:#888;margin:0">CURRENTLY IN BIN</p>
+        </div>
+        <div class="admin-stat" style="border:1px solid var(--line);padding:16px;background:#fff">
+          <span style="font:10px var(--mono);color:#777;letter-spacing:0.1em;display:block">RETENTION POLICY</span>
+          <strong style="font:32px var(--sans);display:block;margin:4px 0">180<span style="font-size:16px;font-weight:400;color:#666"> DAYS</span></strong>
+          <p style="font:11px var(--mono);color:#888;margin:0">6-MONTH ARCHIVE</p>
+        </div>
+      </div>
+
+      ${count === 0 ? `
+        <div style="border:1px dashed var(--line);padding:48px 24px;text-align:center;background:#fff;margin-top:20px">
+          <p style="font:700 13px var(--mono);letter-spacing:0.1em;margin:0 0 6px">THE RECYCLE BIN IS EMPTY</p>
+          <p style="font:12px var(--sans);color:#666;margin:0">Deleted projects, articles, field notes, and research notes will be safely preserved here.</p>
+        </div>
+      ` : `
+        <div class="admin-list" style="display:flex;flex-direction:column;gap:12px">
+          ${list.map((item) => {
+            const typeLabel = String(item.type || "item").toUpperCase();
+            const dateStr = item.deletedAt ? new Date(item.deletedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "-";
+            const daysLeft = typeof item.daysLeft === "number" ? item.daysLeft : 180;
+            const daysTag = daysLeft <= 15
+              ? `<span style="font:700 10px var(--mono);color:var(--accent-red,#e03c31);background:#fff0f0;padding:2px 8px;border:1px solid var(--accent-red,#e03c31)">EXPIRING IN ${daysLeft}D</span>`
+              : `<span style="font:10px var(--mono);color:#666;background:#f0eee8;padding:2px 8px;border:1px solid var(--line)">${daysLeft} DAYS LEFT</span>`;
+
+            return `
+              <div class="admin-row-wrapper" style="border:1px solid var(--line);background:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+                <div style="display:flex;flex-direction:column;gap:4px;min-width:240px;flex:1">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <span class="admin-badge" style="font:700 9px var(--mono);background:#171717;color:#fff;padding:2px 6px;letter-spacing:0.1em">${esc(typeLabel)}</span>
+                    <span style="font:11px var(--mono);color:#888">DELETED: ${esc(dateStr)}</span>
+                    ${daysTag}
+                  </div>
+                  <b style="font:700 16px var(--sans);color:#111;margin-top:4px">${esc(item.title || item.originalId || "Untitled Item")}</b>
+                  <span style="font:11px var(--mono);color:#777;word-break:break-all">${esc(item.originalPath || item.originalId || "")}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                  <button type="button" class="admin-btn" data-act="restore-trash" data-id="${esc(item.id)}" data-title="${esc(item.title || item.originalId)}">
+                    <span class="btn-icon">↺</span> <span class="btn-text">RESTORE</span>
+                  </button>
+                  <button type="button" class="admin-btn admin-btn-danger" data-act="purge-trash" data-id="${esc(item.id)}" data-title="${esc(item.title || item.originalId)}">
+                    <span class="btn-icon">✕</span> <span class="btn-text">PURGE</span>
+                  </button>
+                </div>
+              </div>`;
+          }).join("")}
+        </div>
+      `}
+      `
+    );
+  }
+
   function collectSections(form) {
     if (!form) return [];
     syncAllWysiwyg(form);
@@ -3772,15 +3858,63 @@
     state.error = "";
     try {
       try {
-        state.config = await api("/api/auth/config");
-        const session = await api("/api/session");
-        state.user = session.login ? session : null;
+        if (!state.config || !state.user) {
+          const [cfg, ses] = await Promise.all([
+            state.config ? Promise.resolve(state.config) : api("/api/auth/config"),
+            state.user ? Promise.resolve(state.user) : api("/api/session")
+          ]);
+          state.config = cfg;
+          if (!state.user) {
+            state.user = ses.login ? ses : null;
+          }
+        }
       } catch (err) {
         app.innerHTML = `<div class="admin-gate"><h1>ADMIN SERVER REQUIRED<span class="red-stop">.</span></h1><p>Open the admin origin instead of the public Eleventy port. From the project folder run <code>npm.cmd run admin</code> and go to <a href="http://localhost:8787/admin/">http://localhost:8787/admin/</a>.</p><p class="admin-msg error">${esc(err.message)}</p></div>`;
         return;
       }
       if (!state.user) {
         app.innerHTML = gate();
+        return;
+      }
+      if (path === "/") {
+        const overview = await api("/api/overview");
+        app.innerHTML = dashboard(overview);
+        currentRenderPath = path;
+        if (!state.content) {
+          loadContent().catch(() => {});
+        }
+        return;
+      }
+      if (path === "/trash") {
+        currentRenderPath = path;
+        try {
+          const trashRes = await api("/api/trash");
+          app.innerHTML = trashView(trashRes.items || []);
+        } catch (err) {
+          console.error("Failed to load recycle bin:", err);
+          app.innerHTML = chrome("09 / RECYCLE BIN", `
+            <div class="admin-toolbar">
+              <h1>RECYCLE BIN<span class="red-stop">.</span></h1>
+            </div>
+            <div style="border:1px solid var(--red);background:#fff8f8;padding:24px;margin:24px 0">
+              <p class="admin-kicker" style="color:var(--red);margin-bottom:8px">⚠ SERVER ENDPOINT NOT LOADED</p>
+              <h2 style="margin:0 0 12px;font:700 18px var(--sans)">PLEASE RESTART THE ADMIN SERVER</h2>
+              <p style="font:13px/1.6 var(--mono);margin:0 0 16px;color:#333">
+                The local admin server was started before the Recycle Bin API was added.
+              </p>
+              <div style="background:#171717;color:#fff;padding:14px 18px;font:13px var(--mono);margin-bottom:18px;line-height:1.7">
+                1. Go to the terminal where <code>npm run admin</code> is running.<br>
+                2. Press <strong style="color:var(--red)">Ctrl + C</strong> to stop the server.<br>
+                3. Run <code>npm run admin</code> again.<br>
+                4. Refresh this page.
+              </div>
+              <button class="admin-btn primary" onclick="location.reload()" type="button">RELOAD PAGE <b>→</b></button>
+            </div>
+          `);
+        }
+        if (!state.content) {
+          loadContent().catch(() => {});
+        }
         return;
       }
       if (!state.content) await loadContent();
@@ -3846,8 +3980,24 @@
     const isNew = form.getAttribute("data-new") === "1";
     if (type === "passcode-login") {
       const passcode = formValue(form, "passcode");
-      await api("/api/auth/passcode", { method: "POST", body: { passcode } });
-      await render();
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "UNLOCKING CONSOLE... <span class='btn-spinner'></span>";
+      }
+      try {
+        const res = await api("/api/auth/passcode", { method: "POST", body: { passcode } });
+        if (res && res.login) {
+          state.user = { login: res.login, passcode: true };
+        }
+        await render(true);
+      } catch (err) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "UNLOCK CONSOLE <b>→</b>";
+        }
+        throw err;
+      }
       return;
     }
     if (type === "media-upload") {
@@ -3916,9 +4066,11 @@
     }
     if (type === "project") {
       const sections = collectSections(form);
+      const titleVal = formValue(form, "title");
+      const slugVal = formValue(form, "slug") || slugify(titleVal);
       const payload = {
-        title: formValue(form, "title"),
-        slug: formValue(form, "slug"),
+        title: titleVal,
+        slug: slugVal,
         number: formValue(form, "number"),
         date: formValue(form, "date"),
         year: formValue(form, "year"),
@@ -3938,9 +4090,10 @@
         published,
         sections: sections
       };
+      const oldSlug = form.getAttribute("data-slug");
       let res;
-      if (isNew) res = await api("/api/projects", { method: "POST", body: payload });
-      else res = await api("/api/projects/" + encodeURIComponent(payload.slug), { method: "PUT", body: payload });
+      if (isNew || !oldSlug) res = await api("/api/projects", { method: "POST", body: payload });
+      else res = await api("/api/projects/" + encodeURIComponent(oldSlug), { method: "PUT", body: payload });
       state.message = published
         ? "Project saved. Open VIEW SITE to see it on the website."
         : "Draft saved. It stays off the public site until you publish.";
@@ -3949,9 +4102,11 @@
     }
     if (type === "blog") {
       const sections = collectSections(form);
+      const titleVal = formValue(form, "title");
+      const slugVal = formValue(form, "slug") || slugify(titleVal);
       const payload = {
-        title: formValue(form, "title"),
-        slug: formValue(form, "slug"),
+        title: titleVal,
+        slug: slugVal,
         date: formValue(form, "date"),
         category: formValue(form, "category"),
         tags: formValue(form, "tags"),
@@ -3964,9 +4119,10 @@
         published,
         sections: sections
       };
+      const oldSlug = form.getAttribute("data-slug");
       let res;
-      if (isNew) res = await api("/api/blog", { method: "POST", body: payload });
-      else res = await api("/api/blog/" + encodeURIComponent(payload.slug), { method: "PUT", body: payload });
+      if (isNew || !oldSlug) res = await api("/api/blog", { method: "POST", body: payload });
+      else res = await api("/api/blog/" + encodeURIComponent(oldSlug), { method: "PUT", body: payload });
       state.message = published
         ? "Article saved. Open VIEW SITE to see it on the website."
         : "Draft saved. It stays off the public site until you publish.";
@@ -4012,9 +4168,11 @@
     }
     if (type === "note") {
       const sections = collectSections(form);
+      const titleVal = formValue(form, "title");
+      const slugVal = formValue(form, "slug") || slugify(titleVal);
       const payload = {
-        title: formValue(form, "title"),
-        slug: formValue(form, "slug"),
+        title: titleVal,
+        slug: slugVal,
         date: formValue(form, "date"),
         tags: formValue(form, "tags"),
         body: serializeSectionsToMarkdown(sections),
@@ -4122,6 +4280,13 @@
       if (toggleBtn) {
         toggleBtn.classList.remove("active");
         toggleBtn.setAttribute("aria-expanded", "false");
+      }
+      const href = adminNavLink.getAttribute("href");
+      if (href && href.startsWith("#")) {
+        const targetPath = href.replace(/^#/, "") || "/";
+        if (hash() === targetPath) {
+          render(true);
+        }
       }
     }
 
@@ -4457,8 +4622,20 @@
           return;
         }
         if (name === "dev") {
-          await api("/api/auth/dev", { method: "POST", body: {} });
-          await render();
+          act.disabled = true;
+          act.innerHTML = "LOGGING IN... <span class='btn-spinner'></span>";
+          try {
+            const res = await api("/api/auth/dev", { method: "POST", body: {} });
+            if (res && res.login) {
+              state.user = { login: res.login, dev: true };
+            }
+            await render(true);
+          } catch (err) {
+            act.disabled = false;
+            act.innerHTML = "DEVELOPER LOCALHOST LOGIN <b>→</b>";
+            alert("Dev login failed: " + err.message);
+          }
+          return;
         }
         if (name === "close-preview") act.closest(".admin-preview").remove();
         if (name === "preview-project") { syncAllWysiwyg(act.closest("form")); projectPreview(act.closest("form")); }

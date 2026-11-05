@@ -12,3 +12,5 @@ Thumbs.db
 *.bak
 website_style.png
 scratch/
+/*.png
+/*.svg

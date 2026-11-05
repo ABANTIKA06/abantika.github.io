@@ -345,7 +345,7 @@ async function handle(req, res) {
         about: store.loadAbout(),
         skills: store.loadSkills(),
         settings: store.loadSettings(),
-        media: await store.listMedia()
+        media: store.getCachedMedia ? store.getCachedMedia() : []
       });
       return true;
     }
@@ -424,11 +424,16 @@ async function handle(req, res) {
       return true;
     }
     if (req.method === "PUT" && url.pathname.startsWith("/api/notes/")) {
-      const slug = decodeURIComponent(url.pathname.slice("/api/notes/".length));
-      const resData = store.saveNote({ ...body, slug });
+      const oldSlug = decodeURIComponent(url.pathname.slice("/api/notes/".length));
+      const resData = store.saveNote(body, { oldSlug });
+      const filePaths = [path.join("content", "notes", `${resData.slug}.md`)];
+      if (oldSlug && oldSlug !== resData.slug) {
+        filePaths.push(path.join("content", "notes", `${oldSlug}.md`));
+      }
+      filePaths.push(path.join("content", "notes", ".gitkeep"));
       await saved(resData, {
-        commitMessage: `note: update ${resData.title || slug}`,
-        filePaths: [path.join("content", "notes", `${slug}.md`)]
+        commitMessage: `note: update ${resData.data?.title || resData.slug}`,
+        filePaths
       });
       return true;
     }
@@ -456,19 +461,20 @@ async function handle(req, res) {
       const resData = store.saveProject(body, { isNew: true });
       await saved(resData, {
         commitMessage: `content: publish project ${resData.title || resData.slug}`,
-        filePaths: [path.join("content", "projects", `${resData.slug}.md`)]
+        filePaths: [path.join("content", "projects", `${resData.slug}.md`), path.join("content", "projects", ".gitkeep")]
       });
       return true;
     }
     if (req.method === "PUT" && url.pathname.startsWith("/api/projects/")) {
-      const slug = decodeURIComponent(url.pathname.slice("/api/projects/".length));
-      const resData = store.saveProject({ ...body, slug });
-      const filePaths = [path.join("content", "projects", `${resData.slug || slug}.md`)];
-      if (slug && resData.slug && slug !== resData.slug) {
-        filePaths.push(path.join("content", "projects", `${slug}.md`));
+      const oldSlug = decodeURIComponent(url.pathname.slice("/api/projects/".length));
+      const resData = store.saveProject(body, { oldSlug });
+      const filePaths = [path.join("content", "projects", `${resData.slug}.md`)];
+      if (oldSlug && oldSlug !== resData.slug) {
+        filePaths.push(path.join("content", "projects", `${oldSlug}.md`));
       }
+      filePaths.push(path.join("content", "projects", ".gitkeep"));
       await saved(resData, {
-        commitMessage: `content: update project ${resData.title || slug}`,
+        commitMessage: `content: update project ${resData.title || resData.slug}`,
         filePaths
       });
       return true;
@@ -477,19 +483,20 @@ async function handle(req, res) {
       const resData = store.saveBlog(body, { isNew: true });
       await saved(resData, {
         commitMessage: `blog: publish ${resData.title || resData.slug}`,
-        filePaths: [path.join("content", "blog", `${resData.slug}.md`)]
+        filePaths: [path.join("content", "blog", `${resData.slug}.md`), path.join("content", "blog", ".gitkeep")]
       });
       return true;
     }
     if (req.method === "PUT" && url.pathname.startsWith("/api/blog/")) {
-      const slug = decodeURIComponent(url.pathname.slice("/api/blog/".length));
-      const resData = store.saveBlog({ ...body, slug });
-      const filePaths = [path.join("content", "blog", `${resData.slug || slug}.md`)];
-      if (slug && resData.slug && slug !== resData.slug) {
-        filePaths.push(path.join("content", "blog", `${slug}.md`));
+      const oldSlug = decodeURIComponent(url.pathname.slice("/api/blog/".length));
+      const resData = store.saveBlog(body, { oldSlug });
+      const filePaths = [path.join("content", "blog", `${resData.slug}.md`)];
+      if (oldSlug && oldSlug !== resData.slug) {
+        filePaths.push(path.join("content", "blog", `${oldSlug}.md`));
       }
+      filePaths.push(path.join("content", "blog", ".gitkeep"));
       await saved(resData, {
-        commitMessage: `blog: update ${resData.title || slug}`,
+        commitMessage: `blog: update ${resData.title || resData.slug}`,
         filePaths
       });
       return true;

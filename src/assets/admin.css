@@ -2437,3 +2437,31 @@ table.bauhaus-table tr:hover,
     justify-content: flex-end;
   }
 }
+
+
+.btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: btnSpin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+@keyframes btnSpin {
+  to { transform: rotate(360deg); }
+}
+
+
+.admin-stat[href] {
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+.admin-stat[href]:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  transform: translateY(-2px);
+}
+.admin-stat[href]:hover strong {
+  color: var(--red);
+}

@@ -37,6 +37,19 @@ function safeSiteFile(urlPath) {
 }
 
 function serveSite(req, res) {
+  const urlPath = String(req.url || "/").split("?")[0];
+  if (urlPath.startsWith("/assets/")) {
+    const rel = urlPath.slice("/assets/".length);
+    const srcAsset = path.join(env.ROOT, "src", "assets", rel);
+    if (fs.existsSync(srcAsset) && fs.statSync(srcAsset).isFile()) {
+      res.writeHead(200, {
+        "content-type": TYPES[path.extname(srcAsset).toLowerCase()] || "application/octet-stream",
+        "cache-control": "no-store, no-cache, must-revalidate"
+      });
+      fs.createReadStream(srcAsset).pipe(res);
+      return;
+    }
+  }
   const file = safeSiteFile(req.url || "/");
   if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });

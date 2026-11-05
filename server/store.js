@@ -458,10 +458,10 @@ function deleteJournal(id) {
   return { ok: true, trashed: true, id: safeSlug(id) };
 }
 
-function saveProject(input, { isNew = false } = {}) {
+function saveProject(input, { isNew = false, oldSlug = "" } = {}) {
   const today = new Date().toISOString().slice(0, 10);
   const title = String(input.title || "").trim() || "Untitled Project";
-  const slug = slugify(input.slug || title) || "new-project";
+  const slug = slugify(input.slug || oldSlug || title) || "new-project";
   const date = String(input.date || today).slice(0, 10);
   const category = String(input.category || "Data Analysis").trim();
   const description = String(input.description || input.summary || title).trim();
@@ -501,11 +501,16 @@ function saveProject(input, { isNew = false } = {}) {
       : []
   };
   writeMarkdown(file, data, String(input.body || ""));
+  if (oldSlug && oldSlug !== slug) {
+    const previous = projectFile(oldSlug);
+    safeUnlinkFile(previous);
+    ensureFolderGitkeep("content/projects");
+  }
   return publicProject(loadProjects().find((item) => item.slug === slug));
 }
 
-function saveBlog(input, { isNew = false } = {}) {
-  const slug = slugify(input.slug || input.title);
+function saveBlog(input, { isNew = false, oldSlug = "" } = {}) {
+  const slug = slugify(input.slug || oldSlug || input.title);
   requireFields({ ...input, slug }, ["title", "slug", "description", "date"], "blog");
   const file = blogFile(slug);
   if (isNew && (fs.existsSync(file) || Boolean(getVirtualFile(file)))) throw new Error(`article "${slug}" already exists`);
@@ -532,6 +537,11 @@ function saveBlog(input, { isNew = false } = {}) {
     sections
   };
   writeMarkdown(file, data, String(input.body || ""));
+  if (oldSlug && oldSlug !== slug) {
+    const previous = blogFile(oldSlug);
+    safeUnlinkFile(previous);
+    ensureFolderGitkeep("content/blog");
+  }
   return publicBlog(loadBlog().find((item) => item.slug === slug));
 }
 
@@ -755,6 +765,10 @@ function getMediaBuffer(relPath) {
   return mediaBufferCache.get(norm);
 }
 
+function getCachedMedia() {
+  return mediaListCache || [];
+}
+
 async function listMedia(forceRefresh = false) {
   if (!forceRefresh && mediaListCache && (Date.now() - mediaListCacheTime < MEDIA_CACHE_TTL)) {
     return mediaListCache;
@@ -968,10 +982,10 @@ function getNote(slugOrFilename) {
   };
 }
 
-function saveNote(payload) {
+function saveNote(payload, { oldSlug = "" } = {}) {
   const title = String(payload.title || "").trim();
   if (!title) throw new Error("Note requires a title.");
-  const slug = safeSlug(slugify(payload.slug || title));
+  const slug = safeSlug(slugify(payload.slug || oldSlug || title));
   if (!slug) throw new Error("Note requires a valid slug.");
   const filename = `${slug}.md`;
   const file = path.join(CONTENT, "notes", filename);
@@ -992,6 +1006,11 @@ function saveNote(payload) {
     sections
   };
   writeMarkdown(file, data, payload.body || "");
+  if (oldSlug && oldSlug !== slug) {
+    const previous = path.join(CONTENT, "notes", `${safeSlug(oldSlug)}.md`);
+    safeUnlinkFile(previous);
+    ensureFolderGitkeep("content/notes");
+  }
   return { filename, slug, data };
 }
 
@@ -1079,6 +1098,7 @@ module.exports = {
   deleteJournal,
   promoteNote,
   listMedia,
+  getCachedMedia,
   getMediaBuffer,
   saveMedia,
   saveMediaBuffer,
