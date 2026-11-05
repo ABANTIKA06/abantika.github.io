@@ -1,21 +1,26 @@
 ---
-title: Customer Churn Prediction
+title: Bank Customer Churn Prediction
 slug: customer-churn-prediction
 number: '01'
 date: '2026-09-09'
 year: 2026
 category: Machine Learning
-description: Predicting customer retention patterns using machine learning to identify key churn indicators.
-summary: Predicting customer retention patterns using machine learning to identify key churn indicators.
+description: >-
+  Predicting customer retention patterns using SQL and Power BI and to identify
+  key churn indicators.
+summary: >-
+  Predicting customer retention patterns using SQL and Power BI and to identify
+  key churn indicators.
 technologies:
   - Python
   - Pandas
-  - Scikit-learn
-  - XGBoost
+  - SQL
+  - Power BI
 featured: true
 published: true
 art: dots
 artLabel: DATA / MODEL / DECISION
+customArt: ''
 cover: ''
 github: ''
 live: ''
@@ -24,11 +29,9 @@ headline:
   - CHURN
   - PREDICTION
 sections:
-  - label: 01 / PROBLEM
+  - label: 01 / BUSINESS PROBLEM AND RESOLUTION
     heading: THE QUESTION
-    body: >-
-      [PLACEHOLDER — Define the business or research question using supplied
-      project material.]
+    body: ''
   - label: 02 / DATA
     heading: THE EVIDENCE
     body: >-
@@ -43,4 +46,16 @@ sections:
     heading: THE OUTCOME
     body: METRIC TBD — Add only results supported by the real project record.
 ---
+## THE QUESTION
 
+## THE EVIDENCE
+
+[PLACEHOLDER — Document data sources, scope, and limitations. No metrics have been claimed.]
+
+## THE METHOD
+
+[PLACEHOLDER — Explain exploration, modeling, validation, and interpretability methods.]
+
+## THE OUTCOME
+
+METRIC TBD — Add only results supported by the real project record.
