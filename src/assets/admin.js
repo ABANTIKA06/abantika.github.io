@@ -3845,7 +3845,7 @@
     state.content = await api("/api/content");
   }
 
-  let isRendering = false;
+  let renderGeneration = 0;
   let currentRenderPath = null;
 
   async function render(force = false) {
@@ -3853,8 +3853,7 @@
     if (!force && isFormActive() && currentRenderPath === path) {
       return;
     }
-    if (isRendering && !force) return;
-    isRendering = true;
+    const myGen = ++renderGeneration;
     state.error = "";
     try {
       try {
@@ -3868,6 +3867,7 @@
             state.user = ses.login ? ses : null;
           }
         }
+        if (myGen !== renderGeneration) return;
       } catch (err) {
         app.innerHTML = `<div class="admin-gate"><h1>ADMIN SERVER REQUIRED<span class="red-stop">.</span></h1><p>Open the admin origin instead of the public Eleventy port. From the project folder run <code>npm.cmd run admin</code> and go to <a href="http://localhost:8787/admin/">http://localhost:8787/admin/</a>.</p><p class="admin-msg error">${esc(err.message)}</p></div>`;
         return;
@@ -3878,6 +3878,7 @@
       }
       if (path === "/") {
         const overview = await api("/api/overview");
+        if (myGen !== renderGeneration) return;
         app.innerHTML = dashboard(overview);
         currentRenderPath = path;
         if (!state.content) {
@@ -3889,6 +3890,7 @@
         currentRenderPath = path;
         try {
           const trashRes = await api("/api/trash");
+          if (myGen !== renderGeneration) return;
           app.innerHTML = trashView(trashRes.items || []);
         } catch (err) {
           console.error("Failed to load recycle bin:", err);
@@ -3925,6 +3927,7 @@
       const parts = path.split("/").filter(Boolean);
       if (path === "/") {
         const overview = await api("/api/overview");
+        if (myGen !== renderGeneration) return;
         app.innerHTML = dashboard(overview);
       } else if (path === "/projects") {
         app.innerHTML = chrome("03 / PROJECTS", `<div class="admin-toolbar"><h1>CASE STUDIES<span class="red-stop">.</span></h1><a class="admin-btn primary" href="#/projects/new">NEW PROJECT <b>→</b></a></div>${rows(state.content.projects, (item) => `#/projects/${item.slug}`, "project")}`);
@@ -3968,7 +3971,7 @@
         app.innerHTML = chrome("MISSING", "<h1>NOT FOUND<span class='red-stop'>.</span></h1>");
       }
     } finally {
-      isRendering = false;
+      // render generation counter handles concurrency; no reset needed
     }
   }
 
