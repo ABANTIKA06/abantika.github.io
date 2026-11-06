@@ -1560,7 +1560,9 @@ a.wikilink {
 .admin-sticky-controls-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   width: 100%;
   padding-top: 10px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
@@ -2434,7 +2436,9 @@ table.bauhaus-table tr:hover,
   }
   .trash-row-actions {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   }
 }
 

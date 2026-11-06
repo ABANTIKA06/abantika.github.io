@@ -2,7 +2,7 @@
 permalink: /sw.js
 eleventyExcludeFromCollections: true
 ---
-const CACHE_NAME = 'abantika-pwa-v4.3.0';
+const CACHE_NAME = 'abantika-pwa-v4.5.0';
 const ASSETS_TO_CACHE = [
   '/',
   '/assets/styles.css',
@@ -42,7 +42,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Never cache admin endpoints, admin pages, or admin assets
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin') || url.pathname.includes('admin.')) return;
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin') || url.pathname.includes('admin') || url.pathname.includes('doceditor')) return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {

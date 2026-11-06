@@ -17,7 +17,14 @@ eleventyComputed:
   <main class="article-page">
     <header class="case-header">
       <p class="eyebrow">NOTE &nbsp; · &nbsp; {{ note.dateISO }}</p>
+      {% set tSize = note.titleSize or '' %}
+      {% if tSize == 'sm' or tSize == 'md' or tSize == 'lg' or tSize == 'xl' %}
+      <h1 class="title-size-{{ tSize }}">{{ note.title }}<span class="red-stop">.</span></h1>
+      {% elseif tSize %}
+      <h1 style="font-size: clamp(32px, 6.5vw, {{ tSize }}{% if not ('px' in (tSize | string)) %}px{% endif %}) !important;">{{ note.title }}<span class="red-stop">.</span></h1>
+      {% else %}
       <h1>{{ note.title }}<span class="red-stop">.</span></h1>
+      {% endif %}
     </header>
     <div class="detail-with-share">
       <article class="case-body">

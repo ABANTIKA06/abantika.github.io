@@ -198,6 +198,24 @@
 
 .journal-empty{padding:clamp(55px,8vw,115px) clamp(22px,9vw,145px);display:grid;grid-template-columns:190px minmax(300px,1fr) 120px;gap:clamp(30px,7vw,120px);min-height:420px}.journal-empty>div{border-right:1px solid var(--line);display:flex;flex-direction:column;font-size:clamp(52px,6vw,85px);line-height:.8;font-weight:800;letter-spacing:-.09em}.journal-empty article h2{font-size:clamp(35px,5vw,72px);letter-spacing:-.08em;line-height:.85;margin:10px 0 18px}.journal-empty article>p:last-child{font-size:14px;line-height:1.5;max-width:350px;color:#514e49}.journal-empty aside{font:9px/1.8 var(--mono);letter-spacing:.16em;border-left:1px solid var(--line);padding-left:18px}@media(max-width:510px){.journal-empty{grid-template-columns:1fr;padding:55px 22px}.journal-empty>div{border-right:0;border-bottom:1px solid var(--line);padding-bottom:20px;display:block}.journal-empty>div span{margin-right:10px}.journal-empty aside{display:none}}
 
+/* Document Title Size Presets (Configured from Admin / Doc Editor) */
+.case-header h1.title-size-sm, .note-header h1.title-size-sm, .page-intro h1.title-size-sm, h1.title-size-sm {
+  font-size: clamp(34px, 5.2vw, 64px) !important;
+  line-height: .92 !important;
+}
+.case-header h1.title-size-md, .note-header h1.title-size-md, .page-intro h1.title-size-md, h1.title-size-md {
+  font-size: clamp(46px, 6.8vw, 88px) !important;
+  line-height: .86 !important;
+}
+.case-header h1.title-size-lg, .note-header h1.title-size-lg, .page-intro h1.title-size-lg, h1.title-size-lg {
+  font-size: clamp(56px, 8.4vw, 112px) !important;
+  line-height: .83 !important;
+}
+.case-header h1.title-size-xl, .note-header h1.title-size-xl, .page-intro h1.title-size-xl, h1.title-size-xl {
+  font-size: clamp(68px, 10vw, 140px) !important;
+  line-height: .80 !important;
+}
+
 /* Contained project-index artifacts — do not reuse leaking homepage pseudos */
 .projects-page,
 .projects-page .page-intro,
@@ -1204,3 +1222,42 @@ pre:hover .code-copy-btn {
 
 
 
+
+
+/* ── Editorial Figure & Alignment Styling ──────────────────────────────── */
+.case-markdown figure,
+.note-body figure {
+  margin: 28px auto;
+  max-width: 100%;
+}
+.case-markdown figure[data-align="left"],
+.note-body figure[data-align="left"] {
+  margin: 28px auto 28px 0;
+  text-align: left;
+}
+.case-markdown figure[data-align="center"],
+.note-body figure[data-align="center"] {
+  margin: 28px auto;
+  text-align: center;
+}
+.case-markdown figure[data-align="right"],
+.note-body figure[data-align="right"] {
+  margin: 28px 0 28px auto;
+  text-align: right;
+}
+.case-markdown figure img,
+.note-body figure img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--ink);
+  background: #edeae2;
+}
+.case-markdown figure figcaption,
+.note-body figure figcaption {
+  font: 10px var(--mono);
+  letter-spacing: 0.12em;
+  color: #666;
+  margin-top: 8px;
+  text-transform: uppercase;
+}

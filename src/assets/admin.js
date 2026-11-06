@@ -392,6 +392,9 @@
   function markdownToHtml(mdText) {
     if (!mdText) return "";
     let html = esc(String(mdText));
+    html = html.replace(/&lt;span style=&quot;(.*?)&quot;&gt;(.*?)&lt;\/span&gt;/gi, '<span style="$1">$2</span>');
+    html = html.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gi, "<u>$1</u>");
+    html = html.replace(/&lt;s&gt;(.*?)&lt;\/s&gt;/gi, "<s>$1</s>");
     html = convertMarkdownTablesToHtml(html);
     html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
     html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
@@ -1007,29 +1010,6 @@
     return chrome(
       isNew ? "03 / NEW PROJECT" : "03 / EDIT PROJECT",
       `
-      <div class="admin-sticky-bar">
-        <div class="admin-sticky-top-row">
-          <div class="admin-sticky-left">
-            <a href="#/projects" class="admin-btn-back-circle" aria-label="Go Back to Projects" title="Go Back"><span class="back-chevron">&lt;</span></a>
-            <span class="sticky-divider"></span>
-            <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          </div>
-          <div class="admin-sticky-title-container">
-            <div class="admin-sticky-editing-group">
-              <span class="admin-sticky-editing-kicker">EDITING PROJECT</span>
-              <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW CASE STUDY")}">${esc(item.title || "NEW CASE STUDY")}</h2>
-            </div>
-          </div>
-        </div>
-        <div class="admin-sticky-controls-bar">
-          <div class="admin-actions">
-            <button class="admin-btn" type="submit" form="project-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
-            <button class="admin-btn" type="button" data-act="preview-project"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
-            <button class="admin-btn primary" type="submit" form="project-editor-form" data-publish="true"><span class="btn-icon">${ICONS.publish}</span> <span class="btn-text">PUBLISH</span></button>
-          </div>
-        </div>
-      </div>
-
       <form class="admin-form" id="project-editor-form" data-form="project" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
         <div class="collapsible-details-panel open">
           <div class="collapsible-details-summary" role="button" tabindex="0">
@@ -1038,6 +1018,12 @@
           </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
+            ${sel("DOCUMENT TITLE SIZE", "titleSize", item.titleSize || "md", [
+              { value: "sm", label: "SM — COMPACT (48px - 64px)" },
+              { value: "md", label: "MD — BALANCED (72px - 88px)" },
+              { value: "lg", label: "LG — EDITORIAL DISPLAY (96px - 112px)" },
+              { value: "xl", label: "XL — MAXIMUM IMPACT / HERO (120px - 140px)" }
+            ])}
             ${input("SLUG", "slug", item.slug || "", 'placeholder="auto-generated-from-title"')}
             ${input("NUMBER", "number", item.number || "")}
             ${input("DATE", "date", dateVal, 'type="date"', true)}
@@ -1100,29 +1086,6 @@
     return chrome(
       isNew ? "04 / NEW ARTICLE" : "04 / EDIT ARTICLE",
       `
-      <div class="admin-sticky-bar">
-        <div class="admin-sticky-top-row">
-          <div class="admin-sticky-left">
-            <a href="#/blog" class="admin-btn-back-circle" aria-label="Go Back to Articles" title="Go Back"><span class="back-chevron">&lt;</span></a>
-            <span class="sticky-divider"></span>
-            <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          </div>
-          <div class="admin-sticky-title-container">
-            <div class="admin-sticky-editing-group">
-              <span class="admin-sticky-editing-kicker">EDITING ARTICLE</span>
-              <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW ARTICLE")}">${esc(item.title || "NEW ARTICLE")}</h2>
-            </div>
-          </div>
-        </div>
-        <div class="admin-sticky-controls-bar">
-          <div class="admin-actions">
-            <button class="admin-btn" type="submit" form="blog-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
-            <button class="admin-btn" type="button" data-act="preview-blog"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
-            <button class="admin-btn primary" type="submit" form="blog-editor-form" data-publish="true"><span class="btn-icon">${ICONS.publish}</span> <span class="btn-text">PUBLISH</span></button>
-          </div>
-        </div>
-      </div>
-
       <form class="admin-form" id="blog-editor-form" data-form="blog" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
         <div class="collapsible-details-panel open">
           <div class="collapsible-details-summary" role="button" tabindex="0">
@@ -1131,6 +1094,12 @@
           </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
+            ${sel("DOCUMENT TITLE SIZE", "titleSize", item.titleSize || "md", [
+              { value: "sm", label: "SM — COMPACT (48px - 64px)" },
+              { value: "md", label: "MD — BALANCED (72px - 88px)" },
+              { value: "lg", label: "LG — EDITORIAL DISPLAY (96px - 112px)" },
+              { value: "xl", label: "XL — MAXIMUM IMPACT / HERO (120px - 140px)" }
+            ])}
             ${input("SLUG", "slug", item.slug || "", 'placeholder="auto-generated-from-title"')}
             ${input("DATE", "date", dateVal, 'type="date"', true)}
             ${input("CATEGORY", "category", item.category || "", "", true)}
@@ -1165,28 +1134,6 @@
     return chrome(
       isNew ? "06 / NEW NOTE" : "06 / EDIT NOTE",
       `
-      <div class="admin-sticky-bar">
-        <div class="admin-sticky-top-row">
-          <div class="admin-sticky-left">
-            <a href="#/notes" class="admin-btn-back-circle" aria-label="Go Back to Notes" title="Go Back"><span class="back-chevron">&lt;</span></a>
-            <span class="sticky-divider"></span>
-            <span class="admin-status-badge ${item.published !== false ? 'published' : 'draft'}">${item.published !== false ? 'PUBLISHED' : 'DRAFT'}</span>
-          </div>
-          <div class="admin-sticky-title-container">
-            <div class="admin-sticky-editing-group">
-              <span class="admin-sticky-editing-kicker">EDITING NOTE</span>
-              <h2 class="admin-sticky-title-text" title="${esc(item.title || "NEW NOTE")}">${esc(item.title || "NEW NOTE")}</h2>
-            </div>
-          </div>
-        </div>
-        <div class="admin-sticky-controls-bar">
-          <div class="admin-actions">
-            <button class="admin-btn" type="button" data-act="preview-note"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
-            <button class="admin-btn primary" type="submit" form="note-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE NOTE</span></button>
-          </div>
-        </div>
-      </div>
-
       <form class="admin-form" id="note-editor-form" data-form="note" data-slug="${esc(item.slug || "")}" data-new="${isNew ? "1" : ""}">
         <div class="collapsible-details-panel open">
           <div class="collapsible-details-summary" role="button" tabindex="0">
@@ -1195,6 +1142,12 @@
           </div>
           <div class="collapsible-details-content">
             ${input("TITLE", "title", item.title || "", "", true)}
+            ${sel("DOCUMENT TITLE SIZE", "titleSize", item.titleSize || "md", [
+              { value: "sm", label: "SM — COMPACT (48px - 64px)" },
+              { value: "md", label: "MD — BALANCED (72px - 88px)" },
+              { value: "lg", label: "LG — EDITORIAL DISPLAY (96px - 112px)" },
+              { value: "xl", label: "XL — MAXIMUM IMPACT / HERO (120px - 140px)" }
+            ])}
             ${input("SLUG", "slug", item.slug || "", 'placeholder="auto-generated-from-title"')}
             ${input("DATE", "date", dateVal, 'type="date"', true)}
             ${input("TAGS (COMMA SEPARATED)", "tags", (item.tags || []).join(", "))}
@@ -1227,29 +1180,6 @@
     return chrome(
       isNew ? "05 / NEW NOTE" : "05 / EDIT NOTE",
       `
-      <div class="admin-sticky-bar">
-        <div class="admin-sticky-top-row">
-          <div class="admin-sticky-left">
-            <a href="#/journal" class="admin-btn-back-circle" aria-label="Go Back to Journal" title="Go Back"><span class="back-chevron">&lt;</span></a>
-            <span class="sticky-divider"></span>
-            <span class="admin-status-badge ${item.published ? 'published' : 'draft'}">${item.published ? 'PUBLISHED' : 'DRAFT'}</span>
-          </div>
-          <div class="admin-sticky-title-container">
-            <div class="admin-sticky-editing-group">
-              <span class="admin-sticky-editing-kicker">EDITING JOURNAL</span>
-              <h2 class="admin-sticky-title-text" title="${esc(item.title || "DAILY JOURNAL")}">${esc(item.title || "DAILY JOURNAL")}</h2>
-            </div>
-          </div>
-        </div>
-        <div class="admin-sticky-controls-bar">
-          <div class="admin-actions">
-            <button class="admin-btn" type="submit" form="journal-editor-form" data-publish="false"><span class="btn-icon">${ICONS.save}</span> <span class="btn-text">SAVE DRAFT</span></button>
-            <button class="admin-btn" type="button" data-act="preview-journal"><span class="btn-icon">${ICONS.preview}</span> <span class="btn-text">PREVIEW</span></button>
-            <button class="admin-btn primary" type="submit" form="journal-editor-form" data-publish="true"><span class="btn-icon">${ICONS.publish}</span> <span class="btn-text">PUBLISH</span></button>
-          </div>
-        </div>
-      </div>
-
       <form class="admin-form" id="journal-editor-form" data-form="journal" data-id="${esc(item.id || "")}" data-new="${isNew ? "1" : ""}">
         <div class="collapsible-details-panel open">
           <div class="collapsible-details-summary" role="button" tabindex="0">
@@ -1259,6 +1189,12 @@
           <div class="collapsible-details-content">
             ${input("DATE", "date", dateVal, 'type="date"', true)}
             ${input("TITLE", "title", item.title || "", "", true)}
+            ${sel("DOCUMENT TITLE SIZE", "titleSize", item.titleSize || "md", [
+              { value: "sm", label: "SM — COMPACT (48px - 64px)" },
+              { value: "md", label: "MD — BALANCED (72px - 88px)" },
+              { value: "lg", label: "LG — EDITORIAL DISPLAY (96px - 112px)" },
+              { value: "xl", label: "XL — MAXIMUM IMPACT / HERO (120px - 140px)" }
+            ])}
             ${area("HEADLINE (ONE LINE PER BREAK)", "headline", (item.headline || []).join("\n"))}
             ${sel("RELATED PROJECT", "project", item.project || "", [{ value: "", label: "NONE" }].concat((state.content.projects || []).map((p) => ({ value: p.slug, label: p.title }))))}
             ${input("SUMMARY", "summary", item.summary || "")}
@@ -1404,6 +1340,7 @@
   }
 
   async function showMediaSelectModal(onSelect) {
+    window.showMediaSelectModal = showMediaSelectModal;
     document.querySelector(".admin-modal-root")?.remove();
     let mediaFiles = [];
     try {
@@ -3766,7 +3703,72 @@
       .join("\n\n");
   }
 
-  function previewFrame(html) {
+  function previewFrame(html, titleText = "PREVIEW") {
+    document.querySelectorAll(".admin-preview").forEach(p => p.remove());
+    const box = document.createElement("div");
+    box.className = "admin-preview";
+    box.innerHTML = `
+      <div class="admin-preview-header">
+        <div class="admin-preview-title-group">
+          <span class="preview-dot"></span>
+          <span>${esc(titleText)} — LIVE PREVIEW BEFORE PUSHING</span>
+        </div>
+        <div class="admin-preview-actions">
+          <div class="preview-viewport-toggle">
+            <button type="button" class="preview-mode-btn active" data-vp="desktop">💻 DESKTOP</button>
+            <button type="button" class="preview-mode-btn" data-vp="mobile">📱 MOBILE</button>
+          </div>
+          <button class="admin-btn primary" type="button" data-act="close-preview">✕ CLOSE PREVIEW</button>
+        </div>
+      </div>
+      <div class="admin-preview-container">
+        <iframe title="Preview" sandbox="allow-same-origin allow-scripts"></iframe>
+      </div>
+    `;
+    document.body.appendChild(box);
+
+    const iframe = box.querySelector("iframe");
+    const doc = iframe.contentDocument;
+    doc.open();
+    doc.write(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <style>
+    body { padding: 48px 32px 100px; max-width: 900px; margin: 0 auto; background: var(--paper, #f2f0ea); color: var(--ink, #111); }
+  </style>
+</head>
+<body class="site-body">
+  ${html}
+</body>
+</html>`);
+    doc.close();
+
+    box.querySelectorAll("[data-vp]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        box.querySelectorAll("[data-vp]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const vp = btn.getAttribute("data-vp");
+        if (vp === "mobile") {
+          iframe.style.maxWidth = "390px";
+          iframe.style.margin = "0 auto";
+          iframe.style.display = "block";
+          iframe.style.border = "2px solid #111";
+        } else {
+          iframe.style.maxWidth = "100%";
+          iframe.style.margin = "0";
+          iframe.style.border = "1px solid var(--line, #c8c6bf)";
+        }
+      });
+    });
+
+    box.querySelector('[data-act="close-preview"]')?.addEventListener("click", () => box.remove());
+    return;
+  }
+  function oldPreviewFrame(html) {
     const box = document.createElement("div");
     box.className = "admin-preview";
     box.innerHTML = `<button class="admin-btn" type="button" data-act="close-preview">CLOSE PREVIEW</button><iframe title="Preview" sandbox="allow-same-origin allow-scripts"></iframe>`;
@@ -3775,6 +3777,15 @@
     doc.open();
     doc.write(`<!doctype html><html><head><link rel="stylesheet" href="/assets/styles.css"></head><body>${html}</body></html>`);
     doc.close();
+  }
+
+  function getTitleSizeStyleAttr(titleSize) {
+    if (!titleSize || titleSize === "default") return "";
+    if (["sm", "md", "lg", "xl"].includes(titleSize)) {
+      return `class="title-size-${esc(titleSize)}"`;
+    }
+    const sizeWithUnit = String(titleSize).includes("px") ? titleSize : `${titleSize}px`;
+    return `style="font-size: clamp(32px, 6.5vw, ${esc(sizeWithUnit)}) !important;"`;
   }
 
   function projectPreview(form) {
@@ -3790,7 +3801,8 @@
         </section>`
       )
       .join("");
-    previewFrame(`<main class="case-study"><header class="case-header"><p class="eyebrow">PROJECT PREVIEW</p><h1>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body">${sectionsHtml}</article></main>`);
+    const titleAttr = getTitleSizeStyleAttr(formValue(form, "titleSize") || "");
+    previewFrame(`<main class="case-study"><header class="case-header"><p class="eyebrow">PROJECT PREVIEW</p><h1 ${titleAttr}>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body">${sectionsHtml}</article></main>`);
   }
 
   function blogPreview(form) {
@@ -3806,7 +3818,8 @@
         </section>`
       )
       .join("");
-    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">05 / BLOG</p><h1>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body article-body">${sectionsHtml}</article></main>`);
+    const titleAttr = getTitleSizeStyleAttr(formValue(form, "titleSize") || "");
+    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">05 / BLOG</p><h1 ${titleAttr}>${title}<span class="red-stop">.</span></h1><p>${esc(formValue(form, "description"))}</p></header><article class="case-body article-body">${sectionsHtml}</article></main>`);
   }
 
   function notePreview(form) {
@@ -3822,7 +3835,8 @@
         </section>`
       )
       .join("");
-    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">NOTE PREVIEW</p><h1>${title}<span class="red-stop">.</span></h1></header><article class="case-body">${sectionsHtml}</article></main>`);
+    const titleAttr = getTitleSizeStyleAttr(formValue(form, "titleSize") || "");
+    previewFrame(`<main class="article-page"><header class="case-header"><p class="eyebrow">NOTE PREVIEW</p><h1 ${titleAttr}>${title}<span class="red-stop">.</span></h1></header><article class="case-body">${sectionsHtml}</article></main>`);
   }
 
   function journalPreview(form) {
@@ -3838,8 +3852,22 @@
         </section>`
       )
       .join("");
-    previewFrame(`<main class="note-page"><header class="note-header"><p class="eyebrow">04 / JOURNAL</p><h1>${title}<span class="red-stop">.</span></h1></header><article class="case-body">${sectionsHtml}</article></main>`);
+    const titleAttr = getTitleSizeStyleAttr(formValue(form, "titleSize") || "");
+    previewFrame(`<main class="note-page"><header class="note-header"><p class="eyebrow">04 / JOURNAL</p><h1 ${titleAttr}>${title}<span class="red-stop">.</span></h1></header><article class="case-body">${sectionsHtml}</article></main>`, "JOURNAL PREVIEW");
   }
+
+  window.renderAdminSectionHtml = renderSection;
+  window.reindexAdminSections = reindexSections;
+  window.triggerEditorPreview = function(form) {
+    if (!form) form = document.querySelector('form[data-form="project"], form[data-form="blog"], form[data-form="note"], form[data-form="journal"]');
+    if (!form) return;
+    const type = form.getAttribute("data-form");
+    syncAllWysiwyg(form);
+    if (type === "project") projectPreview(form);
+    else if (type === "blog") blogPreview(form);
+    else if (type === "note") notePreview(form);
+    else if (type === "journal") journalPreview(form);
+  };
 
   async function loadContent() {
     state.content = await api("/api/content");
@@ -3970,6 +3998,9 @@
       } else {
         app.innerHTML = chrome("MISSING", "<h1>NOT FOUND<span class='red-stop'>.</span></h1>");
       }
+      if (window.ZendocController && typeof window.ZendocController.mount === "function") {
+        setTimeout(() => window.ZendocController.mount(), 20);
+      }
     } finally {
       // render generation counter handles concurrency; no reset needed
     }
@@ -4071,13 +4102,16 @@
       const payload = {
         title: titleVal,
         slug: slugVal,
+        titleSize: formValue(form, "titleSize") || "md",
         number: formValue(form, "number"),
         date: formValue(form, "date"),
         year: formValue(form, "year"),
+        titleSize: formValue(form, "titleSize") || "md",
         category: formValue(form, "category"),
         description: formValue(form, "description"),
         summary: formValue(form, "summary"),
         technologies: formValue(form, "technologies"),
+        titleSize: formValue(form, "titleSize") || "md",
         headline: formValue(form, "headline"),
         art: formValue(form, "art"),
         artLabel: formValue(form, "artLabel"),
@@ -4108,9 +4142,11 @@
         title: titleVal,
         slug: slugVal,
         date: formValue(form, "date"),
+        titleSize: formValue(form, "titleSize") || "md",
         category: formValue(form, "category"),
         tags: formValue(form, "tags"),
         description: formValue(form, "description"),
+        titleSize: formValue(form, "titleSize") || "md",
         headline: formValue(form, "headline"),
         relatedProject: formValue(form, "relatedProject"),
         cover: formValue(form, "cover"),
@@ -4143,6 +4179,7 @@
       const payload = {
         date: formValue(form, "date"),
         title: formValue(form, "title"),
+        titleSize: formValue(form, "titleSize") || "md",
         headline: formValue(form, "headline"),
         project: formValue(form, "project"),
         did: did || formValue(form, "did"),
@@ -4201,7 +4238,8 @@
         method: "PUT",
         body: {
           title: formValue(form, "title"),
-          headline: formValue(form, "headline"),
+          titleSize: formValue(form, "titleSize") || "md",
+        headline: formValue(form, "headline"),
           homeHeadline: formValue(form, "homeHeadline"),
           intro: formValue(form, "intro"),
           homeSummary: formValue(form, "homeSummary"),

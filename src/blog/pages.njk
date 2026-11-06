@@ -19,7 +19,14 @@ eleventyComputed:
   <main class="article-page">
     <header class="case-header">
       <p class="eyebrow">05 / BLOG &nbsp; · &nbsp; {{ article.dateISO }} / {{ article.category | upper }}</p>
+      {% set tSize = article.titleSize or '' %}
+      {% if tSize == 'sm' or tSize == 'md' or tSize == 'lg' or tSize == 'xl' %}
+      <h1 class="title-size-{{ tSize }}">{{ article.headline | joinLines | safe }}<span class="red-stop">.</span></h1>
+      {% elseif tSize %}
+      <h1 style="font-size: clamp(32px, 6.5vw, {{ tSize }}{% if not ('px' in (tSize | string)) %}px{% endif %}) !important;">{{ article.headline | joinLines | safe }}<span class="red-stop">.</span></h1>
+      {% else %}
       <h1>{{ article.headline | joinLines | safe }}<span class="red-stop">.</span></h1>
+      {% endif %}
       <p>{{ article.description }}</p>
       {% if article.tags.length %}
       <div class="case-tech">{{ article.tags | join(" / ") | upper }}</div>
