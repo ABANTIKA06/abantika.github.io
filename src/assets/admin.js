@@ -3859,7 +3859,7 @@
       try {
         if (!state.config || !state.user) {
           const [cfg, ses] = await Promise.all([
-            state.config ? Promise.resolve(state.config) : api("/api/auth/config"),
+            api("/api/auth/config"),
             state.user ? Promise.resolve(state.user) : api("/api/session")
           ]);
           state.config = cfg;
