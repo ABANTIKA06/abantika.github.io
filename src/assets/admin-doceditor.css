@@ -685,9 +685,205 @@ body.mode-zendoc-active .admin-sticky-bar {
   padding-right: clamp(24px, 4.5vw, 64px);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE OVERHAUL (ZENDOC DOCUMENT STUDIO)
+   Fixes narrow squished document sheet and horizontal header blow-out
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Always prevent button width expansion inside Zendoc */
+.doc-editor-shell .admin-btn,
+.doc-top-appbar .admin-btn,
+.doc-sticky-header .admin-btn,
+.doc-bottom-bar .admin-btn {
+  width: auto;
+  min-height: unset;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
+  /* 1. Viewport & Container Edge-to-Edge Protection */
+  body.mode-zendoc-active {
+    overflow-x: hidden !important;
+    width: 100% !important;
+  }
+  body.mode-zendoc-active .admin-app {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  body.mode-zendoc-active .admin-main {
+    padding: 0 !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  .doc-editor-shell {
+    margin-top: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 2. Mobile Top App Bar (Stacked 2-Row Clean Layout) */
+  .doc-top-appbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .doc-top-left {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+  }
+  .doc-top-left .doc-brand-badge {
+    display: none !important; /* Hide badge on mobile to give full room to title */
+  }
+  .doc-header-title-box {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+  .doc-title-input {
+    font-size: 13px !important;
+    padding: 4px 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .doc-save-badge {
+    display: none !important; /* Hide 'Auto-synced' text label on mobile */
+  }
+  .doc-top-right {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding: 2px 0 4px !important;
+    flex-wrap: nowrap !important;
+  }
+  .doc-top-right::-webkit-scrollbar {
+    display: none;
+  }
+  .doc-top-right .admin-btn,
+  .doc-top-right .doc-meta-toggle-btn,
+  .doc-top-right .doc-toolbar-select {
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+    height: 30px !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+    width: auto !important;
+  }
+
+  /* 3. Mobile Formatting Toolbar */
+  .doc-full-toolbar {
+    padding: 4px 8px !important;
+    gap: 2px !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .doc-full-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .doc-toolbar-btn {
+    width: 28px !important;
+    height: 26px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+  .doc-toolbar-select {
+    font-size: 10px !important;
+    height: 26px !important;
+    padding: 2px 4px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 4. Full-Width Paper Sheet (Eliminates the Narrow Column & Grey Void) */
+  .doc-viewport {
+    padding: 10px 8px 60px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
   .doc-paper-sheet {
-    padding: 32px 20px 48px;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px 14px 40px !important;
+    min-height: auto !important;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid #dcd8cc !important;
+    box-sizing: border-box !important;
+  }
+  .doc-paper-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .doc-title-size-pill-bar {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+  .doc-paper-h1 {
+    font-size: clamp(22px, 6.5vw, 32px) !important;
+    line-height: 1.15 !important;
+    margin-bottom: 16px !important;
+    word-break: break-word !important;
+  }
+  .doc-unified-canvas {
+    font-size: 15px !important;
+    min-height: 300px !important;
+    word-break: break-word !important;
+  }
+
+  /* 5. Mobile Bottom Actions Bar */
+  .doc-bottom-bar {
+    padding: 10px 12px !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .doc-bottom-left,
+  .doc-bottom-right {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .doc-bottom-bar .admin-btn {
+    width: 100% !important;
+    min-height: 38px !important;
+  }
+
+  /* 6. Mobile Slide-Over Drawer */
+  .doc-drawer-panel {
+    width: min(100vw, 380px) !important;
+  }
+
+  /* 7. Floating Image Toolbar on Mobile */
+  .doc-image-floating-bar {
+    max-width: calc(100vw - 16px) !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
   }
 }
 
