@@ -2,6 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem("abantika_theme");
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="google-site-verification" content="RD_gkmwcNnOB247A-rr-hngV8kBIfXHGGDCCJSHl1Mc">
     <meta name="description" content="{{ description or site.description }}">
@@ -29,7 +39,7 @@
     <meta name="twitter:description" content="{{ description or site.ogDescription }}">
     <meta name="twitter:image" content="{{ image | absoluteUrl(site.url) }}">
     <link rel="canonical" href="{{ site.url }}{{ page.url }}">
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="/assets/styles.css?v=5.5.5">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <title>{{ title or site.name }}</title>
     <script type="application/ld+json">
@@ -495,6 +505,137 @@
           navigator.serviceWorker.register("/sw.js").catch(function () {});
         });
       }
+    </script>
+    <script>
+      (function() {
+        var toggleBtn = document.getElementById("theme-toggle-btn");
+        var dotToggle = document.getElementById("header-dot-toggle");
+        var labelEl = document.getElementById("theme-toggle-label");
+        
+        function updateThemeUI(theme) {
+          if (dotToggle) {
+            dotToggle.removeAttribute("title");
+            dotToggle.setAttribute("aria-label", "Toggle theme");
+          }
+          var metaThemeColor = document.querySelector('meta[name="theme-color"]');
+          if (metaThemeColor) {
+            metaThemeColor.setAttribute("content", theme === "dark" ? "#0A0D12" : "#f2f0ea");
+          }
+        }
+        
+                function switchTheme(event) {
+          var target = (event && (event.target.closest("#header-dot-toggle, #theme-toggle-btn") || event.currentTarget)) || dotToggle || toggleBtn;
+          var isReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var activeTheme = document.documentElement.getAttribute("data-theme") || "light";
+          var nextTheme = activeTheme === "dark" ? "light" : "dark";
+
+          // Randomly choose from 3 Bauhaus transition types:
+          // 0: Radial Aperture Iris
+          // 1: Diagonal Drafting Sweep
+          // 2: Parallel Rule / Curtain Wipe
+          var animType = Math.floor(Math.random() * 3);
+
+          function applyTheme() {
+            document.documentElement.setAttribute("data-theme", nextTheme);
+            try {
+              localStorage.setItem("abantika_theme", nextTheme);
+            } catch(e) {}
+            updateThemeUI(nextTheme);
+          }
+
+          if (isReduced) {
+            applyTheme();
+            return;
+          }
+
+          if (target && target.classList) {
+            target.classList.remove("dot-animating");
+            void target.offsetWidth;
+            target.classList.add("dot-animating");
+            setTimeout(function() { target.classList.remove("dot-animating"); }, 450);
+
+            var rect = target.getBoundingClientRect();
+            var flare = document.createElement("div");
+            if (animType === 0) {
+              flare.className = "theme-ripple-ring";
+            } else if (animType === 1) {
+              flare.className = "theme-slash-flare";
+            } else {
+              flare.className = "theme-diamond-flare";
+            }
+            flare.style.left = (rect.left + rect.width / 2) + "px";
+            flare.style.top = (rect.top + rect.height / 2) + "px";
+            document.body.appendChild(flare);
+            setTimeout(function() { flare.remove(); }, 500);
+          }
+
+          document.documentElement.classList.add("theme-transitioning");
+          var clearTransition = function() {
+            setTimeout(function() {
+              document.documentElement.classList.remove("theme-transitioning");
+            }, 420);
+          };
+
+          if (document.startViewTransition && target) {
+            var rect = target.getBoundingClientRect();
+            var x = rect.left + rect.width / 2;
+            var y = rect.top + rect.height / 2;
+            var endRadius = Math.hypot(
+              Math.max(x, window.innerWidth - x),
+              Math.max(y, window.innerHeight - y)
+            );
+
+            var clipAnimation;
+            if (animType === 0) {
+              // 0: Radial Aperture Iris
+              clipAnimation = [
+                "circle(0px at " + x + "px " + y + "px)",
+                "circle(" + endRadius + "px at " + x + "px " + y + "px)"
+              ];
+            } else if (animType === 1) {
+              // 1: Diagonal Drafting Sweep
+              clipAnimation = [
+                "polygon(100% 0, 100% 0, 100% 100%, 100% 100%)",
+                "polygon(-20% 0, 100% 0, 100% 100%, -20% 100%)"
+              ];
+            } else {
+              // 2: Parallel Rule / Curtain Wipe
+              clipAnimation = [
+                "inset(0 0 100% 0)",
+                "inset(0 0 0 0)"
+              ];
+            }
+
+            var transition = document.startViewTransition(function() {
+              applyTheme();
+            });
+
+            transition.ready.then(function() {
+              document.documentElement.animate(
+                {
+                  clipPath: clipAnimation
+                },
+                {
+                  duration: 420,
+                  easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+                  pseudoElement: "::view-transition-new(root)"
+                }
+              ).finished.finally(clearTransition);
+            }).catch(function() {
+              clearTransition();
+            });
+          } else {
+            applyTheme();
+            clearTransition();
+          }
+        }
+
+        var currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+        updateThemeUI(currentTheme);
+
+        toggleBtn?.addEventListener("click", switchTheme);
+        dotToggle?.addEventListener("click", switchTheme);
+      })();
     </script>
   </body>
 </html>

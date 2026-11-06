@@ -988,7 +988,8 @@ a.wikilink {
 .admin-gate-top {
   padding: 24px 28px 0;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .admin-home-circle-btn {
@@ -2468,4 +2469,808 @@ table.bauhaus-table tr:hover,
 }
 .admin-stat[href]:hover strong {
   color: var(--red);
+}
+
+
+/* ==========================================================================
+   OBSIDIAN LAB — Dark Mode System for Admin Console
+   (Excluding Document Editors which retain light editorial paper aesthetic)
+   ========================================================================== */
+
+[data-theme="dark"] .admin-body {
+  background-color: #0A0D12;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-header {
+  background-color: #0A0D12;
+  border-bottom: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-brand {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-brand small {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .admin-user {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-home-circle-btn {
+  background: #12161F;
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-home-circle-btn .circle-icon {
+  background: #161B26;
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-home-circle-btn:hover {
+  border-color: #FF3B30;
+  color: #FF3B30;
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.25);
+}
+
+[data-theme="dark"] .admin-home-circle-btn:hover .circle-icon {
+  background: #FF3B30;
+  border-color: #FF3B30;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .admin-nav {
+  background-color: #0A0D12;
+  border-bottom: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-nav a {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .admin-nav a:hover,
+[data-theme="dark"] .admin-nav a.active {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-nav a.active::after,
+[data-theme="dark"] .admin-nav a:hover::after {
+  background: #FF3B30;
+}
+
+[data-theme="dark"] .admin-nav i {
+  color: #00F2FE;
+}
+
+[data-theme="dark"] .admin-kicker {
+  color: #9CA3AF;
+}
+
+/* Admin Gate / Login Screen */
+[data-theme="dark"] .admin-gate {
+  background: #0A0D12;
+}
+
+[data-theme="dark"] .admin-gate h1 {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-gate p {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .admin-gate input[name="passcode"] {
+  background: #12161F !important;
+  color: #E1E2EA !important;
+  border: 1px solid #2D3748 !important;
+}
+
+[data-theme="dark"] .admin-gate input[name="passcode"]:focus {
+  border-color: #00F2FE !important;
+  box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2) !important;
+}
+
+/* Dashboard Stats Cards */
+[data-theme="dark"] .admin-stat {
+  background: #12161F;
+  border: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-stat strong {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-stat p {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .admin-stat[href]:hover {
+  background-color: #161B26;
+  border-color: #00F2FE;
+}
+
+/* Buttons */
+[data-theme="dark"] .admin-btn {
+  background: #161B26;
+  color: #E1E2EA;
+  border: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-btn:hover,
+[data-theme="dark"] .admin-btn:focus-visible {
+  background: #202736;
+  border-color: #00F2FE;
+  color: #00F2FE;
+}
+
+[data-theme="dark"] .admin-btn.primary {
+  background: var(--red);
+  border-color: var(--red);
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .admin-btn.primary:hover {
+  background: #ff5247;
+  border-color: #ff5247;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .admin-btn.danger {
+  background: transparent;
+  border-color: #FF3B30;
+  color: #FF3B30;
+}
+
+[data-theme="dark"] .admin-btn.danger:hover {
+  background: #FF3B30;
+  color: #FFFFFF;
+}
+
+/* Lists and Data Rows */
+[data-theme="dark"] .admin-list {
+  border-top: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-row {
+  border-bottom: 1px solid #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-row:hover {
+  background: #161B26;
+  color: #00F2FE;
+}
+
+[data-theme="dark"] .admin-row b {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .admin-row:hover b {
+  color: #00F2FE;
+}
+
+[data-theme="dark"] .admin-row small {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .admin-badge.published {
+  color: #00F2FE;
+}
+
+[data-theme="dark"] .admin-badge.draft {
+  color: #FF3B30;
+}
+
+/* Toolbar & Filter Bar */
+[data-theme="dark"] .admin-toolbar {
+  border-bottom: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-toolbar input,
+[data-theme="dark"] .admin-toolbar select {
+  background: #12161F;
+  color: #E1E2EA;
+  border: 1px solid #2D3748;
+}
+
+/* Modals & Dialogs */
+[data-theme="dark"] .admin-modal-backdrop {
+  background: rgba(0, 0, 0, 0.78);
+}
+
+[data-theme="dark"] .admin-modal {
+  background: #12161F;
+  border: 1px solid #2D3748;
+  color: #E1E2EA;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .admin-modal-top {
+  border-bottom: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-modal p {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .sudo-delete-box {
+  background: #161B26;
+  border: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .sudo-target-phrase {
+  background: rgba(255, 59, 48, 0.15);
+  color: #FF3B30;
+}
+
+[data-theme="dark"] .sudo-delete-input {
+  background: #12161F;
+  color: #E1E2EA;
+  border: 1px solid #2D3748;
+}
+
+/* Cloudflare R2 Storage Metrics Card */
+[data-theme="dark"] .r2-storage-card {
+  background: #12161F;
+  border: 1px solid #2D3748;
+  color: #E1E2EA;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .r2-storage-title .r2-badge {
+  background: #00F2FE;
+  color: #0A0D12;
+}
+
+[data-theme="dark"] .r2-metric-box {
+  background: #161B26;
+  border: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .r2-metric-label {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .r2-metric-value {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .r2-metric-value.status-normal {
+  color: #00F2FE;
+}
+
+[data-theme="dark"] .r2-metric-value.status-caution {
+  color: #FFB020;
+}
+
+[data-theme="dark"] .r2-progress-track {
+  background: #2D3748;
+}
+
+/* Portrait Studio */
+[data-theme="dark"] .portrait-studio-container {
+  background: #12161F;
+  border: 1px solid #2D3748;
+  border-left: 3px solid var(--red);
+}
+
+[data-theme="dark"] .portrait-editor-dialog {
+  background: #12161F;
+  border: 1px solid #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .portrait-editor-head {
+  background: #161B26;
+  border-bottom: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .editor-subtitle {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .editor-close-btn {
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .editor-canvas-stage {
+  background: #0A0D12;
+  border-right: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .editor-section {
+  border-bottom: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .ratio-btn {
+  background: #161B26;
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .ratio-btn.active {
+  background: #00F2FE;
+  color: #0A0D12;
+  border-color: #00F2FE;
+}
+
+[data-theme="dark"] .filter-chip {
+  background: #161B26;
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .filter-chip small {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] .filter-chip.active {
+  background: #202736;
+  border-color: #FF3B30;
+}
+
+[data-theme="dark"] .editor-footer {
+  border-top: 1px solid #2D3748;
+}
+
+/* Recycle Bin */
+[data-theme="dark"] .admin-trash-list {
+  border-top: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-trash-row {
+  border-bottom: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-trash-row:hover {
+  background: #161B26;
+}
+
+[data-theme="dark"] .trash-title {
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .trash-path {
+  color: #9CA3AF;
+}
+
+/* Mobile Navigation Drawer in Dark Mode */
+@media (max-width: 850px) {
+  [data-theme="dark"] .admin-nav {
+    background: #0A0D12 !important;
+    border-bottom: 1px solid #2D3748 !important;
+  }
+  [data-theme="dark"] .admin-nav.mobile-open {
+    background: #0A0D12 !important;
+    border-bottom: 1px solid #2D3748 !important;
+  }
+  [data-theme="dark"] .admin-nav a {
+    background: #12161F !important;
+    border: 1px solid #2D3748 !important;
+    color: #E1E2EA !important;
+  }
+  [data-theme="dark"] .admin-nav a:hover {
+    background: #161B26 !important;
+    border-color: #00F2FE !important;
+    color: #00F2FE !important;
+  }
+  [data-theme="dark"] .admin-nav a.active {
+    background: #161B26 !important;
+    border: 1px solid #FF3B30 !important;
+    border-left: 3px solid #FF3B30 !important;
+    color: #FFFFFF !important;
+  }
+  [data-theme="dark"] .admin-nav a.active i {
+    color: #FF3B30 !important;
+  }
+  [data-theme="dark"] .admin-nav a i {
+    color: #00F2FE !important;
+  }
+  [data-theme="dark"] .admin-user-mobile {
+    border-top: 1px solid #2D3748 !important;
+  }
+  [data-theme="dark"] .admin-mobile-username {
+    color: #9CA3AF !important;
+  }
+  [data-theme="dark"] .admin-mobile-username b {
+    color: #E1E2EA !important;
+  }
+  [data-theme="dark"] .mobile-menu-btn {
+    background: #12161F !important;
+    border-color: #2D3748 !important;
+  }
+  [data-theme="dark"] .mobile-menu-btn .menu-bar {
+    background: #E1E2EA !important;
+  }
+  [data-theme="dark"] .mobile-menu-btn:hover,
+  [data-theme="dark"] .mobile-menu-btn.active {
+    background: #161B26 !important;
+    border-color: #00F2FE !important;
+  }
+}
+
+/* General Forms Outside Document Editor */
+[data-theme="dark"] .admin-form:not(#zendoc-editor-instance):not(.doc-editor-shell) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+[data-theme="dark"] .admin-form:not(#zendoc-editor-instance):not(.doc-editor-shell) textarea,
+[data-theme="dark"] .admin-form:not(#zendoc-editor-instance):not(.doc-editor-shell) select {
+  background: #12161F;
+  color: #E1E2EA;
+  border: 1px solid #2D3748;
+}
+
+[data-theme="dark"] .admin-form:not(#zendoc-editor-instance):not(.doc-editor-shell) input:focus,
+[data-theme="dark"] .admin-form:not(#zendoc-editor-instance):not(.doc-editor-shell) textarea:focus,
+[data-theme="dark"] .admin-form:not(#zendoc-editor-instance):not(.doc-editor-shell) select:focus {
+  border-color: #00F2FE;
+  box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2);
+}
+
+/* ==========================================================================
+   STRICT EXEMPTION: Document Editors (Variant B Zendoc Studio)
+   Retain light editorial paper aesthetic under all circumstances.
+   ========================================================================== */
+.doc-editor-shell,
+.doc-editor-shell *,
+body.mode-zendoc-active .doc-editor-shell,
+body.mode-zendoc-active .doc-editor-shell * {
+  --paper: #f2f0ea;
+  --surface: #ffffff;
+  --surface-tint: #faf8f5;
+  --ink: #111111;
+  --muted: #5e5b55;
+  --line: #dfdcd3;
+  --accent-red: #ef321f;
+  --card-bg: #ffffff;
+}
+
+[data-theme="dark"] .doc-editor-shell {
+  background: #ebe8df !important;
+  border: 1px solid #dcd8cc !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-sticky-header,
+[data-theme="dark"] .doc-editor-shell .doc-top-appbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #dfdcd3 !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-paper-sheet {
+  background: #ffffff !important;
+  border: 1px solid #dfdcd3 !important;
+  color: #111111 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-section-card {
+  background: #ffffff !important;
+  border: 1px solid #dfdcd3 !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-section-header {
+  background: #faf8f5 !important;
+  border-bottom: 1px solid #dfdcd3 !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell input,
+[data-theme="dark"] .doc-editor-shell textarea,
+[data-theme="dark"] .doc-editor-shell select {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #dfdcd3 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-btn {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #dcd8cc;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-btn.primary {
+  background: var(--red);
+  color: #ffffff;
+  border-color: var(--red);
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-back-circle-btn {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #d4d0c5;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-back-circle-btn:hover {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+
+/* Comprehensive Dark Mode Enhancements for Recycle Bin & About Section */
+[data-theme="dark"] .admin-trash-card {
+  background: #12161F !important;
+  border: 1px solid #2D3748 !important;
+  color: #E1E2EA !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-theme="dark"] .admin-trash-card:hover {
+  background: #161B26 !important;
+  border-color: #00F2FE !important;
+}
+
+[data-theme="dark"] .admin-trash-title {
+  color: #E1E2EA !important;
+}
+
+[data-theme="dark"] .admin-trash-card:hover .admin-trash-title {
+  color: #00F2FE !important;
+}
+
+[data-theme="dark"] .admin-trash-tag {
+  background: #161B26 !important;
+  border-color: #2D3748 !important;
+  color: #9CA3AF !important;
+}
+
+[data-theme="dark"] .admin-trash-empty {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+  color: #9CA3AF !important;
+}
+
+[data-theme="dark"] .admin-trash-empty p {
+  color: #9CA3AF !important;
+}
+
+/* About Section & Principle Cards in Dark Mode */
+[data-theme="dark"] .about-principle-card,
+[data-theme="dark"] .portrait-studio-container {
+  background: #12161F !important;
+  border: 1px solid #2D3748 !important;
+  border-left: 3px solid var(--red) !important;
+  color: #E1E2EA !important;
+}
+
+[data-theme="dark"] .portrait-studio-container h3 {
+  color: #E1E2EA !important;
+}
+
+[data-theme="dark"] .portrait-studio-container h4,
+[data-theme="dark"] .about-principle-card h4 {
+  color: var(--accent-red, #FF3B30) !important;
+}
+
+[data-theme="dark"] .portrait-studio-container .admin-label-text,
+[data-theme="dark"] .about-principle-card .admin-label-text {
+  color: #9CA3AF !important;
+}
+
+[data-theme="dark"] .portrait-studio-container p,
+[data-theme="dark"] .about-principle-card p {
+  color: #9CA3AF !important;
+}
+
+[data-theme="dark"] .portrait-studio-container .studio-badge {
+  background: #161B26 !important;
+  border: 1px solid #2D3748 !important;
+  color: #00F2FE !important;
+}
+
+[data-theme="dark"] #resume-pdf-input {
+  background: #161B26 !important;
+  color: #E1E2EA !important;
+  border: 1px solid #2D3748 !important;
+}
+
+
+/* ==========================================================================
+   BAUHAUS EDITORIAL THEME TRANSITION & MICRO-ANIMATION
+   Calibrated tactile micro-animation on toggle dot + circular aperture bloom.
+   Respects prefers-reduced-motion.
+   ========================================================================== */
+
+/* Active transition state during mode toggling */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: 
+    background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.25s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease !important;
+  transition-delay: 0s !important;
+}
+
+/* View Transition circular aperture bloom */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 99999;
+}
+
+/* Interactive Dot Click Recoil & Micro-Animation */
+.header-dot.dot-animating,
+.admin-header-dot.dot-animating {
+  animation: dotRecoil 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dotRecoil {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.68) rotate(45deg); }
+  65% { transform: scale(1.32) rotate(-15deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Tactile Bauhaus Ripple Ring expanding from the dot */
+.theme-ripple-ring {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%);
+  animation: bauhausRippleRing 0.46s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bauhausRippleRing {
+  0% {
+    width: 22px;
+    height: 22px;
+    opacity: 0.95;
+    border: 2px solid var(--red, #ef321f);
+    box-shadow: 0 0 14px rgba(239, 50, 31, 0.6);
+  }
+  100% {
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    box-shadow: 0 0 32px rgba(0, 242, 254, 0);
+  }
+}
+
+[data-theme="dark"] .theme-ripple-ring {
+  animation-name: bauhausRippleRingDark;
+}
+
+@keyframes bauhausRippleRingDark {
+  0% {
+    width: 22px;
+    height: 22px;
+    opacity: 0.95;
+    border: 2px solid #00F2FE;
+    box-shadow: 0 0 16px rgba(0, 242, 254, 0.7);
+  }
+  100% {
+    width: 160px;
+    height: 160px;
+    opacity: 0;
+    border: 1px solid rgba(255, 59, 48, 0.2);
+    box-shadow: 0 0 36px rgba(255, 59, 48, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: none !important;
+  }
+  .header-dot.dot-animating,
+  .admin-header-dot.dot-animating {
+    animation: none !important;
+  }
+  .theme-ripple-ring {
+    display: none !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   RANDOMIZED TRIO OF BAUHAUS THEME TRANSITIONS
+   0: Radial Aperture Iris
+   1: Diagonal Drafting Sweep
+   2: Parallel Rule / Curtain Wipe
+   ========================================================================== */
+
+/* Type 1: Bauhaus Diagonal Crosshair Slash on Dot */
+.theme-slash-flare {
+  position: fixed;
+  width: 2px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--red, #ef321f);
+  box-shadow: 0 0 14px rgba(239, 50, 31, 0.7);
+  animation: bauhausSlashFlare 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bauhausSlashFlare {
+  0% {
+    height: 20px;
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(45deg) scaleY(1);
+  }
+  100% {
+    height: 160px;
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(45deg) scaleY(1.8);
+  }
+}
+
+[data-theme="dark"] .theme-slash-flare {
+  background: #00F2FE;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.8);
+}
+
+/* Type 2: Bauhaus Geometric Diamond Pulse on Dot */
+.theme-diamond-flare {
+  position: fixed;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 2px solid var(--red, #ef321f);
+  box-shadow: 0 0 12px rgba(239, 50, 31, 0.6);
+  animation: bauhausDiamondPulse 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bauhausDiamondPulse {
+  0% {
+    width: 18px;
+    height: 18px;
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(45deg) scale(1);
+  }
+  100% {
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+    border-width: 1px;
+    transform: translate(-50%, -50%) rotate(90deg) scale(1.6);
+  }
+}
+
+[data-theme="dark"] .theme-diamond-flare {
+  border-color: #00F2FE;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-slash-flare,
+  .theme-diamond-flare {
+    display: none !important;
+  }
+}
+
+
+/* Admin Header Controls: Single Theme Dot + Mobile Menu Toggle */
+.admin-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }

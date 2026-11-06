@@ -313,8 +313,8 @@
               </div>
             </div>
             <div class="doc-top-right">
-              <button type="button" class="admin-btn" id="zendoc-top-preview-btn" style="font-size:11px;padding:6px 12px;background:#ffffff;border:1px solid var(--ink,#111);font-weight:700" title="Live Preview Before Pushing">
-                <span>👁 PREVIEW</span>
+              <button type="button" class="doc-btn doc-top-preview-btn" id="zendoc-top-preview-btn" title="Live Preview Before Pushing">
+                <span class="preview-eye-icon">👁</span> <span class="preview-text">PREVIEW</span>
               </button>
               <select class="doc-toolbar-select" id="zendoc-status-select" style="font-weight:700">
                 <option value="draft" ${!this.published ? "selected" : ""}>Drafting ▾</option>

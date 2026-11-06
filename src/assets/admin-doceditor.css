@@ -1476,3 +1476,245 @@ body.mode-zendoc-active .admin-sticky-bar {
   background: #d4d0c5;
   margin: 0 4px;
 }
+
+
+/* ==========================================================================
+   DOCUMENT EDITOR COMPLETE DARK-MODE SHIELD
+   Guarantees that when the admin console is in dark mode, the document
+   editor remains 100% in its pure, crisp, light editorial paper appearance.
+   ========================================================================== */
+[data-theme="dark"] .doc-editor-shell,
+[data-theme="dark"] #zendoc-editor-instance {
+  background: #ebe8df !important;
+  border-color: #dcd8cc !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-sticky-header,
+[data-theme="dark"] .doc-editor-shell .doc-top-appbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #dfdcd3 !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-full-toolbar {
+  background: #faf9f5 !important;
+  border-bottom: 1px solid #dfdcd3 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn,
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn b,
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn strong,
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn i,
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn u,
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn s {
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn:hover {
+  background: #ece8dd !important;
+  border-color: #d6d2c4 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-toolbar-btn.active {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .doc-editor-shell select.doc-toolbar-select {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border-color: #d4d0c5 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-paper-sheet {
+  background: #ffffff !important;
+  border-color: #dfdcd3 !important;
+  color: #111111 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Headings inside the document sheet and unified canvas */
+[data-theme="dark"] .doc-editor-shell .doc-paper-h1,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas h1,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas h2,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas h3,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas h4,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas h5,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas h6 {
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-paper-h1 {
+  border-bottom: 2px solid #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-paper-h1:focus {
+  border-bottom-color: var(--red, #ef321f) !important;
+}
+
+/* Paragraphs, lists, bold text and body copy in unified canvas */
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas p,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas li,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas span,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas div {
+  color: #1a1a1a !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas b,
+[data-theme="dark"] .doc-editor-shell .doc-unified-canvas strong {
+  color: #111111 !important;
+  font-weight: 700 !important;
+}
+
+/* Title size bar inside sheet */
+[data-theme="dark"] .doc-editor-shell .doc-title-size-pill-bar {
+  background: #fbf9f4 !important;
+  border-color: #e5e2d8 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-title-size-label,
+[data-theme="dark"] .doc-editor-shell .doc-title-stepper-mini span {
+  color: #777777 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-title-size-btn {
+  color: #555555 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-title-size-btn.active {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-title-stepper-mini button {
+  color: #555555 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-title-stepper-mini button:hover {
+  background: #ede9df !important;
+  color: #111111 !important;
+}
+
+/* Section cards inside sheet */
+[data-theme="dark"] .doc-editor-shell .doc-section-card {
+  background: #ffffff !important;
+  border-color: #dfdcd3 !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-section-header {
+  background: #faf8f5 !important;
+  border-bottom-color: #dfdcd3 !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-section-header h3,
+[data-theme="dark"] .doc-editor-shell .doc-section-header b {
+  color: #111111 !important;
+}
+
+/* Inputs and controls inside editor */
+[data-theme="dark"] .doc-editor-shell input,
+[data-theme="dark"] .doc-editor-shell textarea,
+[data-theme="dark"] .doc-editor-shell select {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border-color: #dfdcd3 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-title-input {
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-meta-toggle-btn {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border-color: #cfcbc0 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-meta-badge {
+  background: #ebe7dd !important;
+  color: #444444 !important;
+}
+
+/* Metadata drawer */
+[data-theme="dark"] .doc-editor-shell .doc-metadata-drawer {
+  background: #ffffff !important;
+  border-color: #dfdcd3 !important;
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-drawer-title {
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-editor-shell .doc-drawer-field label {
+  color: #5e5b55 !important;
+}
+
+
+/* High-Contrast Editorial Preview Button in Top Bar */
+.doc-top-preview-btn,
+#zendoc-top-preview-btn {
+  font-family: var(--mono, 'DM Mono', monospace) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  padding: 6px 14px !important;
+  background: #ffffff !important;
+  border: 1px solid #111111 !important;
+  color: #111111 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  cursor: pointer !important;
+  border-radius: 2px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  transition: all 0.15s cubic-bezier(0.16,1,0.3,1) !important;
+}
+
+.doc-top-preview-btn span,
+#zendoc-top-preview-btn span {
+  color: #111111 !important;
+  font-weight: 800 !important;
+}
+
+.doc-top-preview-btn:hover,
+#zendoc-top-preview-btn:hover {
+  background: #111111 !important;
+  color: #ffffff !important;
+  border-color: #111111 !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.18) !important;
+}
+
+.doc-top-preview-btn:hover span,
+#zendoc-top-preview-btn:hover span {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .doc-top-preview-btn,
+[data-theme="dark"] #zendoc-top-preview-btn {
+  background: #ffffff !important;
+  border: 1px solid #111111 !important;
+  color: #111111 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="dark"] .doc-top-preview-btn span,
+[data-theme="dark"] #zendoc-top-preview-btn span {
+  color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-top-preview-btn:hover,
+[data-theme="dark"] #zendoc-top-preview-btn:hover {
+  background: #111111 !important;
+  color: #ffffff !important;
+  border-color: #111111 !important;
+}
+
+[data-theme="dark"] .doc-top-preview-btn:hover span,
+[data-theme="dark"] #zendoc-top-preview-btn:hover span {
+  color: #ffffff !important;
+}

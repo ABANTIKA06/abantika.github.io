@@ -26,7 +26,11 @@
 }
 
 * { box-sizing:border-box; } html { scroll-behavior:smooth; background-color:var(--paper); background-image:none; } body { margin:0; background-color:var(--paper); background-image:none !important; color:var(--ink); font-family:var(--sans); } a { color:inherit; text-decoration:none; } .page-shell { max-width:1500px; margin:auto; background-color:var(--paper); background-image:none !important; overflow-x:hidden; }
-.site-header { min-height:92px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:20px; padding:18px clamp(22px,4vw,72px); background:var(--paper); color:var(--ink); position:relative; z-index:2; } .brand { line-height:1; letter-spacing:.2em; font-weight:800; font-size:19px; color:var(--ink); } .brand small { display:block; margin-top:8px; font:10px var(--mono); letter-spacing:.14em; white-space:nowrap; } .header-dot { width:19px;height:19px;border-radius:50%;background:var(--ink);margin-left:20px;flex:none; }
+.site-header { min-height:92px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:20px; padding:18px clamp(22px,4vw,72px); background:var(--paper); color:var(--ink); position:relative; z-index:2; } .brand { line-height:1; letter-spacing:.2em; font-weight:800; font-size:19px; color:var(--ink); } .brand small { display:block; margin-top:8px; font:10px var(--mono); letter-spacing:.14em; white-space:nowrap; } .header-dot { width:20px;height:20px;border-radius:50%;background:var(--ink);margin-left:14px;flex:none;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .2s cubic-bezier(0.16,1,0.3,1),background .2s ease,box-shadow .2s ease,border-color .2s ease;position:relative;outline:none; }
+.header-dot:hover { transform:scale(1.22); border-color:var(--red); }
+.header-dot:focus-visible { outline:2px solid var(--red); outline-offset:3px; }
+[data-theme="dark"] .header-dot { background:#E1E2EA !important; box-shadow:0 0 10px rgba(0,242,254,0.65) !important; border-color:#00F2FE !important; }
+[data-theme="dark"] .header-dot:hover { border-color:#FF3B30 !important; box-shadow:0 0 14px rgba(255,59,48,0.6) !important; }
 
 .header-right-controls { display:flex; align-items:center; gap:10px; margin-left:auto; }
 .mobile-menu-btn { display:none; background:var(--paper); border:1px solid var(--line); padding:6px; cursor:pointer; flex-direction:column; justify-content:center; align-items:center; gap:4px; height:38px; width:38px; border-radius:2px; transition:border-color 0.2s, background 0.2s; }
@@ -137,9 +141,9 @@
 
 @media (max-width:800px) {
   .site-header { min-height:72px; padding:14px 20px; flex-wrap:wrap; }
-  .header-dot { display:none; }
+  .header-dot { display:inline-flex !important; visibility:visible !important; opacity:1 !important; margin:0 !important; flex-shrink:0 !important; }
   .mobile-menu-btn { display:flex; }
-  .main-nav { display:none; width:100%; flex-direction:column; align-items:flex-start; gap:0; border-top:1px solid var(--line); margin-top:12px; padding-top:8px; background:var(--paper); }
+  .main-nav { display:none; width:100%; flex-direction:column; align-items:flex-start; gap:0; border-top:1px solid var(--line); margin-top:12px; padding-top:8px; background:var(--paper); order:10; }
   .main-nav.mobile-open { display:flex; animation:fadeInDown 0.25s ease; }
   .main-nav a { width:100%; padding:12px 6px; border-bottom:1px solid #e0ded7; font-size:11px; }
   .main-nav a:last-child { border-bottom:none; }
@@ -454,23 +458,30 @@
     font-size: 20px !important;
   }
 }
-/* 01. Dots Grid / Constellation */
+/* 01. Dots Grid / Constellation (Clean Bauhaus Analytical Plate) */
 .dots, .case-art.dots, .row-art-dots {
-  background-image: radial-gradient(#222 1px, transparent 1.4px);
-  background-size: 11px 11px;
+  background-color: #f7f5ef;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    radial-gradient(rgba(0, 0, 0, 0.15) 1.5px, transparent 2px);
+  background-size: 32px 32px, 32px 32px, 16px 16px;
   position: relative;
   overflow: hidden;
 }
 .dots::after, .case-art.dots::after, .row-art-dots::after {
   content: "";
   position: absolute;
-  width: 90px;
-  height: 90px;
+  width: 130px;
+  height: 130px;
   right: 15%;
-  top: 12%;
-  background-image: radial-gradient(var(--red) 1.5px, transparent 1.8px);
-  background-size: 10px 10px;
+  top: 14%;
+  background-color: rgba(239, 50, 31, 0.04);
+  background-image: radial-gradient(var(--red) 2px, transparent 2.5px);
+  background-size: 13px 13px;
+  border: 1px solid rgba(239, 50, 31, 0.25);
   transform: rotate(-25deg);
+  box-shadow: 0 8px 24px rgba(239, 50, 31, 0.12);
 }
 
 /* 02. System Mesh / Architecture */
@@ -760,8 +771,8 @@
   .main-nav i { font-size: 10px; margin-right: 5px; }
 }
 @media (max-width: 800px) {
-  .main-nav { display: none; }
-  .header-dot { margin-left: auto; }
+  .main-nav { display: none; order: 10; }
+  .header-dot { display: inline-flex !important; }
 }
 
 .journal-index {
@@ -810,7 +821,7 @@
   color: #4e4b46;
   max-width: 580px;
 }
-a.journal-index-row { color: inherit; }
+a.journal-index-row { color: inherit; transition: background 0.2s ease, padding 0.2s ease, color 0.2s ease; border-radius: 2px; }
 a.journal-index-row:hover,
 a.journal-index-row:focus-visible { background: #ebe9e2; }
 
@@ -1260,4 +1271,1032 @@ pre:hover .code-copy-btn {
   color: #666;
   margin-top: 8px;
   text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OBSIDIAN DATA LAB — TECHNICAL DARK EDITORIAL BRUTALISM
+   Based on DESIGN (1).md · Preserving Inter & DM Mono Typography
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Interactive Bauhaus Header Dot (Sole Theme Switcher) ───────────────── */
+.header-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  margin-left: 0;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1), background .2s ease, box-shadow .2s ease, border-color .2s ease;
+  position: relative;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.header-dot::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+.header-dot:hover {
+  transform: scale(1.25);
+  border-color: var(--red);
+  box-shadow: 0 0 8px rgba(239, 50, 31, 0.4);
+}
+.header-dot:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+[data-theme="dark"] .header-dot {
+  background: #E1E2EA !important;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.65) !important;
+  border-color: #00F2FE !important;
+}
+[data-theme="dark"] .header-dot:hover {
+  border-color: #FF3B30 !important;
+  box-shadow: 0 0 14px rgba(255, 59, 48, 0.6) !important;
+}
+
+/* ── Core Dark Theme Variables ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  --paper: #0A0D12;
+  --surface: #12161F;
+  --surface-tint: #1A202C;
+  --ink: #E1E2EA;
+  --muted: #64748B;
+  --text-secondary: #9CA3AF;
+  --line: #2D3748;
+  --line-focus: #4A5568;
+  --red: #FF3B30;
+  --red-text: #FF5545;
+  --orange: #00F2FE;
+  --cyan: #00F2FE;
+}
+
+[data-theme="dark"] body {
+  background-color: #0A0D12 !important;
+  color: #E1E2EA !important;
+}
+
+[data-theme="dark"] .page-shell {
+  background-color: #0A0D12 !important;
+}
+
+/* ── Universal Contrast Safety: Guarantee Crisp Typography ──────────────── */
+[data-theme="dark"] h1:not(.doc-editor-shell *):not(#zendoc-editor-instance *),
+[data-theme="dark"] h2:not(.doc-editor-shell *):not(#zendoc-editor-instance *),
+[data-theme="dark"] h3:not(.doc-editor-shell *):not(#zendoc-editor-instance *),
+[data-theme="dark"] h4:not(.doc-editor-shell *):not(#zendoc-editor-instance *),
+[data-theme="dark"] h5:not(.doc-editor-shell *):not(#zendoc-editor-instance *),
+[data-theme="dark"] h6:not(.doc-editor-shell *):not(#zendoc-editor-instance *),
+[data-theme="dark"] .brand,
+[data-theme="dark"] .brand span,
+[data-theme="dark"] .project-row h2,
+[data-theme="dark"] .project-row > b,
+[data-theme="dark"] .journal-date strong,
+[data-theme="dark"] .journal-date b,
+[data-theme="dark"] .margin-note b,
+[data-theme="dark"] .skill-listing h2,
+[data-theme="dark"] strong:not(.doc-editor-shell *):not(#zendoc-editor-instance *),
+[data-theme="dark"] b:not(.doc-editor-shell *):not(#zendoc-editor-instance *) {
+  color: #E1E2EA !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] li,
+[data-theme="dark"] .lede,
+[data-theme="dark"] .about-statement p,
+[data-theme="dark"] .principles span,
+[data-theme="dark"] .principles b,
+[data-theme="dark"] .journal-note > p,
+[data-theme="dark"] .body-copy,
+[data-theme="dark"] .page-intro > p,
+[data-theme="dark"] .case-header > p,
+[data-theme="dark"] .case-body section > p,
+[data-theme="dark"] .case-body p,
+[data-theme="dark"] .case-markdown p,
+[data-theme="dark"] .case-markdown li,
+[data-theme="dark"] .note-body,
+[data-theme="dark"] .note-body p,
+[data-theme="dark"] .contact-hero div p,
+[data-theme="dark"] .contact-note,
+[data-theme="dark"] .skill-listing ul,
+[data-theme="dark"] .skill-listing li,
+[data-theme="dark"] .project-row > p,
+[data-theme="dark"] .search-result-desc {
+  color: #9CA3AF !important;
+}
+
+[data-theme="dark"] .eyebrow,
+[data-theme="dark"] .section-id,
+[data-theme="dark"] .journal-date span,
+[data-theme="dark"] .project-row > span,
+[data-theme="dark"] .case-art-label,
+[data-theme="dark"] .brand small,
+[data-theme="dark"] .search-result-header,
+[data-theme="dark"] footer,
+[data-theme="dark"] .site-footer,
+[data-theme="dark"] .journal-plot b {
+  color: #718096 !important;
+}
+
+/* ── Header & Navigation ────────────────────────────────────────────────── */
+[data-theme="dark"] .site-header {
+  background: rgba(10, 13, 18, 0.88) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom-color: #2D3748 !important;
+}
+
+[data-theme="dark"] .main-nav a {
+  color: #9CA3AF !important;
+}
+[data-theme="dark"] .main-nav a i {
+  color: #718096 !important;
+}
+[data-theme="dark"] .main-nav a.active,
+[data-theme="dark"] .main-nav a:hover {
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] .main-nav a.active::after,
+[data-theme="dark"] .main-nav a:hover::after {
+  background: #FF3B30 !important;
+}
+
+/* ── Search Widget & Mobile Menu in Dark Mode ───────────────────────────── */
+[data-theme="dark"] .header-search-box {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+}
+
+[data-theme="dark"] #site-search-input {
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] #site-search-input::placeholder {
+  color: #718096 !important;
+}
+
+[data-theme="dark"] .search-status-badge {
+  background: #2D3748 !important;
+  color: #00F2FE !important;
+}
+
+[data-theme="dark"] .search-results-pane {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75) !important;
+}
+
+[data-theme="dark"] .search-result-header {
+  background: #1A202C !important;
+  border-bottom-color: #2D3748 !important;
+}
+
+[data-theme="dark"] .search-result-item:hover,
+[data-theme="dark"] .search-result-item.selected {
+  background: #1A202C !important;
+}
+
+[data-theme="dark"] .search-result-tag {
+  background: #1A202C !important;
+  border-color: #2D3748 !important;
+  color: #00F2FE !important;
+}
+
+[data-theme="dark"] .mobile-menu-btn {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+}
+
+[data-theme="dark"] .menu-bar {
+  background: #E1E2EA !important;
+}
+
+/* ── Buttons & Interactive Links ────────────────────────────────────────── */
+[data-theme="dark"] .button:not(.button-primary):not(.button-resume) {
+  background: #12161F !important;
+  color: #E1E2EA !important;
+  border: 1px solid #2D3748 !important;
+}
+[data-theme="dark"] .button:not(.button-primary):not(.button-resume):hover {
+  background: #1A202C !important;
+  border-color: #00F2FE !important;
+  color: #00F2FE !important;
+}
+[data-theme="dark"] .button-primary {
+  background: #FF3B30 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #FF3B30 !important;
+}
+[data-theme="dark"] .button-primary:hover {
+  background: #FF5545 !important;
+  box-shadow: 0 0 14px rgba(255, 59, 48, 0.45);
+}
+[data-theme="dark"] .text-link {
+  color: #E1E2EA !important;
+  border-bottom-color: #2D3748 !important;
+}
+[data-theme="dark"] .text-link:hover {
+  color: #00F2FE !important;
+  border-bottom-color: #00F2FE !important;
+}
+[data-theme="dark"] .contact-details > a {
+  color: #E1E2EA !important;
+  border-bottom-color: #2D3748 !important;
+}
+[data-theme="dark"] .contact-details a:first-of-type {
+  border-top-color: #2D3748 !important;
+}
+[data-theme="dark"] .contact-details > a:hover {
+  color: #00F2FE !important;
+  border-bottom-color: #00F2FE !important;
+}
+
+/* ── Section Dividers & Hairlines ───────────────────────────────────────── */
+[data-theme="dark"] .hero,
+[data-theme="dark"] .about,
+[data-theme="dark"] .journal,
+[data-theme="dark"] .page-intro,
+[data-theme="dark"] .case-header,
+[data-theme="dark"] .case-art,
+[data-theme="dark"] .project-row,
+[data-theme="dark"] .project-row:first-child,
+[data-theme="dark"] .skill-listing,
+[data-theme="dark"] .skill-listing > div,
+[data-theme="dark"] .contact-hero,
+[data-theme="dark"] .principles,
+[data-theme="dark"] .principle-sheet ol,
+[data-theme="dark"] .principle-sheet li,
+[data-theme="dark"] .journal-date,
+[data-theme="dark"] .journal-plot {
+  border-color: #2D3748 !important;
+}
+
+/* ── Project Rows & Index Cards ─────────────────────────────────────────── */
+[data-theme="dark"] .project-row:hover {
+  background: #161A24 !important;
+}
+[data-theme="dark"] .row-art {
+  background: #12161F !important;
+}
+[data-theme="dark"] .custom-art {
+  background: #12161F !important;
+}
+
+/* ── Case Study & Pages ─────────────────────────────────────────────────── */
+[data-theme="dark"] .inner-page,
+[data-theme="dark"] .case-study,
+[data-theme="dark"] .projects-page,
+[data-theme="dark"] .journal-page,
+[data-theme="dark"] .blog-page,
+[data-theme="dark"] .notes-page,
+[data-theme="dark"] .contact-page {
+  background-color: #0A0D12 !important;
+}
+
+/* ── Journal Plot Spike Vector ──────────────────────────────────────────── */
+[data-theme="dark"] .journal-plot {
+  background: repeating-linear-gradient(to bottom, transparent 0 50px, #1A202C 51px) !important;
+}
+[data-theme="dark"] .journal-plot span {
+  background: #00F2FE !important;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.45);
+}
+
+/* ── Technical Badges & Margin Notes ────────────────────────────────────── */
+[data-theme="dark"] .case-tech,
+[data-theme="dark"] .margin-note {
+  border-left-color: #2D3748 !important;
+  color: #00F2FE !important;
+}
+
+/* ── Images, Figures & Captions ─────────────────────────────────────────── */
+[data-theme="dark"] .case-markdown img,
+[data-theme="dark"] .case-body img,
+[data-theme="dark"] figure.image-plate img,
+[data-theme="dark"] .case-markdown figure img,
+[data-theme="dark"] .note-body figure img {
+  border-color: #2D3748 !important;
+  background: #12161F !important;
+}
+[data-theme="dark"] figure.image-plate figcaption,
+[data-theme="dark"] .case-markdown figure figcaption,
+[data-theme="dark"] .note-body figure figcaption {
+  color: #718096 !important;
+}
+
+/* ── KaTeX Mathematical Equations ───────────────────────────────────────── */
+[data-theme="dark"] .katex-block-container {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] .katex-formula-body,
+[data-theme="dark"] .katex {
+  color: #E1E2EA !important;
+}
+
+/* ── Code Blocks ────────────────────────────────────────────────────────── */
+[data-theme="dark"] pre {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] code {
+  color: #00F2FE !important;
+}
+[data-theme="dark"] .code-copy-btn {
+  background: #1A202C !important;
+  border-color: #2D3748 !important;
+  color: #A0AEC0 !important;
+}
+[data-theme="dark"] .code-copy-btn:hover {
+  background: #2D3748 !important;
+  color: #E1E2EA !important;
+}
+
+/* ── Interactive Charts ─────────────────────────────────────────────────── */
+[data-theme="dark"] .interactive-chart-figure {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #0A0D12;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #2D3748;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #4A5568;
+}
+
+
+/* header-dot universal mobile rules */
+@media (max-width: 600px) {
+  .header-dot {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0 4px !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+
+/* ── Homepage Project Grid & Alternating Cards in Dark Mode ──────────────── */
+[data-theme="dark"] .project-grid {
+  border-color: #222938 !important;
+}
+[data-theme="dark"] .project {
+  border-color: #222938 !important;
+  background: #12161F !important;
+}
+[data-theme="dark"] .project:nth-child(odd) {
+  background: #12161F !important;
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] .project:nth-child(even) {
+  background: #161B26 !important;
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] .project:hover {
+  background: #1A202E !important;
+}
+[data-theme="dark"] .project-card-body {
+  background: transparent !important;
+}
+[data-theme="dark"] .project-art {
+  background: #0E121A !important;
+  border-bottom-color: #222938 !important;
+}
+[data-theme="dark"] .project h3 a,
+[data-theme="dark"] .project-title-link {
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] .project h3 a:hover,
+[data-theme="dark"] .project-title-link:hover {
+  color: #00F2FE !important;
+}
+[data-theme="dark"] .project p {
+  color: #9CA3AF !important;
+}
+[data-theme="dark"] .project-number {
+  color: #64748B !important;
+}
+[data-theme="dark"] .project-tech {
+  color: #64748B !important;
+}
+[data-theme="dark"] .project-link {
+  color: #E1E2EA !important;
+  border-bottom-color: #2D3748 !important;
+}
+[data-theme="dark"] .project-link:hover {
+  color: #00F2FE !important;
+  border-bottom-color: #00F2FE !important;
+}
+
+/* ── Category Filter Pills in Dark Mode ─────────────────────────────────── */
+[data-theme="dark"] .category-filter-bar .filter-pill {
+  background: transparent !important;
+  border-color: #2D3748 !important;
+  color: #9CA3AF !important;
+}
+[data-theme="dark"] .category-filter-bar .filter-pill:hover {
+  background: #1A202C !important;
+  border-color: #4A5568 !important;
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] .category-filter-bar .filter-pill.active {
+  background: #1E293B !important;
+  border-color: #00F2FE !important;
+  color: #E1E2EA !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPTION A: SELF-ADAPTING VECTOR & TECHNICAL LAB ART HEADERS (DARK MODE)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 00. Global Container & Telemetry Badge ──────────────────────────────── */
+[data-theme="dark"] .case-art {
+  background-color: #080B10 !important;
+  border-bottom-color: #222938 !important;
+  position: relative;
+}
+[data-theme="dark"] .case-art-label {
+  color: #00F2FE !important;
+  background: rgba(11, 14, 20, 0.88) !important;
+  border: 1px solid #2D3748 !important;
+  padding: 5px 12px !important;
+  border-radius: 2px !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  letter-spacing: 0.18em !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+[data-theme="dark"] .case-art-label::before {
+  content: "● ";
+  color: #FF3B30;
+  font-size: 8px;
+  margin-right: 5px;
+}
+[data-theme="dark"] .project-fallback-header-art {
+  background-color: #080B10 !important;
+}
+[data-theme="dark"] .art-badge {
+  color: rgba(0, 242, 254, 0.22) !important;
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.2) !important;
+}
+[data-theme="dark"] .art-kicker {
+  color: #00F2FE !important;
+  letter-spacing: 0.22em !important;
+}
+
+/* ── 01. Dots Grid / Constellation Matrix (Project 01) ───────────────────── */
+[data-theme="dark"] .dots,
+[data-theme="dark"] .case-art.dots,
+[data-theme="dark"] .row-art-dots,
+[data-theme="dark"] .project-fallback-header-art.art-dots {
+  background-color: #080B10 !important;
+  background-image: 
+    linear-gradient(rgba(0, 242, 254, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 254, 0.07) 1px, transparent 1px),
+    radial-gradient(rgba(225, 226, 234, 0.35) 1.5px, transparent 2px) !important;
+  background-size: 32px 32px, 32px 32px, 16px 16px !important;
+}
+[data-theme="dark"] .dots::after,
+[data-theme="dark"] .case-art.dots::after,
+[data-theme="dark"] .row-art-dots::after {
+  background-image: radial-gradient(#FF3B30 2px, transparent 2.5px) !important;
+  background-size: 11px 11px !important;
+  filter: drop-shadow(0 0 16px rgba(255, 59, 48, 0.85)) drop-shadow(0 0 4px rgba(255, 59, 48, 0.9)) !important;
+}
+
+/* ── 02. System Mesh / Isometric Architecture (Project 02) ───────────────── */
+[data-theme="dark"] .architecture,
+[data-theme="dark"] .case-art.architecture,
+[data-theme="dark"] .row-art-architecture,
+[data-theme="dark"] .project-fallback-header-art.art-architecture {
+  background-color: #080B10 !important;
+  background: 
+    linear-gradient(135deg, rgba(0, 242, 254, 0.06) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(0, 242, 254, 0.06) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(0, 242, 254, 0.06) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(0, 242, 254, 0.06) 25%, transparent 25%),
+    linear-gradient(130deg, #12161F 0%, #0A0D12 100%) !important;
+  background-size: 40px 40px, 40px 40px, 40px 40px, 40px 40px, 100% 100% !important;
+}
+[data-theme="dark"] .architecture span,
+[data-theme="dark"] .case-art.architecture span,
+[data-theme="dark"] .row-art-architecture::after {
+  background: #FF3B30 !important;
+  box-shadow: 0 0 24px rgba(255, 59, 48, 0.75), inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid #FF5545 !important;
+}
+
+/* ── 03. Analytical Spline / Oscilloscope Trend (Project 03) ─────────────── */
+[data-theme="dark"] .line-chart,
+[data-theme="dark"] .case-art.line-chart,
+[data-theme="dark"] .row-art-chart,
+[data-theme="dark"] .project-fallback-header-art.art-chart {
+  background-color: #080B10 !important;
+  background-image: 
+    repeating-linear-gradient(to bottom, transparent 0 24px, rgba(45, 55, 72, 0.45) 25px),
+    repeating-linear-gradient(to right, transparent 0 24px, rgba(45, 55, 72, 0.45) 25px) !important;
+}
+[data-theme="dark"] .line-chart span,
+[data-theme="dark"] .case-art.line-chart span,
+[data-theme="dark"] .row-art-chart::before {
+  background: #00F2FE !important;
+  filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.75)) drop-shadow(0 0 2px rgba(0, 242, 254, 0.9)) !important;
+}
+[data-theme="dark"] .line-chart::after,
+[data-theme="dark"] .case-art.line-chart::after,
+[data-theme="dark"] .row-art-chart::after {
+  background: #FF3B30 !important;
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.85), 0 0 0 5px rgba(255, 59, 48, 0.25) !important;
+}
+
+/* ── 04. Spectral Frequency / Quant Bars ─────────────────────────────────── */
+[data-theme="dark"] .data-bars,
+[data-theme="dark"] .case-art.data-bars,
+[data-theme="dark"] .row-art-bars {
+  background-color: #080B10 !important;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 18px, rgba(45, 55, 72, 0.35) 19px) !important;
+}
+[data-theme="dark"] .data-bars span,
+[data-theme="dark"] .case-art.data-bars span,
+[data-theme="dark"] .row-art-bars::before {
+  background: repeating-linear-gradient(to right, #2D3748 0 12px, transparent 12px 20px) !important;
+}
+[data-theme="dark"] .data-bars::after,
+[data-theme="dark"] .case-art.data-bars::after,
+[data-theme="dark"] .row-art-bars::after {
+  background: #FF3B30 !important;
+  box-shadow: 0 0 18px rgba(255, 59, 48, 0.8) !important;
+}
+
+/* ── 05. Correlation Cluster / Scatter Plot ──────────────────────────────── */
+[data-theme="dark"] .scatter-plot,
+[data-theme="dark"] .case-art.scatter-plot,
+[data-theme="dark"] .row-art-scatter {
+  background-color: #080B10 !important;
+  background-image: 
+    linear-gradient(rgba(45, 55, 72, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 55, 72, 0.4) 1px, transparent 1px) !important;
+  background-size: 28px 28px !important;
+}
+[data-theme="dark"] .scatter-plot span,
+[data-theme="dark"] .case-art.scatter-plot span,
+[data-theme="dark"] .row-art-scatter::before {
+  background-image:
+    radial-gradient(circle at 20% 30%, #00F2FE 5px, transparent 5.5px),
+    radial-gradient(circle at 35% 60%, #E1E2EA 4px, transparent 4.5px),
+    radial-gradient(circle at 50% 25%, #00F2FE 6px, transparent 6.5px),
+    radial-gradient(circle at 70% 75%, #E1E2EA 5px, transparent 5.5px),
+    radial-gradient(circle at 85% 40%, #00F2FE 4px, transparent 4.5px) !important;
+  filter: drop-shadow(0 0 6px rgba(0, 242, 254, 0.4)) !important;
+}
+[data-theme="dark"] .scatter-plot::after,
+[data-theme="dark"] .case-art.scatter-plot::after,
+[data-theme="dark"] .row-art-scatter::after {
+  background: #FF3B30 !important;
+  box-shadow: 0 0 18px rgba(255, 59, 48, 0.85), 0 0 0 5px rgba(0, 242, 254, 0.25) !important;
+}
+
+/* ── 06. Harmonic Wave Dynamics / Sine Waves ────────────────────────────── */
+[data-theme="dark"] .sine-waves,
+[data-theme="dark"] .case-art.sine-waves,
+[data-theme="dark"] .row-art-waves {
+  background: linear-gradient(180deg, #12161F 0%, #080B10 100%) !important;
+}
+[data-theme="dark"] .sine-waves span,
+[data-theme="dark"] .case-art.sine-waves span,
+[data-theme="dark"] .row-art-waves::before {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 59, 48, 0.35) 0%, transparent 65%),
+    repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(0, 242, 254, 0.08) 14px, rgba(0, 242, 254, 0.08) 16px) !important;
+}
+
+/* ── 07. Neural Matrix / Binary Tensor Field ─────────────────────────────── */
+[data-theme="dark"] .matrix-grid,
+[data-theme="dark"] .case-art.matrix-grid,
+[data-theme="dark"] .row-art-matrix {
+  background: #080A0E !important;
+}
+[data-theme="dark"] .matrix-grid span,
+[data-theme="dark"] .case-art.matrix-grid span,
+[data-theme="dark"] .row-art-matrix::before {
+  background-image: 
+    linear-gradient(rgba(0, 242, 254, 0.12) 1px, transparent 1px), 
+    linear-gradient(90deg, rgba(0, 242, 254, 0.12) 1px, transparent 1px) !important;
+  background-size: 16px 16px !important;
+}
+[data-theme="dark"] .matrix-grid::after,
+[data-theme="dark"] .case-art.matrix-grid::after,
+[data-theme="dark"] .row-art-matrix::after {
+  background: #FF3B30 !important;
+  box-shadow: 0 0 24px rgba(255, 59, 48, 0.9), 0 0 0 4px rgba(0, 242, 254, 0.3) !important;
+}
+
+/* ── 08. Voronoi Mesh / Geometric Polygons ───────────────────────────────── */
+[data-theme="dark"] .geometric-mesh,
+[data-theme="dark"] .case-art.geometric-mesh,
+[data-theme="dark"] .row-art-geometric {
+  background: 
+    repeating-linear-gradient(60deg, rgba(0, 242, 254, 0.06) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-60deg, rgba(0, 242, 254, 0.06) 0 1px, transparent 1px 24px),
+    #080B10 !important;
+}
+[data-theme="dark"] .geometric-mesh span,
+[data-theme="dark"] .case-art.geometric-mesh span,
+[data-theme="dark"] .row-art-geometric::after {
+  background: #FF3B30 !important;
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.8) !important;
+}
+
+/* ── 09. Quantum Logic Nodes / Circuit Bus ───────────────────────────────── */
+[data-theme="dark"] .circuit-nodes,
+[data-theme="dark"] .case-art.circuit-nodes,
+[data-theme="dark"] .row-art-circuit {
+  background: #080B10 !important;
+}
+[data-theme="dark"] .circuit-nodes span,
+[data-theme="dark"] .case-art.circuit-nodes span,
+[data-theme="dark"] .row-art-circuit::before {
+  background-image: 
+    linear-gradient(90deg, #1E2638 2px, transparent 2px), 
+    linear-gradient(180deg, #1E2638 2px, transparent 2px) !important;
+  background-size: 28px 28px !important;
+}
+[data-theme="dark"] .circuit-nodes::after,
+[data-theme="dark"] .case-art.circuit-nodes::after,
+[data-theme="dark"] .row-art-circuit::after {
+  border-color: #FF3B30 !important;
+  background: #00F2FE !important;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.8) !important;
+}
+
+/* ── 10. Polar Vector Phasor / Radial Burst ──────────────────────────────── */
+[data-theme="dark"] .radial-burst,
+[data-theme="dark"] .case-art.radial-burst,
+[data-theme="dark"] .row-art-radial,
+[data-theme="dark"] .project-fallback-header-art.art-radial {
+  background: 
+    repeating-conic-gradient(from 0deg at 50% 50%, #12161F 0deg 15deg, #080B10 15deg 30deg) !important;
+}
+[data-theme="dark"] .radial-burst span,
+[data-theme="dark"] .case-art.radial-burst span,
+[data-theme="dark"] .row-art-radial::after {
+  border-color: #FF3B30 !important;
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.75) !important;
+}
+
+/* ── Custom SVG Artwork & Embedded Figures in Dark Mode ─────────────────── */
+[data-theme="dark"] .custom-art,
+[data-theme="dark"] .row-art-custom {
+  background: #080B10 !important;
+}
+[data-theme="dark"] .custom-art-img,
+[data-theme="dark"] .project-cover-img {
+  background-color: transparent !important;
+}
+
+/* ── Resume Button Dark Theme (Crisp Crimson & Off-White, No Cyan Clash) ── */
+[data-theme="dark"] .button-resume {
+  background: #12161F !important;
+  color: #E1E2EA !important;
+  border: 1px solid #2D3748 !important;
+  box-shadow: none !important;
+}
+[data-theme="dark"] .button-resume .resume-icon svg {
+  stroke: #E1E2EA !important;
+}
+[data-theme="dark"] .button-resume .resume-arrow {
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] .button-resume::before {
+  background: #FF3B30 !important;
+}
+[data-theme="dark"] .button-resume:hover,
+[data-theme="dark"] .button-resume:focus-visible {
+  background: #FF3B30 !important;
+  color: #FFFFFF !important;
+  border-color: #FF3B30 !important;
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.4) !important;
+}
+[data-theme="dark"] .button-resume:hover .resume-icon svg,
+[data-theme="dark"] .button-resume:focus-visible .resume-icon svg {
+  stroke: #FFFFFF !important;
+}
+[data-theme="dark"] .button-resume:hover .resume-arrow,
+[data-theme="dark"] .button-resume:focus-visible .resume-arrow {
+  color: #FFFFFF !important;
+}
+
+
+/* ── Dark Theme Hover & Focus Highlights (Journal, Blog & Project Rows) ─── */
+[data-theme="dark"] a.journal-index-row:hover,
+[data-theme="dark"] a.journal-index-row:focus,
+[data-theme="dark"] a.journal-index-row:focus-visible {
+  background: #161B26 !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  border-top-color: #2D3748 !important;
+}
+[data-theme="dark"] a.journal-index-row:hover h2,
+[data-theme="dark"] a.journal-index-row:focus h2,
+[data-theme="dark"] a.journal-index-row:focus-visible h2 {
+  color: #00F2FE !important;
+  text-shadow: 0 0 16px rgba(0, 242, 254, 0.25) !important;
+}
+[data-theme="dark"] a.journal-index-row:hover .eyebrow,
+[data-theme="dark"] a.journal-index-row:focus .eyebrow,
+[data-theme="dark"] a.journal-index-row:focus-visible .eyebrow {
+  color: #00F2FE !important;
+}
+[data-theme="dark"] a.journal-index-row:hover p:last-child,
+[data-theme="dark"] a.journal-index-row:focus p:last-child,
+[data-theme="dark"] a.journal-index-row:focus-visible p:last-child {
+  color: #CBD5E1 !important;
+}
+[data-theme="dark"] a.journal-index-row:hover .journal-index-date strong,
+[data-theme="dark"] a.journal-index-row:focus .journal-index-date strong,
+[data-theme="dark"] a.journal-index-row:focus-visible .journal-index-date strong {
+  color: #E1E2EA !important;
+}
+[data-theme="dark"] a.journal-index-row:hover .journal-index-date span,
+[data-theme="dark"] a.journal-index-row:focus .journal-index-date span,
+[data-theme="dark"] a.journal-index-row:focus-visible .journal-index-date span {
+  color: #00F2FE !important;
+}
+
+[data-theme="dark"] .blog-row:hover,
+[data-theme="dark"] .blog-row:focus,
+[data-theme="dark"] .blog-row:focus-visible {
+  background: #161B26 !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  border-color: #2D3748 !important;
+}
+[data-theme="dark"] .blog-row:hover h2,
+[data-theme="dark"] .blog-row:focus h2,
+[data-theme="dark"] .blog-row:focus-visible h2 {
+  color: #00F2FE !important;
+  text-shadow: 0 0 16px rgba(0, 242, 254, 0.25) !important;
+}
+[data-theme="dark"] .blog-row:hover b,
+[data-theme="dark"] .blog-row:focus b,
+[data-theme="dark"] .blog-row:focus-visible b {
+  color: #00F2FE !important;
+}
+[data-theme="dark"] .blog-row:hover span,
+[data-theme="dark"] .blog-row:focus span,
+[data-theme="dark"] .blog-row:focus-visible span {
+  color: #00F2FE !important;
+}
+[data-theme="dark"] .blog-row:hover p,
+[data-theme="dark"] .blog-row:focus p,
+[data-theme="dark"] .blog-row:focus-visible p {
+  color: #CBD5E1 !important;
+}
+
+[data-theme="dark"] .project-row:hover,
+[data-theme="dark"] .project-row:focus,
+[data-theme="dark"] .project-row:focus-visible {
+  background: #161B26 !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  border-color: #2D3748 !important;
+}
+[data-theme="dark"] .project-row:hover h2,
+[data-theme="dark"] .project-row:focus h2,
+[data-theme="dark"] .project-row:focus-visible h2 {
+  color: #00F2FE !important;
+  text-shadow: 0 0 16px rgba(0, 242, 254, 0.25) !important;
+}
+[data-theme="dark"] .project-row:hover b,
+[data-theme="dark"] .project-row:focus b,
+[data-theme="dark"] .project-row:focus-visible b {
+  color: #00F2FE !important;
+}
+[data-theme="dark"] .project-row:hover > span,
+[data-theme="dark"] .project-row:focus > span,
+[data-theme="dark"] .project-row:focus-visible > span {
+  color: #00F2FE !important;
+}
+[data-theme="dark"] .project-row:hover > p,
+[data-theme="dark"] .project-row:focus > p,
+[data-theme="dark"] .project-row:focus-visible > p {
+  color: #CBD5E1 !important;
+}
+
+
+/* ==========================================================================
+   BAUHAUS EDITORIAL THEME TRANSITION & MICRO-ANIMATION
+   Calibrated tactile micro-animation on toggle dot + circular aperture bloom.
+   Respects prefers-reduced-motion.
+   ========================================================================== */
+
+/* Active transition state during mode toggling */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: 
+    background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.25s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease !important;
+  transition-delay: 0s !important;
+}
+
+/* View Transition circular aperture bloom */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 99999;
+}
+
+/* Interactive Dot Click Recoil & Micro-Animation */
+.header-dot.dot-animating,
+.admin-header-dot.dot-animating {
+  animation: dotRecoil 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dotRecoil {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.68) rotate(45deg); }
+  65% { transform: scale(1.32) rotate(-15deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Tactile Bauhaus Ripple Ring expanding from the dot */
+.theme-ripple-ring {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%);
+  animation: bauhausRippleRing 0.46s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bauhausRippleRing {
+  0% {
+    width: 22px;
+    height: 22px;
+    opacity: 0.95;
+    border: 2px solid var(--red, #ef321f);
+    box-shadow: 0 0 14px rgba(239, 50, 31, 0.6);
+  }
+  100% {
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    box-shadow: 0 0 32px rgba(0, 242, 254, 0);
+  }
+}
+
+[data-theme="dark"] .theme-ripple-ring {
+  animation-name: bauhausRippleRingDark;
+}
+
+@keyframes bauhausRippleRingDark {
+  0% {
+    width: 22px;
+    height: 22px;
+    opacity: 0.95;
+    border: 2px solid #00F2FE;
+    box-shadow: 0 0 16px rgba(0, 242, 254, 0.7);
+  }
+  100% {
+    width: 160px;
+    height: 160px;
+    opacity: 0;
+    border: 1px solid rgba(255, 59, 48, 0.2);
+    box-shadow: 0 0 36px rgba(255, 59, 48, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: none !important;
+  }
+  .header-dot.dot-animating,
+  .admin-header-dot.dot-animating {
+    animation: none !important;
+  }
+  .theme-ripple-ring {
+    display: none !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   RANDOMIZED TRIO OF BAUHAUS THEME TRANSITIONS
+   0: Radial Aperture Iris
+   1: Diagonal Drafting Sweep
+   2: Parallel Rule / Curtain Wipe
+   ========================================================================== */
+
+/* Type 1: Bauhaus Diagonal Crosshair Slash on Dot */
+.theme-slash-flare {
+  position: fixed;
+  width: 2px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--red, #ef321f);
+  box-shadow: 0 0 14px rgba(239, 50, 31, 0.7);
+  animation: bauhausSlashFlare 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bauhausSlashFlare {
+  0% {
+    height: 20px;
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(45deg) scaleY(1);
+  }
+  100% {
+    height: 160px;
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(45deg) scaleY(1.8);
+  }
+}
+
+[data-theme="dark"] .theme-slash-flare {
+  background: #00F2FE;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.8);
+}
+
+/* Type 2: Bauhaus Geometric Diamond Pulse on Dot */
+.theme-diamond-flare {
+  position: fixed;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  z-index: 999999;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 2px solid var(--red, #ef321f);
+  box-shadow: 0 0 12px rgba(239, 50, 31, 0.6);
+  animation: bauhausDiamondPulse 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bauhausDiamondPulse {
+  0% {
+    width: 18px;
+    height: 18px;
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(45deg) scale(1);
+  }
+  100% {
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+    border-width: 1px;
+    transform: translate(-50%, -50%) rotate(90deg) scale(1.6);
+  }
+}
+
+[data-theme="dark"] .theme-diamond-flare {
+  border-color: #00F2FE;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-slash-flare,
+  .theme-diamond-flare {
+    display: none !important;
+  }
 }

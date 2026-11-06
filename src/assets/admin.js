@@ -501,11 +501,14 @@
           <span>@${esc(state.user.login)}</span>
           <button class="admin-btn" data-act="logout" type="button">SIGN OUT</button>
         </div>
-        <button type="button" class="mobile-menu-btn admin-mobile-toggle" id="admin-mobile-toggle-btn" aria-label="Toggle admin navigation menu" aria-expanded="false">
-          <span class="menu-bar"></span>
-          <span class="menu-bar"></span>
-          <span class="menu-bar"></span>
-        </button>
+        <div class="admin-header-controls">
+          <button type="button" class="header-dot admin-header-dot" id="admin-theme-toggle" aria-label="Toggle theme" title="Toggle Dark/Light Mode"></button>
+          <button type="button" class="mobile-menu-btn admin-mobile-toggle" id="admin-mobile-toggle-btn" aria-label="Toggle admin navigation menu" aria-expanded="false">
+            <span class="menu-bar"></span>
+            <span class="menu-bar"></span>
+            <span class="menu-bar"></span>
+          </button>
+        </div>
       </header>
       <nav class="admin-nav" id="admin-nav" aria-label="Admin">
         <div class="admin-nav-links">
@@ -555,6 +558,7 @@
           </span>
           <span class="circle-btn-text">RETURN TO HOME</span>
         </a>
+        <button type="button" class="header-dot admin-header-dot" id="admin-gate-theme-toggle" aria-label="Toggle theme" title="Toggle Dark/Light Mode"></button>
       </div>
       <div class="admin-gate">
         <p class="admin-kicker">00 / PRIVATE CONSOLE</p>
@@ -564,7 +568,7 @@
         
         <form class="admin-form" data-form="passcode-login" style="max-width:380px;margin:24px 0">
           <label style="font:11px var(--mono)">SECRET ACCESS PASSCODE
-            <input type="password" name="passcode" placeholder="Enter secret code..." required style="padding:10px;font-size:14px;background:#fff">
+            <input type="password" name="passcode" placeholder="Enter secret code..." required style="padding:10px;font-size:14px">
           </label>
           <button class="admin-btn primary" type="submit" style="width:100%;margin-top:10px">UNLOCK CONSOLE <b>→</b></button>
         </form>
@@ -1220,7 +1224,7 @@
 
   function aboutForm(about) {
     const principles = (about.principles || []).concat([{ title: "", home: "", page: "" }, { title: "", home: "", page: "" }, { title: "", home: "", page: "" }, { title: "", home: "", page: "" }]).slice(0, 4).map((item, i) => `
-      <div class="wide portrait-studio-container" style="margin-top:20px;padding:20px;background:#ffffff">
+      <div class="wide portrait-studio-container about-principle-card" style="margin-top:20px;padding:20px">
         <h4 style="font:700 11px var(--mono);margin:0 0 14px;letter-spacing:0.14em;color:var(--accent-red,#e03c31)">PRINCIPLE 0${i + 1}</h4>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px">
           ${input(`PRINCIPLE ${i + 1} TITLE`, `p-title-${i}`, item.title || "")}
@@ -1289,7 +1293,7 @@
           <div style="padding:16px 0 0;font-family:var(--sans)">
             <p style="font-size:13px;line-height:1.5;color:#555;margin:0 0 16px">Upload your updated resume PDF file here. It will automatically replace <code>/assets/Abantika_Resume.pdf</code> and update all Download Resume buttons on the live site.</p>
             <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-              <input type="file" id="resume-pdf-input" accept="application/pdf" class="admin-input" style="max-width:360px;padding:8px;background:#fff;border:1px solid var(--line)" />
+              <input type="file" id="resume-pdf-input" accept="application/pdf" class="admin-input" style="max-width:360px;padding:8px;border:1px solid var(--line)" />
               <button type="button" class="admin-btn primary" id="upload-resume-btn">📄 UPLOAD NEW RESUME PDF <b>↗</b></button>
             </div>
             <div id="resume-upload-msg" style="margin-top:12px;font:11px var(--mono)"></div>
@@ -3610,12 +3614,12 @@
       </div>
 
       <div class="admin-stat-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin-bottom:28px">
-        <div class="admin-stat" style="border:1px solid var(--line);padding:16px;background:#fff">
+        <div class="admin-stat" style="border:1px solid var(--line);padding:16px">
           <span style="font:10px var(--mono);color:#777;letter-spacing:0.1em;display:block">DELETED ITEMS</span>
           <strong style="font:32px var(--sans);display:block;margin:4px 0">${count}</strong>
           <p style="font:11px var(--mono);color:#888;margin:0">CURRENTLY IN BIN</p>
         </div>
-        <div class="admin-stat" style="border:1px solid var(--line);padding:16px;background:#fff">
+        <div class="admin-stat" style="border:1px solid var(--line);padding:16px">
           <span style="font:10px var(--mono);color:#777;letter-spacing:0.1em;display:block">RETENTION POLICY</span>
           <strong style="font:32px var(--sans);display:block;margin:4px 0">180<span style="font-size:16px;font-weight:400;color:#666"> DAYS</span></strong>
           <p style="font:11px var(--mono);color:#888;margin:0">6-MONTH ARCHIVE</p>
@@ -3623,7 +3627,7 @@
       </div>
 
       ${count === 0 ? `
-        <div style="border:1px dashed var(--line);padding:48px 24px;text-align:center;background:#fff;margin-top:20px">
+        <div class="admin-trash-empty" style="border:1px dashed var(--line);padding:48px 24px;text-align:center;margin-top:20px">
           <p style="font:700 13px var(--mono);letter-spacing:0.1em;margin:0 0 6px">THE RECYCLE BIN IS EMPTY</p>
           <p style="font:12px var(--sans);color:#666;margin:0">Deleted projects, articles, field notes, and research notes will be safely preserved here.</p>
         </div>
@@ -3634,18 +3638,18 @@
             const dateStr = item.deletedAt ? new Date(item.deletedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "-";
             const daysLeft = typeof item.daysLeft === "number" ? item.daysLeft : 180;
             const daysTag = daysLeft <= 15
-              ? `<span style="font:700 10px var(--mono);color:var(--accent-red,#e03c31);background:#fff0f0;padding:2px 8px;border:1px solid var(--accent-red,#e03c31)">EXPIRING IN ${daysLeft}D</span>`
-              : `<span style="font:10px var(--mono);color:#666;background:#f0eee8;padding:2px 8px;border:1px solid var(--line)">${daysLeft} DAYS LEFT</span>`;
+              ? `<span class="admin-trash-expiring" style="font:700 10px var(--mono);color:var(--accent-red,#e03c31);background:rgba(239,50,31,0.12);padding:2px 8px;border:1px solid var(--accent-red,#e03c31)">EXPIRING IN ${daysLeft}D</span>`
+              : `<span class="admin-trash-tag" style="font:10px var(--mono);padding:2px 8px;border:1px solid var(--line)">${daysLeft} DAYS LEFT</span>`;
 
             return `
-              <div class="admin-row-wrapper" style="border:1px solid var(--line);background:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+              <div class="admin-row-wrapper admin-trash-card" style="border:1px solid var(--line);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
                 <div style="display:flex;flex-direction:column;gap:4px;min-width:240px;flex:1">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                     <span class="admin-badge" style="font:700 9px var(--mono);background:#171717;color:#fff;padding:2px 6px;letter-spacing:0.1em">${esc(typeLabel)}</span>
                     <span style="font:11px var(--mono);color:#888">DELETED: ${esc(dateStr)}</span>
                     ${daysTag}
                   </div>
-                  <b style="font:700 16px var(--sans);color:#111;margin-top:4px">${esc(item.title || item.originalId || "Untitled Item")}</b>
+                  <b class="admin-trash-title" style="font:700 16px var(--sans);margin-top:4px">${esc(item.title || item.originalId || "Untitled Item")}</b>
                   <span style="font:11px var(--mono);color:#777;word-break:break-all">${esc(item.originalPath || item.originalId || "")}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
@@ -4299,6 +4303,111 @@
   }
 
   app.addEventListener("click", async (event) => {
+        const themeBtn = event.target.closest("#admin-theme-toggle, #admin-theme-toggle-mobile, #admin-gate-theme-toggle, .admin-header-dot");
+    if (themeBtn) {
+      const isReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      const next = current === "dark" ? "light" : "dark";
+
+      // Randomly choose from 3 Bauhaus transition types:
+      // 0: Radial Aperture Iris
+      // 1: Diagonal Drafting Sweep
+      // 2: Parallel Rule / Curtain Wipe
+      const animType = Math.floor(Math.random() * 3);
+
+      function applyTheme() {
+        document.documentElement.setAttribute("data-theme", next);
+        try {
+          localStorage.setItem("abantika_theme", next);
+        } catch (e) {}
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", next === "dark" ? "#0A0D12" : "#f2f0ea");
+      }
+
+      if (isReduced) {
+        applyTheme();
+        return;
+    }
+
+      if (themeBtn.classList) {
+        themeBtn.classList.remove("dot-animating");
+        void themeBtn.offsetWidth;
+        themeBtn.classList.add("dot-animating");
+        setTimeout(() => { themeBtn.classList.remove("dot-animating"); }, 450);
+
+        const rect = themeBtn.getBoundingClientRect();
+        const flare = document.createElement("div");
+        if (animType === 0) {
+          flare.className = "theme-ripple-ring";
+        } else if (animType === 1) {
+          flare.className = "theme-slash-flare";
+        } else {
+          flare.className = "theme-diamond-flare";
+        }
+        flare.style.left = (rect.left + rect.width / 2) + "px";
+        flare.style.top = (rect.top + rect.height / 2) + "px";
+        document.body.appendChild(flare);
+        setTimeout(() => { flare.remove(); }, 500);
+      }
+
+      document.documentElement.classList.add("theme-transitioning");
+      const clearTransition = () => {
+        setTimeout(() => {
+          document.documentElement.classList.remove("theme-transitioning");
+        }, 420);
+      };
+
+      if (document.startViewTransition) {
+        const rect = themeBtn.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        const endRadius = Math.hypot(
+          Math.max(x, window.innerWidth - x),
+          Math.max(y, window.innerHeight - y)
+        );
+
+        let clipAnimation;
+        if (animType === 0) {
+          clipAnimation = [
+            "circle(0px at " + x + "px " + y + "px)",
+            "circle(" + endRadius + "px at " + x + "px " + y + "px)"
+          ];
+        } else if (animType === 1) {
+          clipAnimation = [
+            "polygon(100% 0, 100% 0, 100% 100%, 100% 100%)",
+            "polygon(-20% 0, 100% 0, 100% 100%, -20% 100%)"
+          ];
+        } else {
+          clipAnimation = [
+            "inset(0 0 100% 0)",
+            "inset(0 0 0 0)"
+          ];
+        }
+
+        const transition = document.startViewTransition(() => {
+          applyTheme();
+        });
+
+        transition.ready.then(() => {
+          document.documentElement.animate(
+            {
+              clipPath: clipAnimation
+            },
+            {
+              duration: 420,
+              easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+              pseudoElement: "::view-transition-new(root)"
+            }
+          ).finished.finally(clearTransition);
+        }).catch(() => {
+          clearTransition();
+        });
+      } else {
+        applyTheme();
+        clearTransition();
+      }
+      return;
+    }
     const adminToggleBtn = event.target.closest("#admin-mobile-toggle-btn");
     if (adminToggleBtn) {
       const nav = document.getElementById("admin-nav");
