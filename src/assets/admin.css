@@ -3274,3 +3274,143 @@ html.theme-transitioning *::after {
   gap: 12px;
   flex-shrink: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   BAUHAUS MEDIA SELECTOR & LATEX MODALS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Media Selector Modal (Full File Version from Media Page) */
+.media-select-modal {
+  width: min(940px, 96vw) !important;
+  max-width: 96vw !important;
+  box-sizing: border-box;
+}
+
+.media-picker-upload-box {
+  border: 1px solid var(--line);
+  background: var(--bg-elevated, #faf9f5);
+}
+
+.media-select-modal .media-picker-tabs .wysiwyg-tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: inherit;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+}
+
+.media-select-modal .media-picker-tabs .wysiwyg-tab.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.media-picker-files-grid {
+  scrollbar-width: thin;
+}
+
+.picker-file-card {
+  border: 1px solid var(--line);
+  background: var(--paper, #ffffff);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.picker-file-card:hover {
+  border-color: var(--ink);
+}
+
+.picker-file-card.is-selected {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 2px var(--red);
+}
+
+/* Dark Theme Overrides for Media Selector */
+[data-theme="dark"] .media-picker-upload-box {
+  background: #161B26;
+  border-color: #2D3748;
+}
+
+[data-theme="dark"] .media-select-modal .media-picker-tabs .wysiwyg-tab.active {
+  background: var(--red);
+  color: #ffffff;
+  border-color: var(--red);
+}
+
+[data-theme="dark"] .picker-file-card {
+  background: #161B26;
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .picker-file-card:hover {
+  border-color: #4A5568;
+}
+
+[data-theme="dark"] .picker-file-card.is-selected {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 2px var(--red);
+}
+
+/* LaTeX Mathematics Modal */
+.math-picker-modal {
+  width: min(640px, 95vw) !important;
+  box-sizing: border-box;
+}
+
+.math-picker-modal .math-preset-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: inherit;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+}
+
+.math-picker-modal .math-preset-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+#math-modal-input {
+  font-family: var(--mono);
+  background: var(--bg-elevated, #faf9f5);
+  border: 1px solid var(--line);
+  color: inherit;
+  line-height: 1.4;
+}
+
+#math-modal-preview {
+  background: #ffffff;
+  color: #111111;
+  border: 1px dashed var(--line);
+}
+
+[data-theme="dark"] .math-picker-modal .math-preset-btn {
+  border-color: #2D3748;
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .math-picker-modal .math-preset-btn:hover {
+  border-color: var(--red);
+  color: #ffffff;
+  background: rgba(239, 50, 31, 0.15);
+}
+
+[data-theme="dark"] #math-modal-input {
+  background: #0D1117;
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] #math-modal-preview {
+  background: #161B26;
+  color: #E1E2EA;
+  border-color: #2D3748;
+}

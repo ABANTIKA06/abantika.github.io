@@ -1343,6 +1343,78 @@
     );
   }
 
+  async function uploadMediaFile(file, folder = "about") {
+    if (!file) throw new Error("Choose a file first.");
+    if (file.size > 25 * 1024 * 1024) throw new Error("File exceeds 25MB limit.");
+
+    const baseName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
+    let uploadedPath = "";
+    try {
+      const presigned = await api("/api/r2-presign", {
+        method: "POST",
+        body: { folder, filename: baseName, contentType: file.type || "application/octet-stream" }
+      });
+      if (presigned && presigned.uploadUrl) {
+        const r2Res = await fetch(presigned.uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: { "content-type": file.type || "application/octet-stream" }
+        });
+        if (r2Res.ok) {
+          uploadedPath = presigned.publicUrl;
+        }
+      }
+    } catch (err) {
+      console.warn("Direct R2 presigned upload error, falling back to API proxy:", err);
+    }
+
+    if (!uploadedPath) {
+      let dataUrl, filename;
+      if (file.type && file.type.includes("svg")) {
+        const text = await file.text();
+        const base64 = btoa(unescape(encodeURIComponent(text)));
+        dataUrl = `data:image/svg+xml;base64,${base64}`;
+        filename = baseName;
+      } else if (file.type && (file.type.includes("pdf") || file.type.includes("mp4"))) {
+        const reader = new FileReader();
+        dataUrl = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        filename = baseName;
+      } else {
+        const converted = await convertToWebp(file);
+        dataUrl = converted.dataUrl;
+        filename = converted.filename;
+      }
+
+      const CHUNK_SIZE = 1.5 * 1024 * 1024;
+      if (dataUrl.length <= CHUNK_SIZE) {
+        const res = await api("/api/media", { method: "POST", body: { folder, filename, data: dataUrl } });
+        uploadedPath = res.path;
+      } else {
+        const uploadId = `up-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        const totalChunks = Math.ceil(dataUrl.length / CHUNK_SIZE);
+        let lastRes = {};
+        for (let i = 0; i < totalChunks; i++) {
+          const chunkData = dataUrl.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+          lastRes = await api("/api/media-chunk", {
+            method: "POST",
+            body: { uploadId, folder, filename, chunkIndex: i, totalChunks, data: chunkData }
+          });
+        }
+        uploadedPath = lastRes.path || `/assets/images/${folder}/${filename}`;
+      }
+    }
+
+    state.mediaPreviewCache = state.mediaPreviewCache || {};
+    try {
+      state.mediaPreviewCache[uploadedPath] = URL.createObjectURL(file);
+    } catch(e) {}
+    return { path: uploadedPath, name: baseName, folder };
+  }
+
   async function showMediaSelectModal(onSelect) {
     window.showMediaSelectModal = showMediaSelectModal;
     document.querySelector(".admin-modal-root")?.remove();
@@ -1354,115 +1426,240 @@
       mediaFiles = Array.isArray(state.content?.media) ? state.content.media : [];
     }
 
+    const fallbackSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='140' viewBox='0 0 200 140'%3E%3Crect width='100%25' height='100%25' fill='%23edebe6'/%3E%3Ctext x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-size='10' font-family='monospace' fill='%23888'%3E%5B MEDIA ASSET %5D%3C/text%3E%3C/svg%3E";
+
     const root = document.createElement("div");
     root.className = "admin-modal-root";
     root.innerHTML = `
       <div class="admin-modal-backdrop" data-dismiss="true"></div>
-      <div class="admin-modal image-picker-modal" role="dialog" aria-modal="true" style="width:min(680px, 100%)">
-        <p class="admin-kicker">07 / ARTWORK & MEDIA PICKER</p>
-        <h2 style="margin-bottom:12px">SELECT OR UPLOAD ARTWORK<span class="red-stop">.</span></h2>
-        
-        <div class="image-picker-tabs" style="display:flex;gap:6px;margin-bottom:14px">
-          <button type="button" class="wysiwyg-tab active" data-img-tab="library">SELECT FROM MEDIA LIBRARY</button>
-          <button type="button" class="wysiwyg-tab" data-img-tab="upload">UPLOAD NEW ART / IMAGE</button>
+      <div class="admin-modal media-select-modal" role="dialog" aria-modal="true" style="width:min(940px, 96vw);max-height:92vh;display:flex;flex-direction:column;padding:26px 24px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <p class="admin-kicker" style="margin:0 0 2px">07 / MEDIA ASSETS</p>
+            <h2 style="margin:0;font-size:clamp(22px, 3.5vw, 28px);letter-spacing:-0.05em">SELECT OR UPLOAD MEDIA<span class="red-stop">.</span></h2>
+          </div>
+          <button type="button" class="admin-btn" data-dismiss="true" style="padding:4px 10px;font-size:11px" title="Close modal">✕ ESC</button>
         </div>
 
-        <div class="image-picker-pane" id="img-pane-library">
-          <div class="admin-media-grid-picker" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:10px;max-height:220px;overflow-y:auto;border:1px solid var(--line);padding:10px">
-            ${mediaFiles.length ? mediaFiles.map((f) => `
-              <div class="picker-item" data-path="${esc(f.path)}" style="border:1px solid var(--line);padding:6px;cursor:pointer;background:#f7f5ef">
-                <img src="${esc(f.path)}" alt="${esc(f.name)}" style="width:100%;height:70px;object-fit:cover">
-                <span style="font:9px var(--mono);display:block;margin-top:4px;word-break:break-all">${esc(f.name)}</span>
-              </div>
-            `).join("") : `<p style="font:11px var(--mono)">No images in library yet.</p>`}
+        <!-- UPLOAD STRIP MATCHING MEDIA PAGE -->
+        <div class="media-picker-upload-box" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:12px;border:1px solid var(--line);background:var(--bg-elevated, #faf9f5);margin-bottom:12px">
+          <div style="flex:0 0 130px">
+            <label style="font:10px var(--mono);display:block;margin-bottom:4px;font-weight:700">FOLDER</label>
+            <select id="picker-folder" style="width:100%;padding:6px;font:11px var(--mono);border:1px solid var(--line);background:var(--bg, #fff)">
+              <option value="projects">projects</option>
+              <option value="blog">blog</option>
+              <option value="journal">journal</option>
+              <option value="about">about</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <label style="font:10px var(--mono);display:block;margin-bottom:4px;font-weight:700">CHOOSE FILE TO UPLOAD</label>
+            <input type="file" id="picker-file" accept="image/*,.svg,application/pdf,video/mp4,.pdf,.mp4" style="width:100%;font:11px var(--mono)">
+          </div>
+          <div>
+            <button type="button" class="admin-btn primary" id="picker-upload-btn" style="white-space:nowrap;padding:7px 14px">UPLOAD FILE <b>↑</b></button>
           </div>
         </div>
 
-        <div class="image-picker-pane" id="img-pane-upload" style="display:none">
-          <label style="display:block;margin-bottom:10px;font:10px var(--mono)">FOLDER
-            <select id="picker-folder"><option>projects</option><option>blog</option><option>journal</option><option>about</option></select>
-          </label>
-          <label style="display:block;margin-bottom:10px;font:10px var(--mono)">CHOOSE ART / IMAGE FILE (SVG / PNG / JPG / WEBP)
-            <input type="file" id="picker-file" accept="image/*,.svg">
-          </label>
-          <button type="button" class="admin-btn" id="picker-upload-btn">UPLOAD TO LIBRARY <b>→</b></button>
+        <!-- FOLDER FILTER TABS & SEARCH -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div class="media-picker-tabs" style="display:flex;gap:4px">
+            <button type="button" class="wysiwyg-tab active" data-picker-filter="all">ALL (<span id="picker-total-count">${mediaFiles.length}</span>)</button>
+            <button type="button" class="wysiwyg-tab" data-picker-filter="projects">PROJECTS</button>
+            <button type="button" class="wysiwyg-tab" data-picker-filter="blog">BLOG</button>
+            <button type="button" class="wysiwyg-tab" data-picker-filter="journal">JOURNAL</button>
+            <button type="button" class="wysiwyg-tab" data-picker-filter="about">ABOUT</button>
+          </div>
+          <div style="flex:1;max-width:260px">
+            <input type="text" id="picker-search" placeholder="Search filename or path..." style="width:100%;padding:5px 8px;font:11px var(--mono);border:1px solid var(--line);background:transparent">
+          </div>
         </div>
 
-        <div style="margin-top:16px">
-          <label style="font:10px var(--mono)">SELECTED ART / IMAGE PATH
-            <input type="text" id="picker-selected-path" placeholder="/assets/images/projects/art.svg">
-          </label>
+        <!-- MEDIA GRID - FILE VERSION FROM MEDIA VIEW -->
+        <div class="media-picker-files-grid" id="media-picker-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:12px;overflow-y:auto;flex:1;min-height:180px;max-height:380px;padding:8px 4px;border:1px solid var(--line);background:var(--bg, transparent)">
         </div>
 
-        <div class="admin-actions" style="margin-top:20px">
+        <!-- SELECTION DETAILS & ALT TEXT -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;align-items:end">
+          <div>
+            <label style="font:10px var(--mono);display:block;margin-bottom:3px;font-weight:700">SELECTED ASSET PATH</label>
+            <input type="text" id="picker-selected-path" placeholder="/assets/images/..." style="width:100%;padding:6px 8px;font:11px var(--mono);border:1px solid var(--line)">
+          </div>
+          <div>
+            <label style="font:10px var(--mono);display:block;margin-bottom:3px;font-weight:700">IMAGE ALT TEXT / CAPTION</label>
+            <input type="text" id="picker-selected-alt" placeholder="Descriptive caption / alt text" style="width:100%;padding:6px 8px;font:11px var(--sans);border:1px solid var(--line)">
+          </div>
+        </div>
+
+        <div class="admin-actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid var(--line)">
           <button type="button" class="admin-btn" data-dismiss="true">CANCEL</button>
-          <button type="button" class="admin-btn primary" id="picker-select-btn">USE THIS ARTWORK <b>→</b></button>
+          <button type="button" class="admin-btn primary" id="picker-select-btn" style="padding:8px 18px;font-weight:700">USE THIS MEDIA <b>→</b></button>
         </div>
-      </div>`;
+      </div>
+    `;
 
     document.body.appendChild(root);
 
+    let activeFilter = "all";
     let selectedPath = "";
+    let selectedName = "";
 
-    const bindPickerItems = () => {
-      root.querySelectorAll(".picker-item").forEach((item) => {
-        item.addEventListener("click", () => {
-          root.querySelectorAll(".picker-item").forEach((i) => (i.style.borderColor = "var(--line)"));
-          item.style.borderColor = "var(--red)";
-          selectedPath = item.getAttribute("data-path");
-          root.querySelector("#picker-selected-path").value = selectedPath;
-        });
+    const grid = root.querySelector("#media-picker-grid");
+    const searchInput = root.querySelector("#picker-search");
+    const pathInput = root.querySelector("#picker-selected-path");
+    const altInput = root.querySelector("#picker-selected-alt");
+    const uploadBtn = root.querySelector("#picker-upload-btn");
+
+    function renderFilesGrid() {
+      const query = (searchInput.value || "").toLowerCase().trim();
+      const filtered = mediaFiles.filter((f) => {
+        const fPath = (f.path || "").toLowerCase();
+        const fFolder = (f.folder || "").toLowerCase();
+        const fName = (f.name || "").toLowerCase();
+
+        if (activeFilter !== "all") {
+          if (fFolder !== activeFilter && !fPath.includes("/" + activeFilter + "/")) return false;
+        }
+        if (query) {
+          if (!fName.includes(query) && !fPath.includes(query)) return false;
+        }
+        return true;
       });
-    };
-    bindPickerItems();
 
-    root.querySelectorAll("[data-img-tab]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        root.querySelectorAll("[data-img-tab]").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        const tab = btn.getAttribute("data-img-tab");
-        root.querySelector("#img-pane-library").style.display = tab === "library" ? "block" : "none";
-        root.querySelector("#img-pane-upload").style.display = tab === "upload" ? "block" : "none";
+      if (!filtered.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;padding:40px 16px;text-align:center;font:12px var(--mono);color:var(--text-muted,#888)">NO MEDIA ASSETS FOUND IN THIS VIEW</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map((file) => {
+        const isSelected = selectedPath === file.path;
+        const refs = file.references || [];
+        const refCount = refs.length;
+        const ext = String(file.name || "").split(".").pop().toLowerCase();
+        const previewSrc = (state.mediaPreviewCache && state.mediaPreviewCache[file.path]) || file.path;
+
+        let previewHtml = `<img src="${esc(previewSrc)}" alt="${esc(file.name)}" style="width:100%;height:110px;object-fit:cover;background:#edebe6;display:block" onerror="this.onerror=null;this.src='${fallbackSvg}'">`;
+        if (ext === "pdf") {
+          previewHtml = `<div style="height:110px;background:#171717;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font:10px var(--mono)"><span style="font-size:26px;margin-bottom:3px">📄</span><b>PDF DOCUMENT</b></div>`;
+        } else if (ext === "mp4") {
+          previewHtml = `<video src="${esc(previewSrc)}" style="width:100%;height:110px;object-fit:cover;background:#000" muted></video>`;
+        }
+
+        return `
+          <article class="admin-file picker-file-card ${isSelected ? "is-selected" : ""}" data-path="${esc(file.path)}" data-name="${esc(file.name)}" style="position:relative;cursor:pointer;border:1px solid ${isSelected ? "var(--red, #ef321f)" : "var(--line)"};padding:8px;background:var(--card-bg, #fff);display:flex;flex-direction:column;justify-content:space-between;transition:border-color 0.15s, transform 0.1s">
+            <div style="position:relative;overflow:hidden">
+              ${previewHtml}
+              ${isSelected ? `<span style="position:absolute;top:6px;right:6px;background:var(--red,#ef321f);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.3)">✓</span>` : ""}
+            </div>
+            <p style="margin:8px 0 2px;font-weight:700;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(file.name)}">${esc(file.name)}</p>
+            <p style="font-size:10px;color:var(--text-muted,#777);word-break:break-all;margin:0 0 6px;font-family:var(--mono);line-height:1.2">${esc(file.path)}</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:9px;padding-top:4px;border-top:1px dashed var(--line)">
+              <span class="admin-badge ${refCount > 0 ? "published" : "draft"}" style="padding:1px 5px">${refCount > 0 ? "USED (" + refCount + ")" : "UNUSED"}</span>
+              <span style="font-family:var(--mono);text-transform:uppercase;color:var(--text-muted,#888)">${esc(file.folder || ext)}</span>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    renderFilesGrid();
+
+    grid.addEventListener("click", (e) => {
+      const card = e.target.closest(".picker-file-card");
+      if (!card) return;
+      selectedPath = card.getAttribute("data-path");
+      selectedName = card.getAttribute("data-name") || "";
+      pathInput.value = selectedPath;
+      if (!altInput.value) {
+        altInput.value = selectedName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+      }
+      renderFilesGrid();
+    });
+
+    grid.addEventListener("dblclick", (e) => {
+      const card = e.target.closest(".picker-file-card");
+      if (!card) return;
+      selectedPath = card.getAttribute("data-path");
+      selectedName = card.getAttribute("data-name") || "";
+      const altVal = altInput.value.trim() || selectedName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+      root.remove();
+      onSelect(selectedPath, altVal);
+    });
+
+    root.querySelectorAll("[data-picker-filter]").forEach((tabBtn) => {
+      tabBtn.addEventListener("click", () => {
+        root.querySelectorAll("[data-picker-filter]").forEach((b) => b.classList.remove("active"));
+        tabBtn.classList.add("active");
+        activeFilter = tabBtn.getAttribute("data-picker-filter");
+        renderFilesGrid();
       });
     });
 
-    root.querySelector("#picker-upload-btn")?.addEventListener("click", async () => {
+    searchInput.addEventListener("input", () => {
+      renderFilesGrid();
+    });
+
+    uploadBtn?.addEventListener("click", async () => {
       const fileInput = root.querySelector("#picker-file");
-      const folderSelect = root.querySelector("#picker-folder");
-      const file = fileInput.files[0];
-      if (!file) { alert("Select a file first."); return; }
+      const file = fileInput?.files?.[0];
+      if (!file) {
+        alert("Please select a file to upload first.");
+        return;
+      }
+      const folder = root.querySelector("#picker-folder")?.value || "projects";
+      uploadBtn.disabled = true;
+      const prevHtml = uploadBtn.innerHTML;
+      uploadBtn.innerHTML = `UPLOADING... ⏳`;
       try {
-        let payload;
-        if (file.type && file.type.includes("svg")) {
-          const text = await file.text();
-          const base64 = btoa(unescape(encodeURIComponent(text)));
-          payload = { folder: folderSelect.value, filename: file.name, data: `data:image/svg+xml;base64,${base64}` };
-        } else {
-          const { dataUrl, filename } = await convertToWebp(file);
-          payload = { folder: folderSelect.value, filename, data: dataUrl };
+        const uploaded = await uploadMediaFile(file, folder);
+        const newMedia = {
+          path: uploaded.path,
+          name: uploaded.name || file.name,
+          folder: folder,
+          references: []
+        };
+        mediaFiles.unshift(newMedia);
+        if (state.content && Array.isArray(state.content.media)) {
+          state.content.media.unshift(newMedia);
         }
-        const res = await api("/api/media", { method: "POST", body: payload });
-        selectedPath = res.path;
-        root.querySelector("#picker-selected-path").value = selectedPath;
-        alert("Artwork uploaded successfully!");
+        selectedPath = uploaded.path;
+        selectedName = newMedia.name;
+        pathInput.value = selectedPath;
+        altInput.value = selectedName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        fileInput.value = "";
+        const countEl = root.querySelector("#picker-total-count");
+        if (countEl) countEl.textContent = mediaFiles.length;
+        renderFilesGrid();
       } catch (err) {
         alert("Upload failed: " + err.message);
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = prevHtml;
       }
     });
 
     root.querySelector("#picker-select-btn")?.addEventListener("click", () => {
-      const pathVal = root.querySelector("#picker-selected-path").value.trim() || selectedPath;
+      const pathVal = pathInput.value.trim() || selectedPath;
+      const altVal = altInput.value.trim() || selectedName;
       if (pathVal) {
         root.remove();
-        onSelect(pathVal);
+        onSelect(pathVal, altVal);
       } else {
-        alert("Please select or upload an image first.");
+        alert("Please select or upload a media file first.");
       }
     });
 
     root.addEventListener("click", (e) => {
       if (e.target.closest("[data-dismiss]")) root.remove();
     });
+
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        root.remove();
+        window.removeEventListener("keydown", onKey);
+      }
+    };
+    window.addEventListener("keydown", onKey);
   }
 
   async function showImagePickerModal(wrapper) {
@@ -1630,11 +1827,13 @@
     textarea.selectionEnd = start + prefix.length + selText.length;
   }
 
-  function showMathPickerModal(target) {
+  function showMathPickerModal(targetOrCallback, initialCode = "") {
+    window.showMathPickerModal = showMathPickerModal;
     document.querySelector(".admin-modal-root")?.remove();
 
     const presets = [
       { label: "Inline E = mc²", code: "$ E = mc^2 $", isBlock: false },
+      { label: "Standard Deviation", code: "$ \\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2} $", isBlock: false },
       { label: "Quadratic Formula", code: "$$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} $$", isBlock: true },
       { label: "Summation Series", code: "$$ \\sum_{i=1}^{n} i = \\frac{n(n+1)}{2} $$", isBlock: true },
       { label: "Definite Integral", code: "$$ \\int_{a}^{b} f(x) \\, dx $$", isBlock: true },
@@ -1643,35 +1842,50 @@
       { label: "Euler's Identity", code: "$$ e^{i\\pi} + 1 = 0 $$", isBlock: true }
     ];
 
+    let startCode = initialCode;
+    if (!startCode) {
+      if (typeof targetOrCallback === "object" && targetOrCallback instanceof HTMLTextAreaElement) {
+        const sel = targetOrCallback.value.substring(targetOrCallback.selectionStart, targetOrCallback.selectionEnd).trim();
+        if (sel) startCode = sel.startsWith("$") ? sel : `$ ${sel} $`;
+      }
+    }
+    if (!startCode) startCode = presets[0].code;
+
     const root = document.createElement("div");
     root.className = "admin-modal-root";
     root.innerHTML = `
       <div class="admin-modal-backdrop" data-dismiss="true"></div>
-      <div class="admin-modal math-picker-modal" role="dialog" aria-modal="true" style="width:min(620px, 100%)">
-        <p class="admin-kicker">08 / LATEX MATHEMATICS</p>
-        <h2 style="margin-bottom:12px">INSERT LATEX MATH<span class="red-stop">.</span></h2>
+      <div class="admin-modal math-picker-modal" role="dialog" aria-modal="true" style="width:min(640px, 95vw);padding:26px 24px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <p class="admin-kicker" style="margin:0 0 2px">08 / MATHEMATICAL NOTATION</p>
+            <h2 style="margin:0;font-size:clamp(22px, 3.5vw, 28px);letter-spacing:-0.05em">LATEX FORMULA<span class="red-stop">.</span></h2>
+          </div>
+          <button type="button" class="admin-btn" data-dismiss="true" style="padding:4px 10px;font-size:11px" title="Close modal">✕ ESC</button>
+        </div>
 
         <div style="margin-bottom:12px">
-          <label style="display:block;font:11px var(--mono);margin-bottom:6px;font-weight:700">CHOOSE PRESET TEMPLATE</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+          <label style="display:block;font:11px var(--mono);margin-bottom:6px;font-weight:700">PRESETS & EXAMPLES</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
             ${presets.map((p, idx) => `
-              <button type="button" class="wysiwyg-tab math-preset-btn" data-preset-idx="${idx}" style="font-size:11px">${esc(p.label)}</button>
+              <button type="button" class="wysiwyg-tab math-preset-btn" data-preset-idx="${idx}" style="font-size:11px;padding:4px 8px">${esc(p.label)}</button>
             `).join("")}
           </div>
         </div>
 
-        <label style="display:block;margin-bottom:12px;font:11px var(--mono);font-weight:700">EDIT LATEX EQUATION
-          <textarea id="math-modal-input" style="width:100%;height:80px;font-family:var(--mono);font-size:13px;padding:8px;margin-top:4px;border:1px solid var(--line);background:#faf9f5">${esc(presets[0].code)}</textarea>
+        <label style="display:block;margin-bottom:12px;font:11px var(--mono);font-weight:700">WRITE FORMULA (LATEX)
+          <textarea id="math-modal-input" rows="3" style="width:100%;font-family:var(--mono);font-size:13px;padding:10px;margin-top:4px;border:1px solid var(--line);resize:vertical;background:var(--bg-elevated, #faf9f5)">${esc(startCode)}</textarea>
+          <span style="font-size:10px;color:var(--text-muted, #777);display:block;margin-top:4px">Tip: Use <code>$ ... $</code> for inline math or <code>$$ ... $$</code> for display block. Press Ctrl+Enter to insert.</span>
         </label>
 
         <div style="margin-bottom:16px">
           <label style="display:block;font:11px var(--mono);margin-bottom:4px;font-weight:700">LIVE MATHEMATICAL PREVIEW</label>
-          <div id="math-modal-preview" style="min-height:55px;padding:12px;background:#ffffff;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;overflow-x:auto"></div>
+          <div id="math-modal-preview" style="min-height:60px;padding:14px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;overflow-x:auto"></div>
         </div>
 
-        <div class="image-picker-actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+        <div class="image-picker-actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:10px;border-top:1px solid var(--line)">
           <button type="button" class="admin-btn secondary" data-dismiss="true">CANCEL</button>
-          <button type="button" class="admin-btn" id="math-modal-insert-btn">INSERT FORMULA <b>→</b></button>
+          <button type="button" class="admin-btn primary" id="math-modal-insert-btn" style="padding:8px 18px;font-weight:700">INSERT FORMULA <b>→</b></button>
         </div>
       </div>
     `;
@@ -1684,48 +1898,49 @@
 
     function updatePreview() {
       const val = input.value.trim();
-      preview.innerHTML = val ? esc(val) : '<span style="color:#888;font-size:12px">Type equation above...</span>';
-      if (window.renderMathInElement) {
-        window.renderMathInElement(preview, {
-          delimiters: [
-            {left: '$$', right: '$$', display: true},
-            {left: '\\[', right: '\\]', display: true},
-            {left: '$', right: '$', display: false},
-            {left: '\\(', right: '\\)', display: false}
-          ],
-          throwOnError: false
-        });
+      if (!val) {
+        preview.innerHTML = '<span style="color:#888;font-size:12px">Type formula above to see live preview...</span>';
+        return;
+      }
+      preview.textContent = val.startsWith("$") ? val : `$ ${val} $`;
+      try {
+        if (window.renderMathInElement) {
+          window.renderMathInElement(preview, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '\\[', right: '\\]', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+          });
+        } else if (window.katex) {
+          const isDisplay = val.startsWith("$$");
+          const clean = val.replace(/^\$\$?/, "").replace(/\$\$?$/, "").trim();
+          window.katex.render(clean, preview, { displayMode: isDisplay, throwOnError: false });
+        }
+      } catch (err) {
+        preview.textContent = val;
       }
     }
 
     input.addEventListener("input", updatePreview);
-    updatePreview();
+    setTimeout(() => {
+      input.focus();
+      input.select();
+      updatePreview();
+    }, 50);
 
-    root.addEventListener("click", (e) => {
-      const presetBtn = e.target.closest(".math-preset-btn");
-      if (presetBtn) {
-        const idx = parseInt(presetBtn.getAttribute("data-preset-idx"), 10);
-        if (presets[idx]) {
-          input.value = presets[idx].code;
-          updatePreview();
-        }
-        return;
-      }
-
-      if (e.target.getAttribute("data-dismiss") === "true") {
-        root.remove();
-        return;
-      }
-    });
-
-    insertBtn.addEventListener("click", () => {
+    const doCommit = () => {
       const mathCode = input.value.trim();
       if (!mathCode) return;
 
-      if (target instanceof HTMLTextAreaElement) {
-        insertIntoTextarea(target, mathCode);
-      } else if (target && target.querySelector) {
-        const wrapper = target;
+      if (typeof targetOrCallback === "function") {
+        targetOrCallback(mathCode);
+      } else if (targetOrCallback instanceof HTMLTextAreaElement) {
+        insertIntoTextarea(targetOrCallback, mathCode);
+      } else if (targetOrCallback && targetOrCallback.querySelector) {
+        const wrapper = targetOrCallback;
         const editable = wrapper.querySelector(".wysiwyg-editable");
         const source = wrapper.querySelector(".wysiwyg-source");
         const activeTab = wrapper.querySelector(".wysiwyg-tab.active");
@@ -1740,7 +1955,44 @@
         syncWysiwyg(wrapper);
       }
       root.remove();
+    };
+
+    insertBtn.addEventListener("click", doCommit);
+
+    input.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        doCommit();
+      } else if (e.key === "Escape") {
+        root.remove();
+      }
     });
+
+    root.addEventListener("click", (e) => {
+      const presetBtn = e.target.closest(".math-preset-btn");
+      if (presetBtn) {
+        const idx = parseInt(presetBtn.getAttribute("data-preset-idx"), 10);
+        if (presets[idx]) {
+          input.value = presets[idx].code;
+          updatePreview();
+          input.focus();
+        }
+        return;
+      }
+
+      if (e.target.getAttribute("data-dismiss") === "true") {
+        root.remove();
+        return;
+      }
+    });
+
+    const onEsc = (e) => {
+      if (e.key === "Escape") {
+        root.remove();
+        window.removeEventListener("keydown", onEsc);
+      }
+    };
+    window.addEventListener("keydown", onEsc);
   }
 
   function showTablePickerModal(target) {
@@ -4037,61 +4289,11 @@
     }
     if (type === "media-upload") {
       const file = form.elements.file.files[0];
-      if (!file) throw new Error("Choose a file first.");
-      if (file.size > 25 * 1024 * 1024) throw new Error("File exceeds 25MB limit.");
-
       const folder = formValue(form, "folder") || "about";
-      const baseName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-") || `upload-${Date.now()}`;
-
-      let uploadedPath = "";
-      try {
-        const presigned = await api("/api/r2-presign", {
-          method: "POST",
-          body: { folder, filename: baseName, contentType: file.type || "application/octet-stream" }
-        });
-        if (presigned && presigned.uploadUrl) {
-          const r2Res = await fetch(presigned.uploadUrl, {
-            method: "PUT",
-            body: file,
-            headers: { "content-type": file.type || "application/octet-stream" }
-          });
-          if (r2Res.ok) {
-            uploadedPath = presigned.publicUrl;
-          }
-        }
-      } catch (err) {
-        console.warn("Direct R2 presigned upload error, falling back to API proxy:", err);
-      }
-
-      if (!uploadedPath) {
-        const { dataUrl, filename } = await convertToWebp(file);
-        const CHUNK_SIZE = 1.5 * 1024 * 1024;
-        if (dataUrl.length <= CHUNK_SIZE) {
-          const res = await api("/api/media", { method: "POST", body: { folder, filename, data: dataUrl } });
-          uploadedPath = res.path;
-        } else {
-          const uploadId = `up-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-          const totalChunks = Math.ceil(dataUrl.length / CHUNK_SIZE);
-          let lastRes = {};
-          for (let i = 0; i < totalChunks; i++) {
-            const chunkData = dataUrl.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-            lastRes = await api("/api/media-chunk", {
-              method: "POST",
-              body: { uploadId, folder, filename, chunkIndex: i, totalChunks, data: chunkData }
-            });
-          }
-          uploadedPath = lastRes.path || `/assets/images/${folder}/${filename}`;
-        }
-      }
-
-      state.mediaPreviewCache = state.mediaPreviewCache || {};
-      if (state.mediaPreviewCache[uploadedPath] && state.mediaPreviewCache[uploadedPath].startsWith("blob:")) {
-        URL.revokeObjectURL(state.mediaPreviewCache[uploadedPath]);
-      }
-      state.mediaPreviewCache[uploadedPath] = URL.createObjectURL(file);
+      const uploaded = await uploadMediaFile(file, folder);
       state.message = "Media uploaded successfully to Cloudflare R2.";
       state.content = null;
-      return { path: uploadedPath };
+      return uploaded;
     }
     let published = Boolean(formValue(form, "published"));
     if (publishFlag === "true") {

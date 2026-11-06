@@ -1092,17 +1092,35 @@
               this.syncBackToForm();
             };
             if (typeof window.showMediaSelectModal === "function") {
-              window.showMediaSelectModal((selectedPath) => doInsert(selectedPath));
+              window.showMediaSelectModal((selectedPath, altText) => doInsert(selectedPath, altText || "Figure"));
             } else {
               const url = prompt("Enter image URL or asset path:", "/assets/images/...");
               if (url) doInsert(url);
             }
           } else if (act === "insert-math") {
-            const math = prompt("Enter LaTeX Formula:", "\\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}");
-            if (math) {
-              document.execCommand("insertHTML", false, ` <code>$${esc(math)}$</code> `);
+            let initialFormula = "";
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+              const text = sel.toString().trim();
+              if (text) initialFormula = text.startsWith("$") ? text : `$ ${text} $`;
+            }
+            if (!initialFormula) {
+              initialFormula = "$ \\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2} $";
+            }
+            const insertFormula = (formula) => {
+              let clean = (formula || "").trim();
+              if (!clean) return;
+              if (!clean.startsWith("$")) clean = `$ ${clean} $`;
+              this.canvas.focus();
+              document.execCommand("insertHTML", false, ` <code>${esc(clean)}</code> `);
               this.indicateUnsaved();
               this.syncBackToForm();
+            };
+            if (typeof window.showMathPickerModal === "function") {
+              window.showMathPickerModal(insertFormula, initialFormula);
+            } else {
+              const math = prompt("Enter LaTeX Formula:", initialFormula);
+              if (math) insertFormula(math);
             }
           } else if (act === "insert-chart") {
             const chartBtn = document.querySelector(".chart-btn");
@@ -1215,6 +1233,24 @@
         }
       });
 
+      // Double-click to edit LaTeX formula
+      canvas.addEventListener("dblclick", (e) => {
+        const codeEl = e.target.closest("code");
+        if (codeEl && codeEl.textContent && codeEl.textContent.includes("$")) {
+          e.preventDefault();
+          const curr = codeEl.textContent.trim();
+          if (typeof window.showMathPickerModal === "function") {
+            window.showMathPickerModal((newFormula) => {
+              let clean = (newFormula || "").trim();
+              if (!clean.startsWith("$")) clean = `$ ${clean} $`;
+              codeEl.textContent = clean;
+              this.indicateUnsaved();
+              this.syncBackToForm();
+            }, curr);
+          }
+        }
+      });
+
       // Floating toolbar actions
       this.imageToolbar?.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -1276,16 +1312,17 @@
 
         // 5. Replace image
         if (act === "replace") {
-          const doReplace = (newUrl) => {
+          const doReplace = (newUrl, newAlt) => {
             if (newUrl && img) {
               img.src = newUrl;
+              if (newAlt) img.alt = newAlt;
               positionImageToolbar();
               this.indicateUnsaved();
               this.syncBackToForm();
             }
           };
           if (typeof window.showMediaSelectModal === "function") {
-            window.showMediaSelectModal((selectedPath) => doReplace(selectedPath));
+            window.showMediaSelectModal((selectedPath, altText) => doReplace(selectedPath, altText));
           } else {
             const url = prompt("Enter new image URL or asset path:", img?.src || "");
             if (url) doReplace(url);
