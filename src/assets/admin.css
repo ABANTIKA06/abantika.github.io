@@ -3416,20 +3416,33 @@ html.theme-transitioning *::after {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   REAL-TIME LATEX STUDIO MODAL
+   REAL-TIME LATEX STUDIO & MEDIA SELECTOR CONTRAST SUITE
+   High-Contrast WCAG-Compliant Rules for Light & Obsidian Dark
    ═══════════════════════════════════════════════════════════════ */
 
+/* --- LATEX STUDIO MODAL: LIGHT MODE --- */
 .latex-studio-modal {
   width: min(780px, 96vw) !important;
   max-width: 96vw !important;
   box-sizing: border-box;
-  background: var(--paper, #faf9f5);
+  background: #FAF8F5 !important;
+  color: #0F172A !important;
+  border: 1px solid #0F172A !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.latex-studio-modal .admin-kicker {
+  color: #64748B !important;
+}
+
+.latex-studio-modal h2 {
+  color: #0F172A !important;
 }
 
 .latex-live-badge {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.3) !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #059669 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
 }
 
 @keyframes pulseLive {
@@ -3438,115 +3451,314 @@ html.theme-transitioning *::after {
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
+/* Format buttons */
 .latex-mode-btn {
   font-family: var(--mono);
   font-size: 11px;
-  padding: 4px 10px;
-  background: transparent;
-  border: 1px solid var(--line);
-  color: inherit;
+  padding: 5px 12px;
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
   cursor: pointer;
   letter-spacing: 0.04em;
+  font-weight: 600;
   transition: all 0.15s ease;
 }
 
-.latex-mode-btn.active {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
+.latex-mode-btn:hover {
+  border-color: #0F172A !important;
+  color: #0F172A !important;
 }
 
+.latex-mode-btn.active {
+  background: #0F172A !important;
+  color: #FFFFFF !important;
+  border-color: #0F172A !important;
+}
+
+.latex-mode-btn code {
+  color: #EF321F;
+  background: #F1F5F9;
+  padding: 1px 4px;
+}
+
+.latex-mode-btn.active code {
+  color: #38BDF8;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Quick Symbol Pills */
 .latex-symbols-bar {
   scrollbar-width: thin;
 }
 
 .latex-sym-btn {
-  background: var(--paper, #fff);
-  border: 1px solid var(--line);
-  color: inherit;
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  font-weight: 600 !important;
+  font-family: var(--mono) !important;
   cursor: pointer;
   transition: all 0.1s ease;
 }
 
 .latex-sym-btn:hover {
-  border-color: var(--red);
-  color: var(--red);
+  background: #0F172A !important;
+  color: #FFFFFF !important;
+  border-color: #0F172A !important;
   transform: translateY(-1px);
 }
 
-.latex-live-canvas {
-  background: #ffffff !important;
-  color: #111111 !important;
-  border: 1px solid var(--line);
-  min-height: 95px;
-  transition: border-color 0.15s ease;
+/* Input Textarea */
+.latex-studio-textarea,
+#latex-studio-input {
+  width: 100% !important;
+  font-family: var(--mono) !important;
+  font-size: 13px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #94A3B8 !important;
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  resize: vertical !important;
+  line-height: 1.5 !important;
+  caret-color: #EF321F !important;
+  box-sizing: border-box !important;
+}
+
+.latex-studio-textarea:focus,
+#latex-studio-input:focus {
+  border-color: #EF321F !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px #EF321F !important;
+}
+
+/* Real-Time Preview Canvas */
+.latex-live-canvas,
+#latex-studio-preview {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #CBD5E1 !important;
+  min-height: 95px !important;
+  max-height: 180px !important;
+  padding: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: auto !important;
+  font-size: 20px !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  box-sizing: border-box !important;
 }
 
 .latex-live-canvas .katex-display {
-  margin: 8px 0;
+  margin: 6px 0 !important;
 }
 
 .latex-live-canvas .katex {
-  font-size: 1.3em;
+  font-size: 1.3em !important;
+  color: #0F172A !important;
 }
 
+/* Presets */
 .latex-preset-pill {
-  background: transparent;
-  border: 1px solid var(--line);
-  color: inherit;
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
   cursor: pointer;
+  font-weight: 500;
   transition: all 0.12s ease;
 }
 
 .latex-preset-pill:hover {
-  border-color: var(--red);
-  color: var(--red);
+  background: #EF321F !important;
+  color: #FFFFFF !important;
+  border-color: #EF321F !important;
 }
 
-/* Dark Theme overrides for LaTeX Studio */
+/* Cancel / Esc buttons */
+.latex-studio-modal .admin-btn[data-dismiss="true"] {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #CBD5E1 !important;
+  font-weight: 600;
+}
+
+.latex-studio-modal .admin-btn[data-dismiss="true"]:hover {
+  border-color: #0F172A !important;
+  color: #0F172A !important;
+}
+
+/* Insert Button */
+#latex-studio-insert-btn {
+  background: #EF321F !important;
+  color: #FFFFFF !important;
+  border: 1px solid #EF321F !important;
+  font-weight: 700 !important;
+}
+
+#latex-studio-insert-btn:hover {
+  background: #DC2626 !important;
+  border-color: #DC2626 !important;
+}
+
+/* --- LATEX STUDIO MODAL: DARK MODE OVERRIDES --- */
 [data-theme="dark"] .latex-studio-modal {
-  background: #12161F !important;
-  border-color: #2D3748 !important;
-  color: #E1E2EA;
+  background: #0D1117 !important;
+  border-color: #30363D !important;
+  color: #F0F6FC !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85) !important;
+}
+
+[data-theme="dark"] .latex-studio-modal .admin-kicker {
+  color: #8B949E !important;
+}
+
+[data-theme="dark"] .latex-studio-modal h2 {
+  color: #F0F6FC !important;
+}
+
+[data-theme="dark"] .latex-live-badge {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34D399 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+[data-theme="dark"] .latex-mode-btn {
+  background: #161B22 !important;
+  color: #C9D1D9 !important;
+  border-color: #30363D !important;
+}
+
+[data-theme="dark"] .latex-mode-btn:hover {
+  border-color: #F0F6FC !important;
+  color: #F0F6FC !important;
 }
 
 [data-theme="dark"] .latex-mode-btn.active {
-  background: var(--red);
-  color: #fff;
-  border-color: var(--red);
+  background: #EF321F !important;
+  color: #FFFFFF !important;
+  border-color: #EF321F !important;
+}
+
+[data-theme="dark"] .latex-mode-btn code {
+  color: #38BDF8 !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .latex-mode-btn.active code {
+  color: #FFFFFF !important;
+  background: rgba(0, 0, 0, 0.25) !important;
 }
 
 [data-theme="dark"] .latex-sym-btn {
-  background: #161B26;
-  border-color: #2D3748;
-  color: #CBD5E1;
+  background: #21262D !important;
+  border-color: #30363D !important;
+  color: #F0F6FC !important;
 }
 
 [data-theme="dark"] .latex-sym-btn:hover {
-  border-color: var(--red);
-  color: #fff;
-  background: rgba(239, 50, 31, 0.2);
+  border-color: #EF321F !important;
+  color: #FFFFFF !important;
+  background: #EF321F !important;
 }
 
+/* Dark mode textarea: deep obsidian with bright white text */
+[data-theme="dark"] .latex-studio-textarea,
 [data-theme="dark"] #latex-studio-input {
-  background: #0D1117;
-  border-color: #2D3748;
-  color: #E1E2EA;
+  background: #161B22 !important;
+  border-color: #30363D !important;
+  color: #F0F6FC !important;
+  caret-color: #EF321F !important;
 }
 
-[data-theme="dark"] .latex-live-canvas {
-  background: #0E131F !important;
-  color: #F0F4FC !important;
-  border-color: #2D3748;
+[data-theme="dark"] .latex-studio-textarea:focus,
+[data-theme="dark"] #latex-studio-input:focus {
+  border-color: #EF321F !important;
+  box-shadow: 0 0 0 1px #EF321F !important;
+}
+
+/* Dark mode preview canvas: true blackboard with pure chalk white KaTeX */
+[data-theme="dark"] .latex-live-canvas,
+[data-theme="dark"] #latex-studio-preview {
+  background: #010409 !important;
+  color: #F8FAFC !important;
+  border-color: #30363D !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] .latex-live-canvas .katex,
+[data-theme="dark"] .latex-live-canvas .katex-html,
+[data-theme="dark"] #latex-studio-preview .katex,
+[data-theme="dark"] #latex-studio-preview .katex-html {
+  color: #F8FAFC !important;
+  fill: #F8FAFC !important;
 }
 
 [data-theme="dark"] .latex-preset-pill {
-  border-color: #2D3748;
-  color: #94A3B8;
+  background: #161B22 !important;
+  border-color: #30363D !important;
+  color: #C9D1D9 !important;
 }
 
 [data-theme="dark"] .latex-preset-pill:hover {
-  border-color: var(--red);
-  color: #ffffff;
-  background: rgba(239, 50, 31, 0.15);
+  border-color: #EF321F !important;
+  color: #FFFFFF !important;
+  background: #EF321F !important;
+}
+
+[data-theme="dark"] .latex-studio-modal .admin-btn[data-dismiss="true"] {
+  background: #21262D !important;
+  color: #F0F6FC !important;
+  border-color: #30363D !important;
+}
+
+[data-theme="dark"] .latex-studio-modal .admin-btn[data-dismiss="true"]:hover {
+  border-color: #F0F6FC !important;
+}
+
+/* --- MEDIA SELECTOR MODAL CONTRAST SUITE --- */
+.media-select-modal {
+  background: #FAF8F5 !important;
+  color: #0F172A !important;
+  border: 1px solid #0F172A !important;
+}
+
+.media-select-modal input[type="text"],
+.media-select-modal select {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #94A3B8 !important;
+}
+
+.media-select-modal .picker-file-card {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+.media-select-modal .picker-file-card:hover {
+  border-color: #0F172A !important;
+}
+
+[data-theme="dark"] .media-select-modal {
+  background: #0D1117 !important;
+  border-color: #30363D !important;
+  color: #F0F6FC !important;
+}
+
+[data-theme="dark"] .media-select-modal input[type="text"],
+[data-theme="dark"] .media-select-modal select {
+  background: #161B22 !important;
+  color: #F0F6FC !important;
+  border-color: #30363D !important;
+}
+
+[data-theme="dark"] .media-select-modal .picker-file-card {
+  background: #161B22 !important;
+  border-color: #30363D !important;
+  color: #F0F6FC !important;
+}
+
+[data-theme="dark"] .media-select-modal .picker-file-card:hover {
+  border-color: #8B949E !important;
 }

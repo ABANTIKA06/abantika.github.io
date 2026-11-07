@@ -240,7 +240,7 @@
             <label style="font:10px var(--mono);font-weight:700">EDIT LATEX EQUATION</label>
             <span style="font:10px var(--mono);color:var(--text-muted,#888)">Type below — preview reacts character-by-character</span>
           </div>
-          <textarea id="latex-studio-input" rows="3" style="width:100%;font-family:var(--mono);font-size:13px;padding:10px 12px;border:1px solid var(--line);background:var(--bg-elevated,#faf9f5);resize:vertical;line-height:1.4" placeholder="e.g. \\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}">${esc(rawFormula)}</textarea>
+          <textarea id="latex-studio-input" class="latex-studio-textarea" rows="3" placeholder="e.g. \\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}">${esc(rawFormula)}</textarea>
         </div>
 
         <!-- REAL-TIME RENDER CANVAS -->
@@ -249,7 +249,7 @@
             <label style="font:10px var(--mono);font-weight:700">REALTIME MATHEMATICAL PREVIEW (HOW IT WILL LOOK)</label>
             <span id="latex-status-text" style="font:10px var(--mono);color:#10b981">● VALID LATEX</span>
           </div>
-          <div class="latex-live-canvas" id="latex-studio-preview" style="min-height:90px;flex:1;max-height:180px;padding:16px;border:1px solid var(--line);background:#ffffff;color:#111111;display:flex;align-items:center;justify-content:center;overflow:auto;font-size:20px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.04)">
+          <div class="latex-live-canvas" id="latex-studio-preview">
           </div>
         </div>
 
