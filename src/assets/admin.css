@@ -3414,3 +3414,139 @@ html.theme-transitioning *::after {
   color: #E1E2EA;
   border-color: #2D3748;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   REAL-TIME LATEX STUDIO MODAL
+   ═══════════════════════════════════════════════════════════════ */
+
+.latex-studio-modal {
+  width: min(780px, 96vw) !important;
+  max-width: 96vw !important;
+  box-sizing: border-box;
+  background: var(--paper, #faf9f5);
+}
+
+.latex-live-badge {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+@keyframes pulseLive {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.latex-mode-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: inherit;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+}
+
+.latex-mode-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.latex-symbols-bar {
+  scrollbar-width: thin;
+}
+
+.latex-sym-btn {
+  background: var(--paper, #fff);
+  border: 1px solid var(--line);
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.latex-sym-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+  transform: translateY(-1px);
+}
+
+.latex-live-canvas {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid var(--line);
+  min-height: 95px;
+  transition: border-color 0.15s ease;
+}
+
+.latex-live-canvas .katex-display {
+  margin: 8px 0;
+}
+
+.latex-live-canvas .katex {
+  font-size: 1.3em;
+}
+
+.latex-preset-pill {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.latex-preset-pill:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Dark Theme overrides for LaTeX Studio */
+[data-theme="dark"] .latex-studio-modal {
+  background: #12161F !important;
+  border-color: #2D3748 !important;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .latex-mode-btn.active {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+}
+
+[data-theme="dark"] .latex-sym-btn {
+  background: #161B26;
+  border-color: #2D3748;
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .latex-sym-btn:hover {
+  border-color: var(--red);
+  color: #fff;
+  background: rgba(239, 50, 31, 0.2);
+}
+
+[data-theme="dark"] #latex-studio-input {
+  background: #0D1117;
+  border-color: #2D3748;
+  color: #E1E2EA;
+}
+
+[data-theme="dark"] .latex-live-canvas {
+  background: #0E131F !important;
+  color: #F0F4FC !important;
+  border-color: #2D3748;
+}
+
+[data-theme="dark"] .latex-preset-pill {
+  border-color: #2D3748;
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .latex-preset-pill:hover {
+  border-color: var(--red);
+  color: #ffffff;
+  background: rgba(239, 50, 31, 0.15);
+}

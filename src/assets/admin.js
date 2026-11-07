@@ -1661,6 +1661,7 @@
     };
     window.addEventListener("keydown", onKey);
   }
+  window.showMediaSelectModal = showMediaSelectModal;
 
   async function showImagePickerModal(wrapper) {
     document.querySelector(".admin-modal-root")?.remove();
@@ -1994,6 +1995,7 @@
     };
     window.addEventListener("keydown", onEsc);
   }
+  window.showMathPickerModal = showMathPickerModal;
 
   function showTablePickerModal(target) {
     document.querySelector(".admin-modal-root")?.remove();

@@ -1,6 +1,7 @@
 ---
 title: Financial Anomaly
 slug: financial-anomaly
+titleSize: md
 number: '00'
 date: '2026-09-19'
 year: 2026
@@ -23,23 +24,20 @@ live: 'https://anomalyiq.onrender.com/'
 headline:
   - FINANCIAL ANOMALY
 sections:
-  - label: 01 / PROBLEM
+  - label: 01 / SECTION
     heading: THE QUESTION
-    body: >-
-      ![Image](https://pub-65f85f4baefb46c4b29927f0c91b7302.r2.dev/projects/bauhaus_swiss_sample_chart.svg)
-  - label: 02 / DATA
+    body: ''
+  - label: 02 / SECTION
     heading: THE EVIDENCE
     body: ''
-  - label: 03 / METHODOLOGY
+  - label: 03 / SECTION
     heading: THE METHOD
     body: ''
-  - label: 04 / RESULTS
+  - label: 04 / SECTION
     heading: THE OUTCOME
     body: ''
 ---
 ## THE QUESTION
-
-![Image](https://pub-65f85f4baefb46c4b29927f0c91b7302.r2.dev/projects/bauhaus_swiss_sample_chart.svg)
 
 ## THE EVIDENCE
 

@@ -132,6 +132,294 @@
 
   let currentDocEditor = null;
 
+  function openRealtimeLatexModal(onInsert, initialFormula = "") {
+    document.querySelector(".admin-modal-root")?.remove();
+
+    // Strip wrapping $ or $$ if present to populate raw LaTeX
+    let rawFormula = (initialFormula || "").trim();
+    let isDisplay = (rawFormula.startsWith("$$") && rawFormula.endsWith("$$")) || rawFormula.startsWith("\\[");
+    if (isDisplay) {
+      if (rawFormula.startsWith("$$") && rawFormula.endsWith("$$")) {
+        rawFormula = rawFormula.slice(2, -2).trim();
+      } else if (rawFormula.startsWith("\\[") && rawFormula.endsWith("\\]")) {
+        rawFormula = rawFormula.slice(2, -2).trim();
+      }
+    } else if (rawFormula.startsWith("$") && rawFormula.endsWith("$")) {
+      rawFormula = rawFormula.slice(1, -1).trim();
+    }
+
+    if (!rawFormula) {
+      rawFormula = "\\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}";
+    }
+
+    const presets = [
+      { label: "Standard Deviation", code: "\\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}", isBlock: false },
+      { label: "Normal Distribution", code: "f(x) = \\frac{1}{\\sigma \\sqrt{2\\pi}} \\exp\\left(-\\frac{(x - \\mu)^2}{2\\sigma^2}\\right)", isBlock: true },
+      { label: "Bayes' Theorem", code: "P(A \\mid B) = \\frac{P(B \\mid A) \\, P(A)}{P(B)}", isBlock: true },
+      { label: "Softmax Function", code: "\\sigma(z)_i = \\frac{e^{z_i}}{\\sum_{j=1}^K e^{z_j}}", isBlock: true },
+      { label: "Linear Regression", code: "\\hat{y} = \\beta_0 + \\beta_1 x_1 + \\dots + \\beta_p x_p + \\epsilon", isBlock: false },
+      { label: "Quadratic Formula", code: "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", isBlock: true },
+      { label: "Definite Integral", code: "\\int_{a}^{b} f(x) \\, dx", isBlock: true },
+      { label: "Matrix (2x2)", code: "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}", isBlock: true },
+      { label: "Summation Series", code: "\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}", isBlock: true },
+      { label: "Euler's Identity", code: "e^{i\\pi} + 1 = 0", isBlock: false }
+    ];
+
+    const quickSymbols = [
+      { label: "a/b", snippet: "\\frac{a}{b}", title: "Fraction" },
+      { label: "√x", snippet: "\\sqrt{x}", title: "Square Root" },
+      { label: "xⁿ", snippet: "^{n}", title: "Superscript" },
+      { label: "xᵢ", snippet: "_{i}", title: "Subscript" },
+      { label: "∑", snippet: "\\sum_{i=1}^{n}", title: "Summation" },
+      { label: "∫", snippet: "\\int_{a}^{b}", title: "Integral" },
+      { label: "lim", snippet: "\\lim_{x \\to \\infty}", title: "Limit" },
+      { label: "±", snippet: "\\pm", title: "Plus-Minus" },
+      { label: "≠", snippet: "\\ne", title: "Not Equal" },
+      { label: "≤", snippet: "\\le", title: "Less Than or Equal" },
+      { label: "≥", snippet: "\\ge", title: "Greater Than or Equal" },
+      { label: "≈", snippet: "\\approx", title: "Approximately" },
+      { label: "∞", snippet: "\\infty", title: "Infinity" },
+      { label: "α", snippet: "\\alpha", title: "Alpha" },
+      { label: "β", snippet: "\\beta", title: "Beta" },
+      { label: "μ", snippet: "\\mu", title: "Mean / Mu" },
+      { label: "σ", snippet: "\\sigma", title: "Sigma" },
+      { label: "π", snippet: "\\pi", title: "Pi" },
+      { label: "θ", snippet: "\\theta", title: "Theta" },
+      { label: "λ", snippet: "\\lambda", title: "Lambda" }
+    ];
+
+    const root = document.createElement("div");
+    root.className = "admin-modal-root";
+    root.innerHTML = `
+      <div class="admin-modal-backdrop" data-dismiss="true"></div>
+      <div class="admin-modal latex-studio-modal" role="dialog" aria-modal="true" style="width:min(780px, 96vw);max-height:92vh;display:flex;flex-direction:column;padding:26px 24px 20px">
+        <!-- HEADER -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line)">
+          <div>
+            <p class="admin-kicker" style="margin:0 0 2px">08 / MATHEMATICAL TYPESETTER</p>
+            <h2 style="margin:0;font-size:clamp(20px, 3.2vw, 26px);letter-spacing:-0.05em;display:flex;align-items:center;gap:10px">
+              REAL-TIME LATEX STUDIO<span class="red-stop">.</span>
+              <span class="latex-live-badge" style="font-size:10px;font-family:var(--mono);padding:2px 8px;border:1px solid var(--line);border-radius:12px;display:inline-flex;align-items:center;gap:5px;font-weight:600;letter-spacing:0.06em">
+                <span class="live-dot" style="width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;animation:pulseLive 2s infinite"></span>
+                REALTIME
+              </span>
+            </h2>
+          </div>
+          <button type="button" class="admin-btn" data-dismiss="true" style="padding:4px 10px;font-size:11px" title="Close modal">✕ ESC</button>
+        </div>
+
+        <!-- EQUATION FORMAT TOGGLE (INLINE VS DISPLAY BLOCK) -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font:10px var(--mono);font-weight:700;color:var(--text-muted,#777)">FORMAT:</span>
+            <button type="button" class="wysiwyg-tab latex-mode-btn ${!isDisplay ? 'active' : ''}" data-mode="inline" style="font-size:11px;padding:4px 10px">
+              INLINE <code>$formula$</code>
+            </button>
+            <button type="button" class="wysiwyg-tab latex-mode-btn ${isDisplay ? 'active' : ''}" data-mode="block" style="font-size:11px;padding:4px 10px">
+              DISPLAY BLOCK <code>$$formula$$</code>
+            </button>
+          </div>
+          <span style="font:10px var(--mono);color:var(--text-muted,#888)">Type LaTeX to see live render</span>
+        </div>
+
+        <!-- QUICK SYMBOL BAR -->
+        <div style="margin-bottom:10px">
+          <label style="display:block;font:10px var(--mono);margin-bottom:4px;font-weight:700">QUICK INSERT SYMBOLS & OPERATORS</label>
+          <div class="latex-symbols-bar" style="display:flex;flex-wrap:wrap;gap:4px">
+            ${quickSymbols.map(s => `
+              <button type="button" class="admin-btn latex-sym-btn" data-snippet="${esc(s.snippet)}" title="${esc(s.title)}" style="padding:2px 7px;font-size:11px;font-family:var(--mono);min-width:28px;height:24px;line-height:1">
+                ${esc(s.label)}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+
+        <!-- WORKSPACE: LATEX CODE INPUT -->
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <label style="font:10px var(--mono);font-weight:700">EDIT LATEX EQUATION</label>
+            <span style="font:10px var(--mono);color:var(--text-muted,#888)">Type below — preview reacts character-by-character</span>
+          </div>
+          <textarea id="latex-studio-input" rows="3" style="width:100%;font-family:var(--mono);font-size:13px;padding:10px 12px;border:1px solid var(--line);background:var(--bg-elevated,#faf9f5);resize:vertical;line-height:1.4" placeholder="e.g. \\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}">${esc(rawFormula)}</textarea>
+        </div>
+
+        <!-- REAL-TIME RENDER CANVAS -->
+        <div style="margin-bottom:12px;flex:1;display:flex;flex-direction:column">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <label style="font:10px var(--mono);font-weight:700">REALTIME MATHEMATICAL PREVIEW (HOW IT WILL LOOK)</label>
+            <span id="latex-status-text" style="font:10px var(--mono);color:#10b981">● VALID LATEX</span>
+          </div>
+          <div class="latex-live-canvas" id="latex-studio-preview" style="min-height:90px;flex:1;max-height:180px;padding:16px;border:1px solid var(--line);background:#ffffff;color:#111111;display:flex;align-items:center;justify-content:center;overflow:auto;font-size:20px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.04)">
+          </div>
+        </div>
+
+        <!-- PRESETS PILLS -->
+        <div style="margin-bottom:14px">
+          <label style="display:block;font:10px var(--mono);margin-bottom:4px;font-weight:700">POPULAR PRESET TEMPLATES</label>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${presets.map((p, idx) => `
+              <button type="button" class="wysiwyg-tab latex-preset-pill" data-preset-idx="${idx}" style="font-size:10px;padding:3px 8px;font-family:var(--mono)">
+                ${esc(p.label)}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="admin-actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px;border-top:1px solid var(--line)">
+          <button type="button" class="admin-btn" data-dismiss="true">CANCEL</button>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font:10px var(--mono);color:var(--text-muted,#888)">Shortcut: <b>Ctrl+Enter</b></span>
+            <button type="button" class="admin-btn primary" id="latex-studio-insert-btn" style="padding:8px 18px;font-weight:700">
+              INSERT FORMULA <b>→</b>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(root);
+
+    const input = root.querySelector("#latex-studio-input");
+    const preview = root.querySelector("#latex-studio-preview");
+    const statusText = root.querySelector("#latex-status-text");
+    const insertBtn = root.querySelector("#latex-studio-insert-btn");
+
+    let currentMode = isDisplay ? "block" : "inline";
+
+    function renderLive() {
+      const raw = input.value.trim();
+      if (!raw) {
+        preview.innerHTML = `<span style="color:#999;font-size:13px;font-family:var(--mono)">Type a LaTeX formula above to see realtime rendering...</span>`;
+        statusText.innerHTML = `<span style="color:#888">EMPTY</span>`;
+        return;
+      }
+
+      try {
+        if (window.katex) {
+          preview.innerHTML = "";
+          window.katex.render(raw, preview, {
+            displayMode: currentMode === "block",
+            throwOnError: true
+          });
+          statusText.innerHTML = `<span style="color:#10b981;font-weight:bold">● VALID LATEX</span>`;
+        } else if (window.renderMathInElement) {
+          preview.textContent = currentMode === "block" ? `$$${raw}$$` : `$${raw}$`;
+          window.renderMathInElement(preview, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+          });
+          statusText.innerHTML = `<span style="color:#10b981;font-weight:bold">● VALID LATEX</span>`;
+        } else {
+          preview.textContent = raw;
+          statusText.innerHTML = `<span style="color:#888">RAW TEXT</span>`;
+        }
+      } catch (err) {
+        statusText.innerHTML = `<span style="color:#ef321f;font-weight:bold">▲ EDITING SYNTAX...</span>`;
+        if (window.katex) {
+          try {
+            preview.innerHTML = "";
+            window.katex.render(raw, preview, {
+              displayMode: currentMode === "block",
+              throwOnError: false,
+              errorColor: "#ef321f"
+            });
+          } catch(e) {
+            preview.innerHTML = `<span style="color:#ef321f;font-size:12px;font-family:var(--mono)">${esc(err.message)}</span>`;
+          }
+        }
+      }
+    }
+
+    input.addEventListener("input", renderLive);
+    setTimeout(() => {
+      input.focus();
+      renderLive();
+    }, 40);
+
+    // Quick symbols
+    root.querySelectorAll(".latex-sym-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const snippet = btn.getAttribute("data-snippet");
+        if (!snippet) return;
+        const start = input.selectionStart || 0;
+        const end = input.selectionEnd || 0;
+        const val = input.value;
+        input.value = val.substring(0, start) + snippet + val.substring(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + snippet.length;
+        renderLive();
+      });
+    });
+
+    // Format mode buttons
+    root.querySelectorAll(".latex-mode-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        root.querySelectorAll(".latex-mode-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentMode = btn.getAttribute("data-mode");
+        renderLive();
+      });
+    });
+
+    // Presets
+    root.querySelectorAll(".latex-preset-pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-preset-idx"), 10);
+        const p = presets[idx];
+        if (p) {
+          input.value = p.code;
+          currentMode = p.isBlock ? "block" : "inline";
+          root.querySelectorAll(".latex-mode-btn").forEach(b => {
+            b.classList.toggle("active", b.getAttribute("data-mode") === currentMode);
+          });
+          renderLive();
+          input.focus();
+        }
+      });
+    });
+
+    const doCommit = () => {
+      const raw = input.value.trim();
+      if (!raw) return;
+      const finalFormula = currentMode === "block" ? `$$${raw}$$` : `$${raw}$`;
+      root.remove();
+      if (typeof onInsert === "function") {
+        onInsert(finalFormula);
+      }
+    };
+
+    insertBtn.addEventListener("click", doCommit);
+
+    input.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        doCommit();
+      } else if (e.key === "Escape") {
+        root.remove();
+      }
+    });
+
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-dismiss]")) root.remove();
+    });
+
+    const onEsc = (e) => {
+      if (e.key === "Escape") {
+        root.remove();
+        window.removeEventListener("keydown", onEsc);
+      }
+    };
+    window.addEventListener("keydown", onEsc);
+  }
+
+  // Also expose to window
+  window.openRealtimeLatexModal = openRealtimeLatexModal;
+  window.showMathPickerModal = openRealtimeLatexModal;
+
   class ZendocDocumentEditor {
     constructor(formEl) {
       this.formEl = formEl;
@@ -1102,26 +1390,17 @@
             const sel = window.getSelection();
             if (sel && sel.rangeCount > 0) {
               const text = sel.toString().trim();
-              if (text) initialFormula = text.startsWith("$") ? text : `$ ${text} $`;
+              if (text) initialFormula = text;
             }
             if (!initialFormula) {
-              initialFormula = "$ \\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2} $";
+              initialFormula = "\\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}";
             }
-            const insertFormula = (formula) => {
-              let clean = (formula || "").trim();
-              if (!clean) return;
-              if (!clean.startsWith("$")) clean = `$ ${clean} $`;
+            openRealtimeLatexModal((formula) => {
               this.canvas.focus();
-              document.execCommand("insertHTML", false, ` <code>${esc(clean)}</code> `);
+              document.execCommand("insertHTML", false, ` <code>${esc(formula)}</code> `);
               this.indicateUnsaved();
               this.syncBackToForm();
-            };
-            if (typeof window.showMathPickerModal === "function") {
-              window.showMathPickerModal(insertFormula, initialFormula);
-            } else {
-              const math = prompt("Enter LaTeX Formula:", initialFormula);
-              if (math) insertFormula(math);
-            }
+            }, initialFormula);
           } else if (act === "insert-chart") {
             const chartBtn = document.querySelector(".chart-btn");
             if (chartBtn) chartBtn.click();
@@ -1239,15 +1518,11 @@
         if (codeEl && codeEl.textContent && codeEl.textContent.includes("$")) {
           e.preventDefault();
           const curr = codeEl.textContent.trim();
-          if (typeof window.showMathPickerModal === "function") {
-            window.showMathPickerModal((newFormula) => {
-              let clean = (newFormula || "").trim();
-              if (!clean.startsWith("$")) clean = `$ ${clean} $`;
-              codeEl.textContent = clean;
-              this.indicateUnsaved();
-              this.syncBackToForm();
-            }, curr);
-          }
+          openRealtimeLatexModal((newFormula) => {
+            codeEl.textContent = newFormula;
+            this.indicateUnsaved();
+            this.syncBackToForm();
+          }, curr);
         }
       });
 
