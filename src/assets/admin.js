@@ -268,17 +268,69 @@
       </label>`;
   }
 
+  function getMathBlockFormula(el) {
+    if (!el) return "";
+    const textarea = el.querySelector(".doc-math-textarea");
+    const fromTextarea = textarea ? textarea.value : "";
+    const fromAttr = el.getAttribute("data-math") || "";
+    return (fromTextarea || fromAttr).trim();
+  }
+
   function htmlToMarkdown(node) {
     if (typeof node === "string") {
       const div = document.createElement("div");
       div.innerHTML = node;
       node = div;
     }
+    if (!node) return "";
+
+    // If node itself is an interactive LaTeX block, serialize only the formula
+    if (node.nodeType === Node.ELEMENT_NODE && node.classList && node.classList.contains("doc-math-block")) {
+      const raw = getMathBlockFormula(node);
+      return raw ? `\n\n$$\n${raw}\n$$\n\n` : "";
+    }
+
     let md = "";
     node.childNodes.forEach((child) => {
       if (child.nodeType === Node.TEXT_NODE) {
         md += child.textContent;
       } else if (child.nodeType === Node.ELEMENT_NODE) {
+        // 1. Intercept LaTeX Block - NEVER serialize inner buttons, labels or UI tools
+        if (child.classList && child.classList.contains("doc-math-block")) {
+          const raw = getMathBlockFormula(child);
+          if (raw) {
+            md += `\n\n$$\n${raw}\n$$\n\n`;
+          }
+          return;
+        }
+
+        // 2. Ignore any stray internal LaTeX UI controls if encountered
+        if (child.classList && (
+          child.classList.contains("doc-math-header") ||
+          child.classList.contains("doc-math-tools") ||
+          child.classList.contains("doc-math-tag") ||
+          child.classList.contains("doc-math-edit-wrap") ||
+          child.classList.contains("doc-math-pills-bar") ||
+          child.classList.contains("doc-math-preview-wrap") ||
+          child.classList.contains("doc-math-footer")
+        )) {
+          return;
+        }
+
+        // 3. Intercept container wrapping a LaTeX block (e.g. <p><div class="doc-math-block">...</div></p>)
+        const childMath = child.querySelector(".doc-math-block");
+        if (childMath && (child.tagName.toLowerCase() === "p" || child.tagName.toLowerCase() === "div")) {
+          const clone = child.cloneNode(true);
+          clone.querySelectorAll(".doc-math-block").forEach((m) => m.remove());
+          if (!clone.textContent.trim()) {
+            const raw = getMathBlockFormula(childMath);
+            if (raw) {
+              md += `\n\n$$\n${raw}\n$$\n\n`;
+            }
+            return;
+          }
+        }
+
         const tag = child.tagName.toLowerCase();
         const inner = htmlToMarkdown(child);
         if (tag === "b" || tag === "strong") {

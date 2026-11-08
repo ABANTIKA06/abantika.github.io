@@ -17,18 +17,91 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
 
+  function getMathBlockFormula(el) {
+    if (!el) return "";
+    const textarea = el.querySelector(".doc-math-textarea");
+    const fromTextarea = textarea ? textarea.value : "";
+    const fromAttr = el.getAttribute("data-math") || "";
+    return (fromTextarea || fromAttr).trim();
+  }
+
   function htmlToMd(node) {
     if (typeof node === "string") {
       const d = document.createElement("div");
       d.innerHTML = node;
       node = d;
     }
+    if (!node) return "";
+
+    // If node itself is an interactive LaTeX block, serialize only the formula
+    if (node.nodeType === Node.ELEMENT_NODE && node.classList && node.classList.contains("doc-math-block")) {
+      const raw = getMathBlockFormula(node);
+      return raw ? `\n\n$$\n${raw}\n$$\n\n` : "";
+    }
+
     let md = "";
     node.childNodes.forEach((c) => {
       if (c.nodeType === Node.TEXT_NODE) {
         md += c.textContent;
       } else if (c.nodeType === Node.ELEMENT_NODE) {
+        // 1. Intercept LaTeX Block - NEVER serialize inner buttons, labels or UI tools
+        if (c.classList && c.classList.contains("doc-math-block")) {
+          const raw = getMathBlockFormula(c);
+          if (raw) {
+            md += `\n\n$$\n${raw}\n$$\n\n`;
+          }
+          return;
+        }
+
+        // 2. Ignore any stray internal LaTeX UI controls if encountered
+        if (c.classList && (
+          c.classList.contains("doc-math-header") ||
+          c.classList.contains("doc-math-tools") ||
+          c.classList.contains("doc-math-tag") ||
+          c.classList.contains("doc-math-edit-wrap") ||
+          c.classList.contains("doc-math-pills-bar") ||
+          c.classList.contains("doc-math-preview-wrap") ||
+          c.classList.contains("doc-math-footer")
+        )) {
+          return;
+        }
+
+        // 3. Intercept container wrapping a LaTeX block (e.g. <p><div class="doc-math-block">...</div></p>)
+        const childMath = c.querySelector(".doc-math-block");
+        if (childMath && (c.tagName.toLowerCase() === "p" || c.tagName.toLowerCase() === "div")) {
+          const clone = c.cloneNode(true);
+          clone.querySelectorAll(".doc-math-block").forEach((m) => m.remove());
+          if (!clone.textContent.trim()) {
+            const raw = getMathBlockFormula(childMath);
+            if (raw) {
+              md += `\n\n$$\n${raw}\n$$\n\n`;
+            }
+            return;
+          }
+        }
+
         const t = c.tagName.toLowerCase();
+
+        // 4. Intercept Figure elements before general recursion
+        if (t === "figure") {
+          const img = c.querySelector("img");
+          const captionEl = c.querySelector(".doc-image-caption") || c.querySelector("figcaption");
+          if (img) {
+            const src = img.getAttribute("src") || "";
+            const alt = img.getAttribute("alt") || "Image";
+            const caption = captionEl ? captionEl.textContent.trim() : "";
+            const width = c.style.width || c.getAttribute("data-width") || "100%";
+            const align = c.getAttribute("data-align") || "center";
+            if (caption || (width && width !== "100%") || (align && align !== "center")) {
+              const cleanWidth = width.replace(/[^0-9%px]/g, "") || "100%";
+              md += `\n\n<figure data-align="${align}" style="width:${cleanWidth};text-align:${align};margin:24px auto;"><img src="${src}" alt="${alt}" style="max-width:100%;height:auto;"><figcaption>${caption}</figcaption></figure>\n\n`;
+            } else {
+              md += `\n\n![${alt}](${src})\n\n`;
+            }
+          }
+          return;
+        }
+
         const inner = htmlToMd(c);
         if (t === "b" || t === "strong") md += `**${inner.trim()}**`;
         else if (t === "i" || t === "em") md += `*${inner.trim()}*`;
@@ -48,13 +121,6 @@
         } else if (t === "h1") md += `\n# ${inner.trim()}\n\n`;
         else if (t === "h2") md += `\n## ${inner.trim()}\n\n`;
         else if (t === "h3") md += `\n### ${inner.trim()}\n\n`;
-        else if (t === "div" && c.classList && c.classList.contains("doc-math-block")) {
-          const textarea = c.querySelector(".doc-math-textarea");
-          const raw = (textarea ? textarea.value : (c.getAttribute("data-math") || "")).trim();
-          if (raw) {
-            md += `\n\n$$\n${raw}\n$$\n\n`;
-          }
-        }
         else if (t === "p" || t === "div") md += `\n${inner.trim()}\n\n`;
         else if (t === "br") md += "\n";
         else if (t === "ul") md += `\n${inner.trim()}\n\n`;
@@ -62,23 +128,6 @@
         else if (t === "li") md += `- ${inner.trim()}\n`;
         else if (t === "blockquote") md += `\n> ${inner.trim()}\n\n`;
         else if (t === "pre" || t === "code") md += `\n\`\`\`\n${inner.trim()}\n\`\`\`\n\n`;
-        else if (t === "figure") {
-          const img = c.querySelector("img");
-          const captionEl = c.querySelector(".doc-image-caption") || c.querySelector("figcaption");
-          if (img) {
-            const src = img.getAttribute("src") || "";
-            const alt = img.getAttribute("alt") || "Image";
-            const caption = captionEl ? captionEl.textContent.trim() : "";
-            const width = c.style.width || c.getAttribute("data-width") || "100%";
-            const align = c.getAttribute("data-align") || "center";
-            if (caption || (width && width !== "100%") || (align && align !== "center")) {
-              const cleanWidth = width.replace(/[^0-9%px]/g, "") || "100%";
-              md += `\n\n<figure data-align="${align}" style="width:${cleanWidth};text-align:${align};margin:24px auto;"><img src="${src}" alt="${alt}" style="max-width:100%;height:auto;"><figcaption>${caption}</figcaption></figure>\n\n`;
-            } else {
-              md += `\n\n![${alt}](${src})\n\n`;
-            }
-          }
-        }
         else if (t === "img") md += `\n\n![${c.getAttribute("alt") || "Image"}](${c.getAttribute("src") || ""})\n\n`;
         else if (t === "a") md += `[${inner.trim()}](${c.getAttribute("href") || "#"})`;
         else md += inner;

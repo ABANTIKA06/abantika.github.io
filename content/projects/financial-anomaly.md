@@ -26,14 +26,10 @@ headline:
 sections:
   - label: 01 / SECTION
     heading: THE QUESTION
-    body: |-
-      ∑ LATEX BLOCK
-      ✎ EDIT✕
-
-      \sigma = \sqrt{\frac{1}{N} \sum_{i=1}^N (x_i - \mu)^2}
-      a/b√xxⁿxᵢ∑∫lim±≈≤≥μσπθ
-
-      ● LIVE REALTIME✓ DONE
+    body: |
+      $$
+      \int_{a}^{b}xdx
+      $$
   - label: 02 / SECTION
     heading: THE EVIDENCE
     body: ''
@@ -46,13 +42,9 @@ sections:
 ---
 ## THE QUESTION
 
-∑ LATEX BLOCK
-✎ EDIT✕
-
-\sigma = \sqrt{\frac{1}{N} \sum_{i=1}^N (x_i - \mu)^2}
-a/b√xxⁿxᵢ∑∫lim±≈≤≥μσπθ
-
-● LIVE REALTIME✓ DONE
+$$
+\int_{a}^{b}xdx
+$$
 
 ## THE EVIDENCE
 
