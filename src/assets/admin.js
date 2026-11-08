@@ -1396,6 +1396,7 @@
   }
 
   async function uploadMediaFile(file, folder = "about") {
+    window.uploadMediaFile = uploadMediaFile;
     if (!file) throw new Error("Choose a file first.");
     if (file.size > 25 * 1024 * 1024) throw new Error("File exceeds 25MB limit.");
 
@@ -1467,16 +1468,10 @@
     return { path: uploadedPath, name: baseName, folder };
   }
 
-  async function showMediaSelectModal(onSelect) {
+  function showMediaSelectModal(onSelect) {
     window.showMediaSelectModal = showMediaSelectModal;
     document.querySelector(".admin-modal-root")?.remove();
-    let mediaFiles = [];
-    try {
-      const res = await api("/api/media");
-      mediaFiles = Array.isArray(res) ? res : (Array.isArray(state.content?.media) ? state.content.media : []);
-    } catch(e) {
-      mediaFiles = Array.isArray(state.content?.media) ? state.content.media : [];
-    }
+    let mediaFiles = window._cachedMediaList || (state.content && Array.isArray(state.content.media) ? state.content.media : []);
 
     const fallbackSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='140' viewBox='0 0 200 140'%3E%3Crect width='100%25' height='100%25' fill='%23edebe6'/%3E%3Ctext x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-size='10' font-family='monospace' fill='%23888'%3E%5B MEDIA ASSET %5D%3C/text%3E%3C/svg%3E";
 
@@ -1609,12 +1604,25 @@
               <span class="admin-badge ${refCount > 0 ? "published" : "draft"}" style="padding:1px 5px">${refCount > 0 ? "USED (" + refCount + ")" : "UNUSED"}</span>
               <span style="font-family:var(--mono);text-transform:uppercase;color:var(--text-muted,#888)">${esc(file.folder || ext)}</span>
             </div>
+            <button type="button" class="admin-btn primary picker-card-insert-btn" style="width:100%;padding:5px 8px;font-size:10px;font-weight:700;margin-top:6px;letter-spacing:0.04em">INSERT ↵</button>
           </article>
         `;
       }).join("");
     }
 
     renderFilesGrid();
+
+    // Background fresh fetch without blocking modal
+    api("/api/media").then((res) => {
+      if (Array.isArray(res) && res.length) {
+        window._cachedMediaList = res;
+        if (state.content) state.content.media = res;
+        mediaFiles = res;
+        const countEl = root.querySelector("#picker-total-count");
+        if (countEl) countEl.textContent = mediaFiles.length;
+        renderFilesGrid();
+      }
+    }).catch(() => {});
 
     grid.addEventListener("click", (e) => {
       const card = e.target.closest(".picker-file-card");
@@ -1625,7 +1633,31 @@
       if (!altInput.value) {
         altInput.value = selectedName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
       }
-      renderFilesGrid();
+
+      // 1-Click INSERT button on card
+      if (e.target.closest(".picker-card-insert-btn")) {
+        const altVal = altInput.value.trim() || selectedName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        root.remove();
+        onSelect(selectedPath, altVal);
+        return;
+      }
+
+      // Fast DOM selection highlighting without re-rendering the whole grid
+      grid.querySelectorAll(".picker-file-card").forEach((c) => {
+        const isThis = c === card;
+        c.classList.toggle("is-selected", isThis);
+        c.style.borderColor = isThis ? "var(--red, #ef321f)" : "var(--line)";
+        let badge = c.querySelector(".picker-check-badge");
+        if (isThis && !badge) {
+          const el = document.createElement("span");
+          el.className = "picker-check-badge";
+          el.style.cssText = "position:absolute;top:6px;right:6px;background:var(--red,#ef321f);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.3)";
+          el.textContent = "✓";
+          c.querySelector("div")?.appendChild(el);
+        } else if (!isThis && badge) {
+          badge.remove();
+        }
+      });
     });
 
     grid.addEventListener("dblclick", (e) => {
@@ -5473,8 +5505,9 @@
       editable.focus();
       document.execCommand("insertText", false, imgMarkdown);
       syncWysiwyg(wrapper);
-      state.content = null;
-      await loadContent();
+      if (state.content && Array.isArray(state.content.media)) {
+        state.content.media.unshift({ path: res.path, name: filename, folder, references: [] });
+      }
     } catch(e) {
       alert(`Image upload failed: ${e.message}`);
     }

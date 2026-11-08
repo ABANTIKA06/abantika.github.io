@@ -736,7 +736,7 @@ const mediaBufferTimestamps = new Map();
 const MEDIA_BUFFER_MAX_AGE = 10 * 60 * 1000; // 10 minutes max retention
 let mediaListCache = null;
 let mediaListCacheTime = 0;
-const MEDIA_CACHE_TTL = 15000;
+const MEDIA_CACHE_TTL = 300000;
 
 function cleanExpiredMediaBuffers() {
   const now = Date.now();
