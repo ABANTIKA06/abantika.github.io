@@ -14,7 +14,7 @@ technologies:
   - MATPLOTLIB
   - PLOTLY
 featured: true
-published: false
+published: true
 art: matrix
 artLabel: FREQUENCY SPECTRUM / ANOMALY IQ
 customArt: ''
