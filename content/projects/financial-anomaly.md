@@ -26,14 +26,10 @@ headline:
 sections:
   - label: 01 / SECTION
     heading: THE QUESTION
-    body: |-
-      ∑ LATEX BLOCK
-      ✎ EDIT✕
-
+    body: |
+      $$
       \int_{a}^{b}xdx
-      a/b√xxⁿxᵢ∑∫lim±≈≤≥μσπθ
-
-      ● LIVE REALTIME✓ DONE
+      $$
   - label: 02 / SECTION
     heading: THE EVIDENCE
     body: ''
@@ -46,13 +42,9 @@ sections:
 ---
 ## THE QUESTION
 
-∑ LATEX BLOCK
-✎ EDIT✕
-
+$$
 \int_{a}^{b}xdx
-a/b√xxⁿxᵢ∑∫lim±≈≤≥μσπθ
-
-● LIVE REALTIME✓ DONE
+$$
 
 ## THE EVIDENCE
 
