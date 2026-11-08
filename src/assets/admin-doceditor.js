@@ -1445,7 +1445,9 @@
           } else if (act === "insert-image") {
             const doInsert = (url, alt = "Image") => {
               if (!url) return;
-              const figHtml = `<p></p><figure class="doc-image-figure" data-align="center" style="width:100%;text-align:center;margin:24px auto;" contenteditable="false"><div class="doc-image-wrap"><img src="${esc(url)}" alt="${esc(alt)}" style="width:100%;height:auto;display:inline-block;"><div class="doc-image-resize-handle handle-se" title="Drag to resize"></div><div class="doc-image-resize-handle handle-sw" title="Drag to resize"></div></div><figcaption class="doc-image-caption" contenteditable="true" placeholder="Click to add caption…"></figcaption></figure><p></p>`;
+              const canvasEl = this.shell ? this.shell.querySelector("#zendoc-unified-canvas") : document.querySelector("#zendoc-unified-canvas");
+              canvasEl?.focus();
+              const figHtml = `<p></p><figure class="doc-image-figure" data-align="center" style="width:100%;text-align:center;margin:24px auto;" contenteditable="false"><div class="doc-image-wrap"><img src="${esc(url)}" alt="${esc(alt)}" style="width:100%;height:auto;display:inline-block;" loading="eager"><div class="doc-image-resize-handle handle-se" title="Drag to resize"></div><div class="doc-image-resize-handle handle-sw" title="Drag to resize"></div></div><figcaption class="doc-image-caption" contenteditable="true" placeholder="Click to add caption…"></figcaption></figure><p></p>`;
               document.execCommand("insertHTML", false, figHtml);
               this.indicateUnsaved();
               this.syncBackToForm();
@@ -1743,6 +1745,51 @@
           deselectImage();
           this.indicateUnsaved();
           this.syncBackToForm();
+        }
+      });
+
+      // Direct Image Paste (Ctrl+V) in Zendoc Canvas (0ms instant preview)
+      canvas?.addEventListener("paste", async (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf("image") !== -1) {
+            e.preventDefault();
+            const file = items[i].getAsFile();
+            if (!file) return;
+
+            const tempUrl = URL.createObjectURL(file);
+            const placeholderId = "img-up-" + Date.now();
+            const figHtml = `<p></p><figure id="${placeholderId}" class="doc-image-figure" data-align="center" style="width:100%;text-align:center;margin:24px auto;opacity:0.8" contenteditable="false"><div class="doc-image-wrap" style="position:relative"><img src="${tempUrl}" alt="Uploading..." style="width:100%;height:auto;display:inline-block;"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(15,23,42,0.85);color:#fff;padding:8px 16px;font:11px monospace;letter-spacing:0.06em;font-weight:700">PASTING & UPLOADING...</div></div></figure><p></p>`;
+            document.execCommand("insertHTML", false, figHtml);
+
+            try {
+              if (typeof window.uploadMediaFile === "function") {
+                const uploaded = await window.uploadMediaFile(file, "projects");
+                const figEl = canvas.querySelector("#" + placeholderId);
+                if (figEl) {
+                  figEl.id = "";
+                  figEl.style.opacity = "";
+                  const wrap = figEl.querySelector(".doc-image-wrap");
+                  if (wrap) {
+                    wrap.innerHTML = `<img src="${uploaded.path}" alt="${uploaded.name}" style="width:100%;height:auto;display:inline-block;" loading="eager"><div class="doc-image-resize-handle handle-se" title="Drag to resize"></div><div class="doc-image-resize-handle handle-sw" title="Drag to resize"></div>`;
+                  }
+                  const caption = document.createElement("figcaption");
+                  caption.className = "doc-image-caption";
+                  caption.contentEditable = "true";
+                  caption.setAttribute("placeholder", "Click to add caption...");
+                  figEl.appendChild(caption);
+                  this.indicateUnsaved();
+                  this.syncBackToForm();
+                }
+              }
+            } catch (err) {
+              const figEl = canvas.querySelector("#" + placeholderId);
+              if (figEl) figEl.remove();
+              alert("Image paste failed: " + err.message);
+            }
+            break;
+          }
         }
       });
 
