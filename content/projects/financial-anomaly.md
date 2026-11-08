@@ -26,7 +26,7 @@ headline:
 sections:
   - label: 01 / SECTION
     heading: THE QUESTION
-    body: |
+    body: |-
       $$
       \int_{a}^{b}xdx
       $$
