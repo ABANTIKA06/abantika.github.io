@@ -1718,3 +1718,247 @@ body.mode-zendoc-active .admin-sticky-bar {
 [data-theme="dark"] #zendoc-top-preview-btn:hover span {
   color: #ffffff !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   IN-DOCUMENT INTERACTIVE LATEX BLOCK (MOBILE-FIRST)
+   ═══════════════════════════════════════════════════════════════ */
+
+.doc-math-block {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 22px 0 !important;
+  border: 1px solid #CBD5E1 !important;
+  background: #FFFFFF !important;
+  border-left: 4px solid #EF321F !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.doc-math-block.is-editing {
+  border-color: #EF321F !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.doc-math-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 6px 12px !important;
+  background: #F8FAFC !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  font-family: var(--mono, monospace) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 700 !important;
+}
+
+.doc-math-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: #334155 !important;
+}
+
+.doc-math-icon {
+  color: #EF321F !important;
+  font-weight: 900 !important;
+  font-size: 13px !important;
+}
+
+.doc-math-tools {
+  display: flex !important;
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+.doc-math-btn {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  font-family: var(--mono, monospace) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  padding: 3px 8px !important;
+  cursor: pointer !important;
+  border-radius: 2px !important;
+  transition: all 0.12s ease !important;
+}
+
+.doc-math-btn:hover {
+  background: #0F172A !important;
+  color: #FFFFFF !important;
+  border-color: #0F172A !important;
+}
+
+.doc-math-btn.danger:hover {
+  background: #EF321F !important;
+  color: #FFFFFF !important;
+  border-color: #EF321F !important;
+}
+
+/* Edit Workspace inside the block */
+.doc-math-edit-wrap {
+  display: none;
+  padding: 12px 14px 8px !important;
+  background: #FAF9F5 !important;
+  border-bottom: 1px dashed #CBD5E1 !important;
+}
+
+.doc-math-block.is-editing .doc-math-edit-wrap {
+  display: block !important;
+}
+
+.doc-math-textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  font-family: var(--mono, monospace) !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  border: 1px solid #94A3B8 !important;
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  line-height: 1.4 !important;
+  resize: vertical !important;
+  caret-color: #EF321F !important;
+  outline: none !important;
+}
+
+.doc-math-textarea:focus {
+  border-color: #EF321F !important;
+  box-shadow: 0 0 0 1px #EF321F !important;
+}
+
+/* Horizontally scrollable symbol pills row for mobile & desktop */
+.doc-math-pills-bar {
+  display: flex !important;
+  gap: 4px !important;
+  overflow-x: auto !important;
+  padding: 8px 0 2px !important;
+  scrollbar-width: thin !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.doc-math-pill {
+  flex-shrink: 0 !important;
+  padding: 3px 8px !important;
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  font-family: var(--mono, monospace) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  border-radius: 2px !important;
+  transition: all 0.1s ease !important;
+  touch-action: manipulation !important;
+}
+
+.doc-math-pill:hover {
+  background: #0F172A !important;
+  color: #FFFFFF !important;
+  border-color: #0F172A !important;
+}
+
+/* Rendered mathematical equation */
+.doc-math-preview-wrap {
+  padding: 20px 14px !important;
+  background: #FFFFFF !important;
+  cursor: pointer !important;
+  min-height: 60px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow-x: auto !important;
+}
+
+.doc-math-rendered {
+  font-size: 21px !important;
+  color: #0F172A !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+
+.doc-math-rendered .katex-display {
+  margin: 4px 0 !important;
+}
+
+/* Footer (only visible when editing) */
+.doc-math-footer {
+  display: none;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 8px 12px !important;
+  background: #F8FAFC !important;
+  border-top: 1px solid #E2E8F0 !important;
+  font-family: var(--mono, monospace) !important;
+  font-size: 10px !important;
+}
+
+.doc-math-block.is-editing .doc-math-footer {
+  display: flex !important;
+}
+
+.doc-math-live-indicator {
+  color: #10B981 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+}
+
+.doc-math-done-btn {
+  background: #EF321F !important;
+  color: #FFFFFF !important;
+  border: 1px solid #EF321F !important;
+  font-family: var(--mono, monospace) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 5px 14px !important;
+  cursor: pointer !important;
+  letter-spacing: 0.05em !important;
+  border-radius: 2px !important;
+}
+
+.doc-math-done-btn:hover {
+  background: #DC2626 !important;
+}
+
+/* Mobile responsive optimizations */
+@media (max-width: 768px) {
+  .doc-math-block {
+    margin: 14px 0 !important;
+    border-left-width: 4px !important;
+  }
+  .doc-math-header {
+    padding: 6px 10px !important;
+  }
+  .doc-math-edit-wrap {
+    padding: 8px 10px 4px !important;
+  }
+  .doc-math-textarea {
+    font-size: 13px !important;
+    padding: 6px 8px !important;
+  }
+  .doc-math-pills-bar {
+    padding: 6px 0 !important;
+    gap: 3px !important;
+  }
+  .doc-math-pill {
+    padding: 4px 9px !important;
+    font-size: 12px !important;
+  }
+  .doc-math-preview-wrap {
+    padding: 16px 10px !important;
+    min-height: 50px !important;
+  }
+  .doc-math-rendered {
+    font-size: 18px !important;
+  }
+  .doc-math-footer {
+    padding: 6px 10px !important;
+  }
+  .doc-math-done-btn {
+    padding: 6px 14px !important;
+    font-size: 11px !important;
+  }
+}

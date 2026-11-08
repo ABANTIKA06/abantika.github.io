@@ -48,6 +48,13 @@
         } else if (t === "h1") md += `\n# ${inner.trim()}\n\n`;
         else if (t === "h2") md += `\n## ${inner.trim()}\n\n`;
         else if (t === "h3") md += `\n### ${inner.trim()}\n\n`;
+        else if (t === "div" && c.classList && c.classList.contains("doc-math-block")) {
+          const textarea = c.querySelector(".doc-math-textarea");
+          const raw = (textarea ? textarea.value : (c.getAttribute("data-math") || "")).trim();
+          if (raw) {
+            md += `\n\n$$\n${raw}\n$$\n\n`;
+          }
+        }
         else if (t === "p" || t === "div") md += `\n${inner.trim()}\n\n`;
         else if (t === "br") md += "\n";
         else if (t === "ul") md += `\n${inner.trim()}\n\n`;
@@ -80,6 +87,11 @@
     return md.replace(/\n{3,}/g, "\n\n");
   }
 
+  function buildInteractiveMathBlock(formula = "", isEditing = false) {
+    const raw = (formula || "").trim() || "\\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}";
+    return `<div class="doc-math-block ${isEditing ? "is-editing" : ""}" data-math="${esc(raw)}" contenteditable="false"><div class="doc-math-header"><span class="doc-math-tag"><span class="doc-math-icon">∑</span> LATEX BLOCK</span><div class="doc-math-tools"><button type="button" class="doc-math-btn doc-math-toggle-btn" title="Toggle edit mode">${isEditing ? "👁 PREVIEW" : "✎ EDIT"}</button><button type="button" class="doc-math-btn danger doc-math-del-btn" title="Delete LaTeX block">✕</button></div></div><div class="doc-math-edit-wrap"><textarea class="doc-math-textarea" rows="2" placeholder="Write LaTeX equation here...">${esc(raw)}</textarea><div class="doc-math-pills-bar"><button type="button" class="doc-math-pill" data-math-insert="\\frac{a}{b}">a/b</button><button type="button" class="doc-math-pill" data-math-insert="\\sqrt{x}">√x</button><button type="button" class="doc-math-pill" data-math-insert="^{n}">xⁿ</button><button type="button" class="doc-math-pill" data-math-insert="_{i}">xᵢ</button><button type="button" class="doc-math-pill" data-math-insert="\\sum_{i=1}^{n}">∑</button><button type="button" class="doc-math-pill" data-math-insert="\\int_{a}^{b}">∫</button><button type="button" class="doc-math-pill" data-math-insert="\\lim_{x \\to \\infty}">lim</button><button type="button" class="doc-math-pill" data-math-insert="\\pm">±</button><button type="button" class="doc-math-pill" data-math-insert="\\approx">≈</button><button type="button" class="doc-math-pill" data-math-insert="\\le">≤</button><button type="button" class="doc-math-pill" data-math-insert="\\ge">≥</button><button type="button" class="doc-math-pill" data-math-insert="\\mu">μ</button><button type="button" class="doc-math-pill" data-math-insert="\\sigma">σ</button><button type="button" class="doc-math-pill" data-math-insert="\\pi">π</button><button type="button" class="doc-math-pill" data-math-insert="\\theta">θ</button></div></div><div class="doc-math-preview-wrap"><div class="doc-math-rendered" title="Click equation to edit"></div></div><div class="doc-math-footer"><span class="doc-math-live-indicator">● LIVE REALTIME</span><button type="button" class="doc-math-done-btn">✓ DONE</button></div></div>`;
+  }
+
   function buildInteractiveFigure(src, alt, width = "100%", align = "center", caption = "") {
     const cleanWidth = (width || "100%").replace(/[^0-9%px]/g, "") || "100%";
     const cleanAlign = (align || "center").trim();
@@ -89,6 +101,16 @@
   function mdToHtml(md) {
     if (!md) return "";
     let h = esc(String(md));
+
+    // Convert $$ ... $$ block math to interactive LaTeX Blocks
+    h = h.replace(/\$\$([\s\S]*?)\$\$/g, (m, rawMath) => {
+      const clean = rawMath.trim()
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"');
+      return buildInteractiveMathBlock(clean, false);
+    });
 
     // Decode and build interactive figures if already present as HTML
     h = h.replace(/&lt;figure(.*?)&gt;([\s\S]*?)&lt;\/figure&gt;/gi, (m, attrs, inner) => {
@@ -1395,12 +1417,14 @@
             if (!initialFormula) {
               initialFormula = "\\sigma = \\sqrt{\\frac{1}{N} \\sum_{i=1}^N (x_i - \\mu)^2}";
             }
-            openRealtimeLatexModal((formula) => {
-              this.canvas.focus();
-              document.execCommand("insertHTML", false, ` <code>${esc(formula)}</code> `);
-              this.indicateUnsaved();
-              this.syncBackToForm();
-            }, initialFormula);
+            initialFormula = initialFormula.replace(/^\$\$?/, "").replace(/\$\$?$/, "").trim();
+            const blockHtml = `<p></p>${buildInteractiveMathBlock(initialFormula, true)}<p></p>`;
+            const canvasEl = this.shell.querySelector("#zendoc-unified-canvas");
+            canvasEl?.focus();
+            document.execCommand("insertHTML", false, blockHtml);
+            this.bindMathBlocks();
+            this.indicateUnsaved();
+            this.syncBackToForm();
           } else if (act === "insert-chart") {
             const chartBtn = document.querySelector(".chart-btn");
             if (chartBtn) chartBtn.click();
@@ -1926,6 +1950,135 @@
           this.formEl.dataset.nextPublish = "true";
           this.formEl.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
         }
+      });
+
+      // Initialize in-document LaTeX Blocks
+      this.bindMathBlocks();
+    }
+
+    bindMathBlocks() {
+      const canvas = this.shell ? this.shell.querySelector("#zendoc-unified-canvas") : document.querySelector("#zendoc-unified-canvas");
+      if (!canvas) return;
+
+      canvas.querySelectorAll(".doc-math-block").forEach((block) => {
+        if (block._mathBound) return;
+        block._mathBound = true;
+
+        const textarea = block.querySelector(".doc-math-textarea");
+        const preview = block.querySelector(".doc-math-rendered");
+        const indicator = block.querySelector(".doc-math-live-indicator");
+        const toggleBtn = block.querySelector(".doc-math-toggle-btn");
+        const delBtn = block.querySelector(".doc-math-del-btn");
+        const doneBtn = block.querySelector(".doc-math-done-btn");
+
+        const updateKaTeX = () => {
+          const val = (textarea ? textarea.value : (block.getAttribute("data-math") || "")).trim();
+          block.setAttribute("data-math", val);
+
+          if (!val) {
+            if (preview) preview.innerHTML = `<span style="color:#888;font-style:italic;font-size:13px;font-family:var(--mono)">[Empty LaTeX Block — Click to edit]</span>`;
+            if (indicator) {
+              indicator.textContent = "○ EMPTY";
+              indicator.style.color = "#888";
+            }
+            return;
+          }
+
+          try {
+            if (window.katex && preview) {
+              preview.innerHTML = "";
+              window.katex.render(val, preview, { displayMode: true, throwOnError: true });
+              if (indicator) {
+                indicator.textContent = "● VALID LATEX";
+                indicator.style.color = "#10b981";
+              }
+            } else if (window.renderMathInElement && preview) {
+              preview.textContent = `$$${val}$$`;
+              window.renderMathInElement(preview, { delimiters: [{ left: "$$", right: "$$", display: true }], throwOnError: false });
+              if (indicator) {
+                indicator.textContent = "● VALID LATEX";
+                indicator.style.color = "#10b981";
+              }
+            }
+          } catch (err) {
+            if (indicator) {
+              indicator.textContent = "▲ EDITING SYNTAX...";
+              indicator.style.color = "#ef321f";
+            }
+            if (window.katex && preview) {
+              try {
+                preview.innerHTML = "";
+                window.katex.render(val, preview, { displayMode: true, throwOnError: false, errorColor: "#ef321f" });
+              } catch(e) {}
+            }
+          }
+        };
+
+        // Render initially
+        updateKaTeX();
+
+        // Typing updates KaTeX in real time
+        textarea?.addEventListener("input", () => {
+          updateKaTeX();
+          this.indicateUnsaved();
+          this.syncBackToForm();
+        });
+
+        // Quick symbol pills
+        block.querySelectorAll("[data-math-insert]").forEach((pill) => {
+          pill.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const snippet = pill.getAttribute("data-math-insert");
+            if (!snippet || !textarea) return;
+            const start = textarea.selectionStart || 0;
+            const end = textarea.selectionEnd || 0;
+            textarea.value = textarea.value.substring(0, start) + snippet + textarea.value.substring(end);
+            textarea.focus();
+            textarea.selectionStart = textarea.selectionEnd = start + snippet.length;
+            updateKaTeX();
+            this.indicateUnsaved();
+            this.syncBackToForm();
+          });
+        });
+
+        const setEditing = (editing) => {
+          block.classList.toggle("is-editing", editing);
+          if (toggleBtn) toggleBtn.textContent = editing ? "👁 PREVIEW" : "✎ EDIT";
+          if (editing && textarea) {
+            setTimeout(() => textarea.focus(), 30);
+          }
+          this.syncBackToForm();
+        };
+
+        toggleBtn?.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setEditing(!block.classList.contains("is-editing"));
+        });
+
+        doneBtn?.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setEditing(false);
+          this.indicateUnsaved();
+          this.syncBackToForm();
+        });
+
+        preview?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!block.classList.contains("is-editing")) {
+            setEditing(true);
+          }
+        });
+
+        delBtn?.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          block.remove();
+          this.indicateUnsaved();
+          this.syncBackToForm();
+        });
       });
     }
 
