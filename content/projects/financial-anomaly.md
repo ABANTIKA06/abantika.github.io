@@ -27,6 +27,27 @@ sections:
   - label: 01 / SECTION
     heading: THE QUESTION
     body: |-
+      METRIC
+                            BASELINE
+                            OUTCOME
+                            +
+                          
+                        
+                        
+                          
+                            Conversion Rate
+                            3.2%
+                            +28.4%
+                            
+                          
+                        
+                        
+                          
+                            + ADD NEW ROW
+                          
+                        
+                      
+
       $$
       \int_{a}^{b}xdx
       $$
@@ -41,6 +62,27 @@ sections:
     body: ''
 ---
 ## THE QUESTION
+
+METRIC
+                      BASELINE
+                      OUTCOME
+                      +
+                    
+                  
+                  
+                    
+                      Conversion Rate
+                      3.2%
+                      +28.4%
+                      
+                    
+                  
+                  
+                    
+                      + ADD NEW ROW
+                    
+                  
+                
 
 $$
 \int_{a}^{b}xdx
