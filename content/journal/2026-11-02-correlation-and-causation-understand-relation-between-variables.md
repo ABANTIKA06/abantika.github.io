@@ -5,7 +5,7 @@ title: CORRELATION AND CAUSATION ( Understand relation between variables)
 headline:
   - CORRELATION AND CAUSATION( UNDERSTAND RELATION BETWEEN VARIABLES)
 project: ''
-published: false
+published: true
 titleSize: md
 summary: >-
   Correlation - when two variables are related to each other, meaning when one
