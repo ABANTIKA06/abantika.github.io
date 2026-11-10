@@ -48,6 +48,10 @@ sections:
                         
                       
 
+                          
+                        
+                      
+
       $$
       \int_{a}^{b}xdx
       $$
@@ -80,6 +84,10 @@ METRIC
                   
                     
                       + ADD NEW ROW
+                    
+                  
+                
+
                     
                   
                 
