@@ -1,6 +1,7 @@
 ---
-title: Bank Customer Churn Prediction
+title: Retail Banking Customer Insights & Deposit Risk Analysis
 slug: customer-churn-prediction
+titleSize: md
 number: '01'
 date: '2026-09-09'
 year: 2026
@@ -17,7 +18,7 @@ technologies:
   - SQL
   - Power BI
 featured: true
-published: true
+published: false
 art: dots
 artLabel: DATA / MODEL / DECISION
 customArt: ''
@@ -29,28 +30,194 @@ headline:
   - CHURN
   - PREDICTION
 sections:
-  - label: 01 / BUSINESS PROBLEM AND RESOLUTION
-    heading: THE QUESTION
-    body: ''
-  - label: 02 / DATA
-    heading: THE EVIDENCE
+  - label: 01 / SECTION
+    heading: THE PROJECT OVERVIEW
     body: >-
-      [PLACEHOLDER — Document data sources, scope, and limitations. No metrics
-      have been claimed.]
-  - label: 03 / METHODOLOGY
+      This project focuses on analysing a retail banking customer dataset
+      containing 10,000 validated customer records across three countries. Using
+      PostgreSQL, the analysis explores customer demographics, account balances,
+      banking product ownership, account activity and customer tenure to uncover
+      meaningful patterns and potential business risks.
+
+
+      A key area of investigation is the relationship between customer
+      inactivity and deposit contribution. The analysis examines whether a
+      substantial portion of the bank's deposits is associated with customers
+      who are currently classified as inactive, while also identifying
+      high-value customer segments and opportunities for improved customer
+      retention.
+
+
+      Through exploratory data analysis, statistical techniques, customer
+      segmentation and relationship analysis, the project aims to transform raw
+      banking data into actionable business insights.
+  - label: 02 / SECTION
+    heading: ''
+    body: ''
+  - label: 03 / SECTION
+    heading: 2. Business Context & Problem Statement
+    body: ''
+  - label: 04 / SECTION
+    heading: 2.1 Business Context
+    body: >-
+      Retail banks manage a diverse customer base with different financial
+      behaviours, deposit levels, product preferences and banking activity
+      patterns. Understanding these differences is essential for managing
+      customer relationships, maintaining deposit stability and identifying
+      opportunities for business growth.
+
+
+      However, a large customer base does not necessarily indicate strong
+      customer engagement. Some customers may maintain substantial deposits but
+      have limited banking activity, while others may hold multiple banking
+      products without contributing significantly to the bank's overall deposit
+      portfolio.
+
+
+      These patterns create important business questions:
+
+
+      1. Are a significant number of customers inactive despite holding deposits
+      with the bank?
+
+
+      2. Which customer segments contribute the most to the overall deposit
+      portfolio?
+
+
+      3. Do factors such as age, tenure, credit score and product ownership show
+      meaningful relationships with customer activity?
+
+
+      4. Which customer groups may require greater attention from a customer
+      retention perspective?
+
+
+      5. Where can the bank identify opportunities to improve customer
+      engagement and deposit contribution?
+
+
+      Analysing these patterns can help the bank better understand its customer
+      portfolio and identify areas that may require further business attention.
+
+
+      2.2 Problem Statement
+
+
+      The primary objective of this project is to analyse retail banking
+      customer data to understand customer behaviour, deposit distribution and
+      potential customer inactivity risks.
+
+
+      The analysis focuses on identifying patterns that may otherwise remain
+      unnoticed when examining customer records individually. In particular, it
+      investigates the relationship between customer activity status and deposit
+      contribution, identifies high-value and low-value customer segments, and
+      examines whether selected customer characteristics are associated with
+      differences in banking behaviour.
+
+
+      The project aims to address the following business problems:
+
+
+      Customer Inactivity: Identify the proportion of inactive customers and
+      understand their contribution to the bank's deposit portfolio.
+
+
+      Deposit Concentration: Examine how deposits are distributed across
+      different customer segments and identify segments with significant deposit
+      contributions.
+
+
+      Customer Segmentation: Group customers based on demographics, account
+      balances, tenure and banking product ownership to understand differences
+      in customer behaviour.
+
+
+      Behavioural Relationships: Analyse whether customer attributes such as
+      age, credit score, tenure and product ownership have meaningful
+      relationships with account activity and deposit balances.
+
+
+      Potential Retention Risks: Identify inactive customers with relatively
+      high deposit balances who may deserve greater attention from a customer
+      retention perspective.
+
+
+      Business Opportunities: Translate analytical findings into practical
+      recommendations for improving customer engagement, strengthening retention
+      strategies and identifying potential deposit growth opportunities.
+
+
+      2.3 Planned Project Approach
+
+
+      To address these business problems, the project is structured into six
+      analytical phases:
+  - label: 05 / SECTION
     heading: THE METHOD
     body: >-
       [PLACEHOLDER — Explain exploration, modeling, validation, and
       interpretability methods.]
-  - label: 04 / RESULTS
+  - label: 06 / SECTION
     heading: THE OUTCOME
     body: METRIC TBD — Add only results supported by the real project record.
 ---
-## THE QUESTION
+## THE PROJECT OVERVIEW
 
-## THE EVIDENCE
+This project focuses on analysing a retail banking customer dataset containing 10,000 validated customer records across three countries. Using PostgreSQL, the analysis explores customer demographics, account balances, banking product ownership, account activity and customer tenure to uncover meaningful patterns and potential business risks.
 
-[PLACEHOLDER — Document data sources, scope, and limitations. No metrics have been claimed.]
+A key area of investigation is the relationship between customer inactivity and deposit contribution. The analysis examines whether a substantial portion of the bank's deposits is associated with customers who are currently classified as inactive, while also identifying high-value customer segments and opportunities for improved customer retention.
+
+Through exploratory data analysis, statistical techniques, customer segmentation and relationship analysis, the project aims to transform raw banking data into actionable business insights.
+
+## 02 / SECTION
+
+## 2. Business Context & Problem Statement
+
+## 2.1 Business Context
+
+Retail banks manage a diverse customer base with different financial behaviours, deposit levels, product preferences and banking activity patterns. Understanding these differences is essential for managing customer relationships, maintaining deposit stability and identifying opportunities for business growth.
+
+However, a large customer base does not necessarily indicate strong customer engagement. Some customers may maintain substantial deposits but have limited banking activity, while others may hold multiple banking products without contributing significantly to the bank's overall deposit portfolio.
+
+These patterns create important business questions:
+
+1. Are a significant number of customers inactive despite holding deposits with the bank?
+
+2. Which customer segments contribute the most to the overall deposit portfolio?
+
+3. Do factors such as age, tenure, credit score and product ownership show meaningful relationships with customer activity?
+
+4. Which customer groups may require greater attention from a customer retention perspective?
+
+5. Where can the bank identify opportunities to improve customer engagement and deposit contribution?
+
+Analysing these patterns can help the bank better understand its customer portfolio and identify areas that may require further business attention.
+
+2.2 Problem Statement
+
+The primary objective of this project is to analyse retail banking customer data to understand customer behaviour, deposit distribution and potential customer inactivity risks.
+
+The analysis focuses on identifying patterns that may otherwise remain unnoticed when examining customer records individually. In particular, it investigates the relationship between customer activity status and deposit contribution, identifies high-value and low-value customer segments, and examines whether selected customer characteristics are associated with differences in banking behaviour.
+
+The project aims to address the following business problems:
+
+Customer Inactivity: Identify the proportion of inactive customers and understand their contribution to the bank's deposit portfolio.
+
+Deposit Concentration: Examine how deposits are distributed across different customer segments and identify segments with significant deposit contributions.
+
+Customer Segmentation: Group customers based on demographics, account balances, tenure and banking product ownership to understand differences in customer behaviour.
+
+Behavioural Relationships: Analyse whether customer attributes such as age, credit score, tenure and product ownership have meaningful relationships with account activity and deposit balances.
+
+Potential Retention Risks: Identify inactive customers with relatively high deposit balances who may deserve greater attention from a customer retention perspective.
+
+Business Opportunities: Translate analytical findings into practical recommendations for improving customer engagement, strengthening retention strategies and identifying potential deposit growth opportunities.
+
+2.3 Planned Project Approach
+
+To address these business problems, the project is structured into six analytical phases:
 
 ## THE METHOD
 
