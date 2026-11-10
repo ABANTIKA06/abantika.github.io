@@ -5,7 +5,7 @@ title: CORRELATION AND CAUSATION ( Understand relation between variables)
 headline:
   - CORRELATION AND CAUSATION( UNDERSTAND RELATION BETWEEN VARIABLES)
 project: ''
-published: true
+published: false
 titleSize: md
 summary: >-
   Correlation - when two variables are related to each other, meaning when one
@@ -28,7 +28,7 @@ sections:
     body: "Suppose you observe that people who drink more coffee tend to work for longer hours.\nSo, can you conclude that drinking coffee can cause people to work longer?\n\nCoorelation:-\_ Workload and coffee consumption increase together\nCausation:-\_ \_If increased workload actually leads employees to consume more coffee.\n\nImagine two employees:\n\n- Employee A has a heavy workload and drinks 4 cups of coffee daily.\n- Employee B has a light workload and drinks 1 cup of coffee daily.\n\nYou observe that as workload increases, coffee consumption also increases.\n\nThis indicates a positive correlation.\n\nBut does workload cause people to drink more coffee? Not necessarily. It might be because:\n\n- Heavy workload makes employees feel tired.\n- They drink more coffee to stay awake.\n- Other factors, such as sleep patterns, may also influence coffee consumption."
   - label: 04 / SECTION
     heading: KEY TAKEAWAY
-    body: "Insight- COrrelation defines a relationship in between variables but doesnt prove\_ any cause and effect thing and can happen due to coincidence or other factor.\n\nCaussation on the other hand, it is influential, and shows cause and effect relationship."
+    body: "Insight- Correlation defines a relationship in between variables but doesnt prove\_ any cause and effect thing and can happen due to coincidence or other factor.\n\nCaussation on the other hand, it is influential, and shows cause and effect relationship."
 ---
 ## TLDR
 
@@ -94,6 +94,6 @@ But does workload cause people to drink more coffee? Not necessarily. It might b
 
 ## KEY TAKEAWAY
 
-Insight- COrrelation defines a relationship in between variables but doesnt prove  any cause and effect thing and can happen due to coincidence or other factor.
+Insight- Correlation defines a relationship in between variables but doesnt prove  any cause and effect thing and can happen due to coincidence or other factor.
 
 Caussation on the other hand, it is influential, and shows cause and effect relationship.
