@@ -27,30 +27,10 @@ sections:
   - label: 01 / SECTION
     heading: THE QUESTION
     body: |-
-      METRIC
-                            BASELINE
-                            OUTCOME
-                            +
-                          
-                        
-                        
-                          
-                            Conversion Rate
-                            3.2%
-                            +28.4%
-                            
-                          
-                        
-                        
-                          
-                            + ADD NEW ROW
-                          
-                        
-                      
-
-                          
-                        
-                      
+      | METRIC | BASELINE | OUTCOME |
+      | :--- | :--- | :--- |
+      | Conversion Rate | 3.2% | +28.4% |
+      | nnjnjnj |  |  |
 
       $$
       \int_{a}^{b}xdx
@@ -67,30 +47,10 @@ sections:
 ---
 ## THE QUESTION
 
-METRIC
-                      BASELINE
-                      OUTCOME
-                      +
-                    
-                  
-                  
-                    
-                      Conversion Rate
-                      3.2%
-                      +28.4%
-                      
-                    
-                  
-                  
-                    
-                      + ADD NEW ROW
-                    
-                  
-                
-
-                    
-                  
-                
+| METRIC | BASELINE | OUTCOME |
+| :--- | :--- | :--- |
+| Conversion Rate | 3.2% | +28.4% |
+| nnjnjnj |  |  |
 
 $$
 \int_{a}^{b}xdx
