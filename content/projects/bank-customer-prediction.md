@@ -1,11 +1,11 @@
 ---
 title: Retail Banking Customer Insights & Deposit Risk Analysis
-slug: customer-churn-prediction
+slug: bank-customer-prediction
 titleSize: md
 number: '01'
 date: '2026-09-09'
 year: 2026
-category: Machine Learning
+category: DATA ANALYTICS
 description: >-
   Predicting customer retention patterns using SQL and Power BI and to identify
   key churn indicators.
@@ -18,17 +18,15 @@ technologies:
   - SQL
   - Power BI
 featured: true
-published: false
-art: dots
-artLabel: DATA / MODEL / DECISION
+published: true
+art: chart
+artLabel: DATA / ANALYSIS / DECISION
 customArt: ''
 cover: ''
 github: ''
 live: ''
 headline:
-  - CUSTOMER
-  - CHURN
-  - PREDICTION
+  - Retail Bank Customer Insights
 sections:
   - label: 01 / SECTION
     heading: THE PROJECT OVERVIEW
