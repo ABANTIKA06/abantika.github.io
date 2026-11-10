@@ -50,13 +50,12 @@ sections:
       segmentation and relationship analysis, the project aims to transform raw
       banking data into actionable business insights.
   - label: 02 / SECTION
-    heading: 02 / SECTION
+    heading: BUSINESS CONTEXT & PROBLEM STATEMENT
     body: ''
   - label: 03 / SECTION
-    heading: 2. Business Context & Problem Statement
-    body: ''
-  - label: 04 / SECTION
-    heading: 2.1 Business Context
+    heading: >-
+      <span style="color: rgb(17, 17, 17); letter-spacing: -0.02em;">2.1
+      Business Context</span>
     body: >-
       Retail banks manage a diverse customer base with different financial
       behaviours, deposit levels, product preferences and banking activity
@@ -93,7 +92,7 @@ sections:
 
       Analysing these patterns can help the bank better understand its customer
       portfolio and identify areas that may require further business attention.
-  - label: 05 / SECTION
+  - label: 04 / SECTION
     heading: 2.2 Problem Statement
     body: >-
       The primary objective of this project is to analyse retail banking
@@ -139,7 +138,7 @@ sections:
       Business Opportunities: Translate analytical findings into practical
       recommendations for improving customer engagement, strengthening retention
       strategies and identifying potential deposit growth opportunities.
-  - label: 06 / SECTION
+  - label: 05 / SECTION
     heading: 2.3 Planned Project Approach
     body: >-
       To address these business problems, the project is structured into six
@@ -158,12 +157,12 @@ sections:
       findings into business insights, identify potential risks and recommend
       relevant actions.**Phase 6Reporting & VisualizationPresent the findings
       through a structured report and visual dashboards.
-  - label: 07 / SECTION
+  - label: 06 / SECTION
     heading: THE METHOD
     body: >-
       [PLACEHOLDER — Explain exploration, modeling, validation, and
       interpretability methods.]
-  - label: 08 / SECTION
+  - label: 07 / SECTION
     heading: THE OUTCOME
     body: METRIC TBD — Add only results supported by the real project record.
 ---
@@ -175,11 +174,9 @@ A key area of investigation is the relationship between customer inactivity and 
 
 Through exploratory data analysis, statistical techniques, customer segmentation and relationship analysis, the project aims to transform raw banking data into actionable business insights.
 
-## 02 / SECTION
+## BUSINESS CONTEXT & PROBLEM STATEMENT
 
-## 2. Business Context & Problem Statement
-
-## 2.1 Business Context
+## <span style="color: rgb(17, 17, 17); letter-spacing: -0.02em;">2.1 Business Context</span>
 
 Retail banks manage a diverse customer base with different financial behaviours, deposit levels, product preferences and banking activity patterns. Understanding these differences is essential for managing customer relationships, maintaining deposit stability and identifying opportunities for business growth.
 
