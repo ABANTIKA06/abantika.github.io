@@ -52,7 +52,7 @@ sections:
       segmentation and relationship analysis, the project aims to transform raw
       banking data into actionable business insights.
   - label: 02 / SECTION
-    heading: ''
+    heading: 02 / SECTION
     body: ''
   - label: 03 / SECTION
     heading: 2. Business Context & Problem Statement
@@ -77,33 +77,27 @@ sections:
       These patterns create important business questions:
 
 
-      1. Are a significant number of customers inactive despite holding deposits
-      with the bank?
+      - **Are a significant number of customers inactive despite holding
+      deposits with the bank?**
 
+      - **Which customer segments contribute the most to the overall deposit
+      portfolio?**
 
-      2. Which customer segments contribute the most to the overall deposit
-      portfolio?
+      - **Do factors such as age, tenure, credit score and product ownership
+      show meaningful relationships with customer activity?**
 
+      - **Which customer groups may require greater attention from a customer
+      retention perspective?**
 
-      3. Do factors such as age, tenure, credit score and product ownership show
-      meaningful relationships with customer activity?
-
-
-      4. Which customer groups may require greater attention from a customer
-      retention perspective?
-
-
-      5. Where can the bank identify opportunities to improve customer
-      engagement and deposit contribution?
+      - **Where can the bank identify opportunities to improve customer
+      engagement and deposit contribution?**
 
 
       Analysing these patterns can help the bank better understand its customer
       portfolio and identify areas that may require further business attention.
-
-
-      2.2 Problem Statement
-
-
+  - label: 05 / SECTION
+    heading: 2.2 Problem Statement
+    body: >-
       The primary objective of this project is to analyse retail banking
       customer data to understand customer behaviour, deposit distribution and
       potential customer inactivity risks.
@@ -147,19 +141,31 @@ sections:
       Business Opportunities: Translate analytical findings into practical
       recommendations for improving customer engagement, strengthening retention
       strategies and identifying potential deposit growth opportunities.
-
-
-      2.3 Planned Project Approach
-
-
+  - label: 06 / SECTION
+    heading: 2.3 Planned Project Approach
+    body: >-
       To address these business problems, the project is structured into six
       analytical phases:
-  - label: 05 / SECTION
+
+
+      PhaseFocus AreaPurposePhase 1Data Understanding & PreparationUnderstand
+      the dataset, inspect data quality and prepare reliable data for
+      analysis.Phase 2Exploratory Data Analysis (EDA)Examine customer
+      demographics, deposit distribution and statistical patterns.Phase
+      3Customer Behaviour & Risk AnalysisInvestigate active and inactive
+      customers, country-level patterns and inactive high-value customers.Phase
+      4Relationships & Customer ProfilingExamine correlations and segment
+      customers by age, tenure, product ownership and deposit value.**Phase
+      5****Business Insights & Strategic Recommendations****Convert analytical
+      findings into business insights, identify potential risks and recommend
+      relevant actions.**Phase 6Reporting & VisualizationPresent the findings
+      through a structured report and visual dashboards.
+  - label: 07 / SECTION
     heading: THE METHOD
     body: >-
       [PLACEHOLDER — Explain exploration, modeling, validation, and
       interpretability methods.]
-  - label: 06 / SECTION
+  - label: 08 / SECTION
     heading: THE OUTCOME
     body: METRIC TBD — Add only results supported by the real project record.
 ---
@@ -183,19 +189,15 @@ However, a large customer base does not necessarily indicate strong customer eng
 
 These patterns create important business questions:
 
-1. Are a significant number of customers inactive despite holding deposits with the bank?
-
-2. Which customer segments contribute the most to the overall deposit portfolio?
-
-3. Do factors such as age, tenure, credit score and product ownership show meaningful relationships with customer activity?
-
-4. Which customer groups may require greater attention from a customer retention perspective?
-
-5. Where can the bank identify opportunities to improve customer engagement and deposit contribution?
+- **Are a significant number of customers inactive despite holding deposits with the bank?**
+- **Which customer segments contribute the most to the overall deposit portfolio?**
+- **Do factors such as age, tenure, credit score and product ownership show meaningful relationships with customer activity?**
+- **Which customer groups may require greater attention from a customer retention perspective?**
+- **Where can the bank identify opportunities to improve customer engagement and deposit contribution?**
 
 Analysing these patterns can help the bank better understand its customer portfolio and identify areas that may require further business attention.
 
-2.2 Problem Statement
+## 2.2 Problem Statement
 
 The primary objective of this project is to analyse retail banking customer data to understand customer behaviour, deposit distribution and potential customer inactivity risks.
 
@@ -215,9 +217,11 @@ Potential Retention Risks: Identify inactive customers with relatively high depo
 
 Business Opportunities: Translate analytical findings into practical recommendations for improving customer engagement, strengthening retention strategies and identifying potential deposit growth opportunities.
 
-2.3 Planned Project Approach
+## 2.3 Planned Project Approach
 
 To address these business problems, the project is structured into six analytical phases:
+
+PhaseFocus AreaPurposePhase 1Data Understanding & PreparationUnderstand the dataset, inspect data quality and prepare reliable data for analysis.Phase 2Exploratory Data Analysis (EDA)Examine customer demographics, deposit distribution and statistical patterns.Phase 3Customer Behaviour & Risk AnalysisInvestigate active and inactive customers, country-level patterns and inactive high-value customers.Phase 4Relationships & Customer ProfilingExamine correlations and segment customers by age, tenure, product ownership and deposit value.**Phase 5****Business Insights & Strategic Recommendations****Convert analytical findings into business insights, identify potential risks and recommend relevant actions.**Phase 6Reporting & VisualizationPresent the findings through a structured report and visual dashboards.
 
 ## THE METHOD
 
