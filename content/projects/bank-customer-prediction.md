@@ -145,18 +145,64 @@ sections:
       analytical phases:
 
 
-      PhaseFocus AreaPurposePhase 1Data Understanding & PreparationUnderstand
-      the dataset, inspect data quality and prepare reliable data for
-      analysis.Phase 2Exploratory Data Analysis (EDA)Examine customer
-      demographics, deposit distribution and statistical patterns.Phase
-      3Customer Behaviour & Risk AnalysisInvestigate active and inactive
-      customers, country-level patterns and inactive high-value customers.Phase
-      4Relationships & Customer ProfilingExamine correlations and segment
-      customers by age, tenure, product ownership and deposit value.**Phase
-      5****Business Insights & Strategic Recommendations****Convert analytical
-      findings into business insights, identify potential risks and recommend
-      relevant actions.**Phase 6Reporting & VisualizationPresent the findings
-      through a structured report and visual dashboards.
+      ### Project Approach and Methodology
+
+
+      Phase 1: Data Understanding & Preparation
+
+
+      The first phase focuses on understanding the dataset, identifying its
+      structure, examining individual columns, and assessing overall data
+      quality. This includes inspecting missing values, duplicate records,
+      inconsistent entries, and data types. The objective is to clean and
+      prepare the dataset to ensure reliable and accurate analysis.
+
+
+      Phase 2: Exploratory Data Analysis (EDA)
+
+
+      This phase focuses on exploring the dataset to understand customer
+      demographics, deposit distribution, and other important statistical
+      patterns. Descriptive statistics and visualizations are used to identify
+      trends, variations, and potential patterns within the customer data.
+
+
+      Phase 3: Customer Behaviour & Risk Analysis
+
+
+      This phase examines customer behaviour by analysing active and inactive
+      customers, identifying country-level patterns, and investigating inactive
+      customers with high deposit values. The objective is to understand
+      customer inactivity and identify potential business risks associated with
+      valuable customers.
+
+
+      Phase 4: Relationships & Customer Profiling
+
+
+      This phase investigates relationships between different customer
+      attributes using correlation analysis and customer segmentation. Customers
+      are analysed based on age, tenure, product ownership, and deposit value to
+      identify behavioural patterns and meaningful customer groups.
+
+
+      Phase 5: Business Insights & Strategic Recommendations
+
+
+      The findings from the previous phases are translated into meaningful
+      business insights. This includes identifying potential customer risks,
+      understanding factors associated with inactivity, highlighting important
+      customer segments, and recommending appropriate strategies to improve
+      customer engagement and retention.
+
+
+      Phase 6: Reporting & Visualization
+
+
+      The final phase focuses on presenting the analytical findings through a
+      structured project report and visual dashboards. The objective is to
+      communicate key observations, business insights, and recommendations in a
+      clear and understandable manner to support data-driven decision-making.
   - label: 06 / SECTION
     heading: THE METHOD
     body: >-
@@ -216,7 +262,31 @@ Business Opportunities: Translate analytical findings into practical recommendat
 
 To address these business problems, the project is structured into six analytical phases:
 
-PhaseFocus AreaPurposePhase 1Data Understanding & PreparationUnderstand the dataset, inspect data quality and prepare reliable data for analysis.Phase 2Exploratory Data Analysis (EDA)Examine customer demographics, deposit distribution and statistical patterns.Phase 3Customer Behaviour & Risk AnalysisInvestigate active and inactive customers, country-level patterns and inactive high-value customers.Phase 4Relationships & Customer ProfilingExamine correlations and segment customers by age, tenure, product ownership and deposit value.**Phase 5****Business Insights & Strategic Recommendations****Convert analytical findings into business insights, identify potential risks and recommend relevant actions.**Phase 6Reporting & VisualizationPresent the findings through a structured report and visual dashboards.
+### Project Approach and Methodology
+
+Phase 1: Data Understanding & Preparation
+
+The first phase focuses on understanding the dataset, identifying its structure, examining individual columns, and assessing overall data quality. This includes inspecting missing values, duplicate records, inconsistent entries, and data types. The objective is to clean and prepare the dataset to ensure reliable and accurate analysis.
+
+Phase 2: Exploratory Data Analysis (EDA)
+
+This phase focuses on exploring the dataset to understand customer demographics, deposit distribution, and other important statistical patterns. Descriptive statistics and visualizations are used to identify trends, variations, and potential patterns within the customer data.
+
+Phase 3: Customer Behaviour & Risk Analysis
+
+This phase examines customer behaviour by analysing active and inactive customers, identifying country-level patterns, and investigating inactive customers with high deposit values. The objective is to understand customer inactivity and identify potential business risks associated with valuable customers.
+
+Phase 4: Relationships & Customer Profiling
+
+This phase investigates relationships between different customer attributes using correlation analysis and customer segmentation. Customers are analysed based on age, tenure, product ownership, and deposit value to identify behavioural patterns and meaningful customer groups.
+
+Phase 5: Business Insights & Strategic Recommendations
+
+The findings from the previous phases are translated into meaningful business insights. This includes identifying potential customer risks, understanding factors associated with inactivity, highlighting important customer segments, and recommending appropriate strategies to improve customer engagement and retention.
+
+Phase 6: Reporting & Visualization
+
+The final phase focuses on presenting the analytical findings through a structured project report and visual dashboards. The objective is to communicate key observations, business insights, and recommendations in a clear and understandable manner to support data-driven decision-making.
 
 ## THE METHOD
 
