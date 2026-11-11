@@ -50,12 +50,7 @@ sections:
       segmentation and relationship analysis, the project aims to transform raw
       banking data into actionable business insights.
   - label: 02 / SECTION
-    heading: BUSINESS CONTEXT & PROBLEM STATEMENT
-    body: ''
-  - label: 03 / SECTION
-    heading: >-
-      <span style="color: rgb(17, 17, 17); letter-spacing: -0.02em;">2.1
-      Business Context</span>
+    heading: 02 /
     body: >-
       Retail banks manage a diverse customer base with different financial
       behaviours, deposit levels, product preferences and banking activity
@@ -92,7 +87,7 @@ sections:
 
       Analysing these patterns can help the bank better understand its customer
       portfolio and identify areas that may require further business attention.
-  - label: 04 / SECTION
+  - label: 03 / SECTION
     heading: 2.2 Problem Statement
     body: >-
       The primary objective of this project is to analyse retail banking
@@ -138,7 +133,7 @@ sections:
       Business Opportunities: Translate analytical findings into practical
       recommendations for improving customer engagement, strengthening retention
       strategies and identifying potential deposit growth opportunities.
-  - label: 05 / SECTION
+  - label: 04 / SECTION
     heading: 2.3 Planned Project Approach
     body: >-
       To address these business problems, the project is structured into six
@@ -148,7 +143,7 @@ sections:
       ### Project Approach and Methodology
 
 
-      Phase 1: Data Understanding & Preparation
+      **Phase 1: Data Understanding & Preparation**
 
 
       The first phase focuses on understanding the dataset, identifying its
@@ -158,7 +153,7 @@ sections:
       prepare the dataset to ensure reliable and accurate analysis.
 
 
-      Phase 2: Exploratory Data Analysis (EDA)
+      **Phase 2: Exploratory Data Analysis (EDA)**
 
 
       This phase focuses on exploring the dataset to understand customer
@@ -203,12 +198,12 @@ sections:
       structured project report and visual dashboards. The objective is to
       communicate key observations, business insights, and recommendations in a
       clear and understandable manner to support data-driven decision-making.
-  - label: 06 / SECTION
+  - label: 05 / SECTION
     heading: THE METHOD
     body: >-
       [PLACEHOLDER — Explain exploration, modeling, validation, and
       interpretability methods.]
-  - label: 07 / SECTION
+  - label: 06 / SECTION
     heading: THE OUTCOME
     body: METRIC TBD — Add only results supported by the real project record.
 ---
@@ -220,9 +215,7 @@ A key area of investigation is the relationship between customer inactivity and 
 
 Through exploratory data analysis, statistical techniques, customer segmentation and relationship analysis, the project aims to transform raw banking data into actionable business insights.
 
-## BUSINESS CONTEXT & PROBLEM STATEMENT
-
-## <span style="color: rgb(17, 17, 17); letter-spacing: -0.02em;">2.1 Business Context</span>
+## 02 /
 
 Retail banks manage a diverse customer base with different financial behaviours, deposit levels, product preferences and banking activity patterns. Understanding these differences is essential for managing customer relationships, maintaining deposit stability and identifying opportunities for business growth.
 
@@ -264,11 +257,11 @@ To address these business problems, the project is structured into six analytica
 
 ### Project Approach and Methodology
 
-Phase 1: Data Understanding & Preparation
+**Phase 1: Data Understanding & Preparation**
 
 The first phase focuses on understanding the dataset, identifying its structure, examining individual columns, and assessing overall data quality. This includes inspecting missing values, duplicate records, inconsistent entries, and data types. The objective is to clean and prepare the dataset to ensure reliable and accurate analysis.
 
-Phase 2: Exploratory Data Analysis (EDA)
+**Phase 2: Exploratory Data Analysis (EDA)**
 
 This phase focuses on exploring the dataset to understand customer demographics, deposit distribution, and other important statistical patterns. Descriptive statistics and visualizations are used to identify trends, variations, and potential patterns within the customer data.
 
